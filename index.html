@@ -160,9 +160,16 @@ function drawOil(svg, col, rowIdx) {
   const {cx, cy} = cellCenter(col, rowIdx);
   const symW = Math.round(CELL_SLOT * 0.55 * 1.17);
   const symH = Math.round(symW * 0.9133);
-  const srcs = [OIL_1, OIL_2, OIL_3];
-  const src = srcs[(col * 7 + rowIdx * 13) % 3];
-  placeOverlay(svg, src, cx, cy, symW, symH, 17, 0);
+  const srcs = [OIL_1, OIL_2];
+  const rotations = [0, 90, 180, 270];
+  const variant = (col * 7 + rowIdx * 13) % 8;
+  const src = srcs[variant % 2];
+  const rot = rotations[Math.floor(variant / 2)];
+  const img = placeOverlay(svg, src, cx + 17, cy, symW, symH);
+  if (rot !== 0) {
+    const cx2 = Math.round(cx + 17);
+    img.setAttribute('transform', `rotate(${rot}, ${cx2}, ${cy})`);
+  }
 }
 
 function drawRamp(svg, col, rowIdx) {
