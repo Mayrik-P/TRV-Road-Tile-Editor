@@ -40,7 +40,7 @@ h1{font-size:15px;font-weight:900;color:#302924;letter-spacing:1px;text-transfor
     <button class="btn" id="title-img-btn" onclick="document.getElementById('title-img-input').click()" style="white-space:normal;line-height:1.4;">Load title image<br><span style="font-size:9px;opacity:0.7;">ideal size: 4243 × 456 px</span></button>
     <input id="title-img-input" type="file" accept="image/png,image/jpeg" style="display:none" onchange="loadTitleImage(this)"/>
     <span id="title-img-warn" style="font-size:10px;color:#E8231A;display:none;">⚠ Image too small — may appear blurry when printed</span>
-    <button class="btn p" onclick="exportPNG()">Export the .png</button>
+  <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">Chargement...</button>
   </div>
   <div id="palette"><span id="pal-lbl">Types of spaces :</span></div>
   <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
@@ -590,9 +590,30 @@ window.addEventListener('load', function () {
     salt: 'textures/Texture-Salt-Flats.png',
     glass: 'textures/Texture-Desert-Glass.png',
   };
+let texturesLoaded = 0;
+  const totalTextures = Object.keys(textureSources).length;
   Object.entries(textureSources).forEach(([key, src]) => {
     const img = new Image();
-    img.onload = function () { TEXTURES[key] = img; buildBoard(); };
+    img.onload = function () {
+      TEXTURES[key] = img;
+      texturesLoaded++;
+      buildBoard();
+      if (texturesLoaded === totalTextures) {
+        const btn = document.getElementById('export-btn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'Export the .png';
+      }
+    };
+    img.onerror = function () {
+      texturesLoaded++;
+      if (texturesLoaded === totalTextures) {
+        const btn = document.getElementById('export-btn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'Export the .png';
+      }
+    };
     img.src = src;
   });
 });
