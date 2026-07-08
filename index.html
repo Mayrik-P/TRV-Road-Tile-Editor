@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TRV Road Tile Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#f2e8d6;color:#ddd;min-height:100vh;}
+#app{display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:8px;}
+h1{font-size:15px;font-weight:900;color:#302924;letter-spacing:1px;text-transform:uppercase;
+  font-family:"Rockwell","Georgia",serif;font-style:italic;
+  text-shadow:1px 1px 0 rgba(0,0,0,0.15);}
+#toolbar{background:#f2e8d6;border-radius:10px 10px 0 0;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #c8b89a;}
+#title-input{background:#ede3cf;border:1px solid #b0956e;color:#3a2c1a;padding:5px 9px;border-radius:5px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;width:190px;}
+#title-input::placeholder{color:#9a8060;font-weight:400;text-transform:none;letter-spacing:0;}
+#cc{font-size:11px;color:#555;min-width:36px;}
+.btn{background:#e0d4bc;border:1px solid #b0956e;color:#3a2c1a;padding:6px 11px;border-radius:5px;font-size:11px;cursor:pointer;}
+.btn:hover{background:#cfc3a8;}
+.btn.p{background:#E8A84C;color:#111;border-color:#E8A84C;font-weight:700;}
+.btn.p:hover{background:#f5b555;}
+.btn.p:disabled{background:#b8884c;color:#555;cursor:not-allowed;opacity:0.7;}
+#palette{background:#f2e8d6;padding:8px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-bottom:1px solid #c8b89a;}
+#pal-lbl{font-size:10px;color:#555;margin-right:4px;}
+.tb{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#e0d4bc;border:2px solid transparent;border-radius:5px;cursor:pointer;font-size:11px;color:#3a2c1a;white-space:nowrap;user-select:none;-webkit-user-select:none;}
+.tb:hover{background:#cfc3a8;}
+.tb.sel{border-color:#8B5E3C;background:#c8a87a;color:#3a1a00;}
+.sw{width:11px;height:11px;border-radius:2px;flex-shrink:0;border:1px solid rgba(255,255,255,0.15);}
+#bwrap{background:#fff;overflow:hidden;border-radius:0 0 10px 10px;}
+#bsvg{display:block;width:100%;touch-action:manipulation;}
+#hint{font-size:10px;color:#555;text-align:center;padding:5px;background:#f2e8d6;margin-top:4px;border-radius:5px;}
+/* Progress bar inside export button */
+#export-btn{position:relative;overflow:hidden;min-width:110px;}
+#export-progress{position:absolute;left:0;top:0;height:100%;width:0%;background:rgba(0,0,0,0.15);transition:width 0.2s;pointer-events:none;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="toolbar">
+    <h1>TRV Road Tile Editor</h1>
+    <input id="title-input" type="text" maxlength="20" placeholder="Name of your road"/>
+    <span id="cc">0/20</span>
+    <button class="btn" onclick="resetBoard()">Reset</button>
+    <button class="btn" id="title-img-btn" onclick="document.getElementById('title-img-input').click()" style="white-space:normal;line-height:1.4;">Load title image<br><span style="font-size:9px;opacity:0.7;">ideal size: 4243 × 456 px</span></button>
+    <input id="title-img-input" type="file" accept="image/png,image/jpeg" style="display:none" onchange="loadTitleImage(this)"/>
+    <span id="title-img-warn" style="font-size:10px;color:#E8231A;display:none;">⚠ Image too small — may appear blurry when printed</span>
+    <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
+      <span id="export-progress"></span>
+      <span id="export-label">Loading… 0%</span>
+    </button>
+  </div>
+  <div id="palette"><span id="pal-lbl">Types of spaces :</span></div>
+  <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <div id="hint">Select a space type from the list above, then click or tap on a space on the board</div>
+  <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#DB9D50;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.</div>
+</div>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+
+const TILES = [
+  {id:'mud',        label:'Muddy',               color:'#53413d'},
+  {id:'haz_mud',    label:'Muddy + Hazard',      color:'#53413d'},
+  {id:'sand',       label:'Off-Road',            color:'#e9b964'},
+  {id:'haz_sand',   label:'Off-Road + Hazard',   color:'#e9b964'},
+  {id:'off_oil',    label:'Off-Road + Oil',      color:'#e9b964'},
+  {id:'road',       label:'Road',                color:'#64635e'},
+  {id:'haz_road',   label:'Road + Hazard',       color:'#64635e'},
+  {id:'oil',        label:'Road + Oil',          color:'#64635e'},
+  {id:'rock',       label:'Impassable',          color:'#9b5043'},
+  {id:'goo',        label:'Toxic Goo',           color:'#82a94d'},
+  {id:'glass',      label:'Desert Glass',        color:'#a4c0c8'},
+  {id:'ramp',       label:'Ramp',                color:'#897a5b'},
+  {id:'multi_ramp', label:'MultiRamp',           color:'#897a5b'},
+  {id:'fire',       label:'Fire!',               color:'#ff3333'},
+  {id:'salt',       label:'Salt Flats',          color:'#fff8e2'},
+  {id:'haz_salt',   label:'Salt Flats + Hazard', color:'#fff8e2'},
+];
+
+// Texture inheritance: hazard/oil/fire/ramp variants reuse the base terrain texture
+const TEXTURE_BASE = {
+  haz_mud:'mud', haz_sand:'sand', haz_road:'road',
+  off_oil:'sand', oil:'road', haz_salt:'salt',
+  fire:'sand', ramp:'sand', multi_ramp:'sand',
+};
+
+function baseId(id) { return TEXTURE_BASE[id] || id; }
+
+// Board fill color override — used when a tile has no loaded texture
+const BOARD_FILL_OVERRIDE = { rock: '#000000' };
+
+function tcolor(id) { return BOARD_FILL_OVERRIDE[id] || TILES.find(t => t.id === id)?.color || '#888'; }
+
+const TEXTURES = {};    // Image objects for SVG display
+const IMAGES_B64 = {};  // base64 strings for PNG export
+let TITLE_IMAGE = null;
+let sel = 'road';
+let board = Array(48).fill('road');
+
+// ---- Board geometry (A3 @ 300dpi) ----
+const VW = 4961, VH = 3508, NOTCH = 50, CELL_SLOT = 493, COLS = 8, ROWS = 6;
+const GAME_X = 361, GAME_Y = 620, GAME_W = 4243, GAME_H = 2718;
+
+const BANDS = [
+  {top:164,  bot:620,  left:606},  // title
+  {top:620,  bot:1072, left:411},  // row1 (odd)
+  {top:1072, bot:1526, left:606},  // row2 (even)
+  {top:1526, bot:1978, left:411},  // row3 (odd)
+  {top:1978, bot:2432, left:606},  // row4 (even)
+  {top:2432, bot:2884, left:411},  // row5 (odd)
+  {top:2884, bot:3338, left:606},  // row6 (even)
+];
+
+function cellPoly(col, rowIdx) {
+  const b = BANDS[rowIdx + 1];
+  const y0 = b.top, yb = b.bot, rowH = yb - y0;
+  const x0 = b.left + col * CELL_SLOT, mid = y0 + rowH / 2, rx = x0 + CELL_SLOT + NOTCH;
+  if (col === 0) return [[x0,y0],[x0+CELL_SLOT,y0],[rx,mid],[x0+CELL_SLOT,yb],[x0,yb],[x0-NOTCH,mid]];
+  return [[x0,y0],[x0+CELL_SLOT,y0],[rx,mid],[x0+CELL_SLOT,yb],[x0,yb],[x0+NOTCH,mid]];
+}
+function pts2s(p) { return p.map(v => Math.round(v[0]) + ',' + Math.round(v[1])).join(' '); }
+
+function leftMaskPoly(i) {
+  const b = BANDS[i], y0 = b.top, yb = b.bot, mid = (y0 + yb) / 2, l = b.left;
+  return `0,${y0} ${l},${y0} ${l+NOTCH},${mid} ${l},${yb} 0,${yb}`;
+}
+function rightMaskPoly(i) {
+  const b = BANDS[i], y0 = b.top, yb = b.bot, mid = (y0 + yb) / 2, re = b.left + COLS * CELL_SLOT;
+  return `${re},${y0} ${VW},${y0} ${VW},${yb} ${re},${yb} ${re+NOTCH},${mid}`;
+}
+function mkEl(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  return e;
+}
+
+// Generic overlay placer: positions an <image> centered on (cx,cy) with given size/offset
+// Uses base64 from IMAGES_B64 if available — ensures export works without CORS issues
+function placeOverlay(svg, href, cx, cy, w, h, dx = 0, dy = 0) {
+  const img = mkEl('image', {
+    href: IMAGES_B64[href] || href,
+    x: Math.round(cx - w / 2 + dx),
+    y: Math.round(cy - h / 2 + dy),
+    width: w, height: h,
+    preserveAspectRatio: 'xMidYMid meet'
+  });
+  svg.appendChild(img);
+  return img;
+}
+
+function cellCenter(col, rowIdx, xOffset = 0) {
+  const b = BANDS[rowIdx + 1], rowH = b.bot - b.top;
+  return {
+    cx: b.left + col * CELL_SLOT + CELL_SLOT * 0.5 + NOTCH * 0.3 + xOffset,
+    cy: b.top + rowH * 0.5
+  };
+}
+
+function seededRandom(seed) {
+  let t = seed += 0x6D2B79F5;
+  t = Math.imul(t ^ t >>> 15, t | 1);
+  t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+}
+
+function cellBBox(col, row) {
+  const xs = cellPoly(col, row).map(p => p[0]);
+  return { minX: Math.min(...xs), maxX: Math.max(...xs) };
+}
+
+function cellXRange(col, row) {
+  const b = BANDS[row + 1];
+  const x0 = b.left + col * CELL_SLOT;
+  return [x0, x0 + CELL_SLOT];
+}
+
+function getNeighborPairs() {
+  const pairs = [];
+  for (let row = 0; row < ROWS; row++)
+    for (let col = 0; col < COLS; col++) {
+      if (col < COLS - 1) pairs.push([[col, row], [col + 1, row]]);
+      if (row < ROWS - 1) {
+        const bb = cellBBox(col, row);
+        for (let nc = 0; nc < COLS; nc++) {
+          const nbb = cellBBox(nc, row + 1);
+          if (Math.min(bb.maxX, nbb.maxX) - Math.max(bb.minX, nbb.minX) > 0)
+            pairs.push([[col, row], [nc, row + 1]]);
+        }
+      }
+    }
+  return pairs;
+}
+
+// Trace exact de la frontière réelle entre deux cases :
+// - même ligne : le "V" formé par la pointe du chevron (3 points)
+// - inter-lignes : la ligne droite de bande partagée, sur toute la largeur de recouvrement
+function boundaryLine(colA, rowA, colB, rowB) {
+  if (rowA === rowB) {
+    const b = BANDS[rowA + 1];
+    const leftCol = Math.min(colA, colB);
+    const x0 = b.left + leftCol * CELL_SLOT;
+    const rx = x0 + CELL_SLOT + NOTCH;
+    return [[x0 + CELL_SLOT, b.top], [rx, (b.top + b.bot) / 2], [x0 + CELL_SLOT, b.bot]];
+  }
+  const [aMin, aMax] = cellXRange(colA, rowA);
+  const [bMin, bMax] = cellXRange(colB, rowB);
+  const ox0 = Math.max(aMin, bMin), ox1 = Math.min(aMax, bMax);
+  const y = rowA < rowB ? BANDS[rowA + 1].bot : BANDS[rowB + 1].bot;
+  return [[ox0, y], [ox1, y]];
+}
+
+// Avance de la distance d (longueur d'arc) le long de la polyligne pts,
+// renvoie la position et la normale perpendiculaire à cet endroit.
+function pointAlong(pts, d) {
+  let remaining = d;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+    const segLen = Math.hypot(x2 - x1, y2 - y1);
+    if (remaining <= segLen || i === pts.length - 2) {
+      const t = segLen === 0 ? 0 : remaining / segLen;
+      const x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;
+      const len = segLen || 1;
+      return { x, y, nx: -(y2 - y1) / len, ny: (x2 - x1) / len };
+    }
+    remaining -= segLen;
+  }
+  const [x, y] = pts[pts.length - 1];
+  return { x, y, nx: 0, ny: 1 };
+}
+function polylineLength(pts) {
+  let L = 0;
+  for (let i = 0; i < pts.length - 1; i++) L += Math.hypot(pts[i+1][0]-pts[i][0], pts[i+1][1]-pts[i][1]);
+  return L;
+}
+
+// Construit une bande "déchirée" (polygone fermé, pure géométrie, pas de filtre)
+// qui suit toute la longueur de la frontière avec une épaisseur irrégulière.
+function jaggedStrip(pts, baseHalfWidth, seed, samples = 20) {
+  const L = polylineLength(pts);
+  const side1 = [], side2 = [];
+  for (let i = 0; i <= samples; i++) {
+    const { x, y, nx, ny } = pointAlong(pts, (i / samples) * L);
+    const j1 = 0.5 + seededRandom(seed + i * 37) * 0.9;
+    const j2 = 0.5 + seededRandom(seed + i * 37 + 500) * 0.9;
+    side1.push([x + nx * baseHalfWidth * j1, y + ny * baseHalfWidth * j1]);
+    side2.push([x - nx * baseHalfWidth * j2, y - ny * baseHalfWidth * j2]);
+  }
+  return side1.concat(side2.reverse());
+}
+
+function drawTransition(svg, defs, [colA, rowA], [colB, rowB]) {
+  const typeA = board[rowA * COLS + colA], typeB = board[rowB * COLS + colB];
+  const baseA = baseId(typeA), baseB = baseId(typeB);
+  if (baseA === baseB || baseA === 'road' || baseB === 'road') return;
+  if (!TEXTURES[baseA] || !TEXTURES[baseB]) return;
+
+  const uid = `${colA}-${rowA}-${colB}-${rowB}`;
+  const seed = colA * 31 + rowA * 97 + colB * 13 + rowB * 211;
+  const sameRow = rowA === rowB;
+  const bandH = BANDS[rowA + 1].bot - BANDS[rowA + 1].top;
+  const halfW = sameRow ? CELL_SLOT * 0.22 : bandH * 0.22;
+  const pts = boundaryLine(colA, rowA, colB, rowB);
+
+  const clipAId = `tcellA-${uid}`, clipBId = `tcellB-${uid}`;
+  const clipA = mkEl('clipPath', {id: clipAId});
+  clipA.appendChild(mkEl('polygon', {points: pts2s(cellPoly(colA, rowA))}));
+  defs.appendChild(clipA);
+  const clipB = mkEl('clipPath', {id: clipBId});
+  clipB.appendChild(mkEl('polygon', {points: pts2s(cellPoly(colB, rowB))}));
+  defs.appendChild(clipB);
+
+  // Deux bandes indépendantes : le terrain B qui mord sur A, et le terrain A qui mord sur B —
+  // chacune clippée uniquement au territoire de l'AUTRE case pour un effet de morsure mutuelle.
+  const stripIntoA = jaggedStrip(pts, halfW, seed);
+  const stripIntoB = jaggedStrip(pts, halfW, seed + 9973);
+
+  const gA = mkEl('g', {'clip-path': `url(#${clipAId})`});
+  const stripAClip = mkEl('clipPath', {id: `sA-${uid}`});
+  stripAClip.appendChild(mkEl('polygon', {points: pts2s(stripIntoA)}));
+  defs.appendChild(stripAClip);
+  const gA2 = mkEl('g', {'clip-path': `url(#sA-${uid})`});
+  gA2.appendChild(mkEl('image', {
+    href: IMAGES_B64[TEXTURE_PATHS[baseB]] || TEXTURE_PATHS[baseB],
+    x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H, preserveAspectRatio: 'none'
+  }));
+  gA.appendChild(gA2);
+  svg.appendChild(gA);
+
+  const gB = mkEl('g', {'clip-path': `url(#${clipBId})`});
+  const stripBClip = mkEl('clipPath', {id: `sB-${uid}`});
+  stripBClip.appendChild(mkEl('polygon', {points: pts2s(stripIntoB)}));
+  defs.appendChild(stripBClip);
+  const gB2 = mkEl('g', {'clip-path': `url(#sB-${uid})`});
+  gB2.appendChild(mkEl('image', {
+    href: IMAGES_B64[TEXTURE_PATHS[baseA]] || TEXTURE_PATHS[baseA],
+    x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H, preserveAspectRatio: 'none'
+  }));
+  gB.appendChild(gB2);
+  svg.appendChild(gB);
+}
+
+function drawHazard(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 0.40 * 1.17);
+  const symH = Math.round(symW * (264 / 233));
+  placeOverlay(svg, [HAZARD_1, HAZARD_2, HAZARD_3][(col * 7 + rowIdx * 13) % 3], cx, cy, symW, symH, 17, 0);
+}
+
+function drawOil(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 0.55 * 1.17);
+  const symH = Math.round(symW * 0.9133);
+  const variant = (col * 7 + rowIdx * 13) % 8;
+  const img = placeOverlay(svg, variant % 2 === 0 ? OIL_1 : OIL_2, cx + 17, cy, symW, symH);
+  const rot = [0, 90, 180, 270][Math.floor(variant / 2)];
+  if (rot !== 0) img.setAttribute('transform', `rotate(${rot}, ${Math.round(cx + 17)}, ${cy})`);
+}
+
+function drawRamp(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 1.1 * 1.17 * 1.25 * 0.8);
+  placeOverlay(svg, RAMP, cx, cy, symW, Math.round(symW * 1.0229), 12, -12);
+}
+
+function drawMultiRamp(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 1.2 * 1.1);
+  placeOverlay(svg, MULTI_RAMP, cx, cy, symW, Math.round(symW * 0.8865), 0, -24);
+}
+
+function drawFire(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx, 39);
+  const idx = (col + rowIdx * 2) % 6;
+  const srcs = [FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6];
+  const ws   = [646, 611, 688, 664, 661, 641];
+  const hs   = [671, 678, 665, 680, 665, 718];
+  placeOverlay(svg, srcs[idx], cx, cy, ws[idx], hs[idx], 0, -70);
+}
+
+function drawImpassable(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx, 13);
+  const idx = (col + rowIdx * 2) % 7;
+  const srcs = [IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7];
+  // All impassable sprites share the same base size (704×815), scaled uniformly
+  const scale = 11 / 12 * 1.05 * 0.99 * 0.99 * 0.99;
+  placeOverlay(svg, srcs[idx], cx, cy, Math.round(704 * scale) + 3, Math.round(815 * scale) + 3);
+}
+
+function makeTitleText(x, y, size, txt, fillColor, withShadow, sdx, sdy) {
+  const grp = mkEl('g', {transform: `translate(${x},0) scale(0.9,1) translate(${-x},0)`});
+  if (withShadow) {
+    const sh = mkEl('text', {
+      x: x + sdx, y: y + sdy, fill: '#1a0e00', opacity: '0.85',
+      'font-size': size, 'font-family': '"Rockwell","Georgia",serif',
+      'font-weight': 'bold', 'font-style': 'italic'
+    });
+    sh.textContent = txt;
+    grp.appendChild(sh);
+  }
+  const fill = mkEl('text', {
+    x: x, y: y, fill: fillColor, 'font-size': size,
+    'font-family': '"Rockwell","Georgia",serif',
+    'font-weight': 'bold', 'font-style': 'italic'
+  });
+  fill.textContent = txt;
+  grp.appendChild(fill);
+  return grp;
+}
+
+function buildBoard() {
+  const svg = document.getElementById('bsvg');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+  const defs = mkEl('defs', {});
+  svg.appendChild(defs);
+
+  // 1. White page background
+  svg.appendChild(mkEl('rect', {x:0, y:0, width:VW, height:VH, fill:'#FFFFFF'}));
+
+  // 2. Texture layers — one clipPath per base terrain type
+  const baseTypes = [...new Set(TILES.map(t => baseId(t.id)))];
+  baseTypes.forEach(base => {
+    if (!TEXTURES[base]) return;
+    const clipId = 'tex-clip-' + base;
+    const cp = mkEl('clipPath', {id: clipId});
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++) {
+        if (baseId(board[row * COLS + col]) !== base) continue;
+        cp.appendChild(mkEl('polygon', {points: pts2s(cellPoly(col, row))}));
+      }
+    defs.appendChild(cp);
+    // Use base64 directly in SVG — avoids any CORS issue during export
+    // Falls back to TEXTURE_PATHS if base64 not yet ready (first render)
+    svg.appendChild(mkEl('image', {
+      href: IMAGES_B64[TEXTURE_PATHS[base]] || TEXTURE_PATHS[base],
+      x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H,
+      'clip-path': `url(#${clipId})`,
+      preserveAspectRatio: 'none'
+    }));
+  });
+
+  // 2b. Organic procedural transitions between adjacent non-Road terrains
+  getNeighborPairs().forEach(([A, B]) => drawTransition(svg, defs, A, B));
+
+  // 3. Flat color fill for cell types without a texture (e.g. rock)
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const type = board[row * COLS + col];
+      if (TEXTURES[baseId(type)]) continue;
+      svg.appendChild(mkEl('polygon', {
+        points: pts2s(cellPoly(col, row)), fill: tcolor(type),
+        stroke: '#C07820', 'stroke-width': '2.5', 'stroke-linejoin': 'round'
+      }));
+    }
+
+  // 4. Borders over textured cells
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const type = board[row * COLS + col];
+      if (!TEXTURES[baseId(type)]) continue;
+      svg.appendChild(mkEl('polygon', {
+        points: pts2s(cellPoly(col, row)), fill: 'none',
+        stroke: '#C07820', 'stroke-width': '2.5', 'stroke-linejoin': 'round'
+      }));
+    }
+
+  // 5. Title band background (brown) + optional user image
+  const tb = BANDS[0], tbH = tb.bot - tb.top, tbR = tb.left + COLS * CELL_SLOT, tbMid = (tb.top + tb.bot) / 2;
+  svg.appendChild(mkEl('polygon', {
+    points: `${tb.left},${tb.top} ${tbR},${tb.top} ${tbR+NOTCH},${tbMid} ${tbR},${tb.bot} ${tb.left},${tb.bot} ${tb.left-NOTCH},${tbMid}`,
+    fill: '#6B3A2A'
+  }));
+  if (TITLE_IMAGE) {
+    svg.appendChild(mkEl('image', {
+      href: TITLE_IMAGE.src,
+      x: tb.left - NOTCH, y: tb.top,
+      width: tbR - tb.left + NOTCH * 2, height: tb.bot - tb.top,
+      preserveAspectRatio: 'xMidYMid slice'
+    }));
+  }
+  [tb.top + 3, tb.bot - 3].forEach(y => svg.appendChild(mkEl('line', {
+    x1: tb.left - NOTCH, x2: tbR + NOTCH, y1: y, y2: y, stroke: '#C07820', 'stroke-width': '6'
+  })));
+
+  // 6. Hazard + Oil overlays
+  for (let row = 0; row < ROWS; row++)
+    for (let col = 0; col < COLS; col++) {
+      const t = board[row * COLS + col];
+      if (['haz_mud', 'haz_sand', 'haz_road', 'haz_salt'].includes(t)) drawHazard(svg, col, row);
+      if (t === 'oil' || t === 'off_oil') drawOil(svg, col, row);
+    }
+
+  // 7. Ramp / Multi-ramp / Impassable / Fire — isometric draw order (top-right first, bottom-left last)
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const t = board[row * COLS + col];
+      if (t === 'ramp')       drawRamp(svg, col, row);
+      if (t === 'multi_ramp') drawMultiRamp(svg, col, row);
+      if (t === 'rock')       drawImpassable(svg, col, row);
+      if (t === 'fire')       drawFire(svg, col, row);
+    }
+
+  // 8. Title text — above everything
+  const titleVal = document.getElementById('title-input').value.toUpperCase() || 'NAME OF YOUR ROAD';
+  const mainSize = Math.round(tbH * 0.78 * 0.76), capH = mainSize * 0.72;
+  const titleY = Math.round(tb.top + tbH / 2 + capH / 2) + 9;
+  const textLeft = tb.left + Math.round(tbH * 0.08) + 331;
+  const sdx = Math.round(tbH * 0.03), sdy = Math.round(tbH * 0.04);
+  const chapSize = Math.round(tbH * 0.22), chapY = Math.round(titleY - capH - tbH * 0.04);
+
+  const cg = mkEl('g', {transform: `translate(${textLeft+35},0) scale(0.9,1) translate(${-(textLeft+35)},0)`});
+  const cf = mkEl('text', {
+    x: textLeft + 35, y: chapY, fill: '#BBB3A2', 'font-size': chapSize,
+    'font-family': '"Rockwell","Georgia",serif', 'font-weight': 'bold', 'font-style': 'italic'
+  });
+  cf.textContent = 'FAN-MADE CHAPTER';
+  cg.appendChild(cf);
+  svg.appendChild(cg);
+
+  const mg = makeTitleText(textLeft, titleY, mainSize, titleVal, '#F8F0D0', true, sdx, sdy);
+  mg.childNodes[1].id = 'title-display';
+  mg.childNodes[0].id = 'title-shadow';
+  svg.appendChild(mg);
+
+  const theSize = Math.round(mainSize * 0.42), theX = textLeft - 236;
+  const theCapH = theSize * 0.72, theY = Math.round(titleY - capH / 2 + theCapH / 2);
+  const tg = mkEl('g', {transform: `translate(${theX},0) scale(0.9,1) translate(${-theX},0)`});
+  const tf = mkEl('text', {
+    x: theX, y: theY, fill: '#BBB3A2', 'font-size': theSize,
+    'font-family': '"Rockwell","Georgia",serif', 'font-weight': 'bold', 'font-style': 'italic'
+  });
+  tf.textContent = 'THE';
+  tg.appendChild(tf);
+  svg.appendChild(tg);
+
+  // 9. White chevron masks — clip cell tips into margins
+  svg.appendChild(mkEl('rect', {x:0, y:0, width:VW, height:BANDS[0].top, fill:'#FFFFFF'}));
+  svg.appendChild(mkEl('rect', {x:0, y:BANDS[6].bot, width:VW, height:VH-BANDS[6].bot, fill:'#FFFFFF'}));
+  for (let i = 0; i < 7; i++) {
+    svg.appendChild(mkEl('polygon', {points: leftMaskPoly(i), fill: '#FFFFFF'}));
+    svg.appendChild(mkEl('polygon', {points: rightMaskPoly(i), fill: '#FFFFFF'}));
+  }
+
+  // 10. Clickable hit areas (transparent, on top)
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const hit = mkEl('polygon', {points: pts2s(cellPoly(col, row)), fill: 'transparent', stroke: 'none'});
+      hit.dataset.idx = row * COLS + col;
+      hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', function () { this.setAttribute('fill', 'rgba(255,255,255,0.22)'); });
+      hit.addEventListener('mouseleave', function () { this.setAttribute('fill', 'transparent'); });
+      hit.addEventListener('click', function () { board[parseInt(this.dataset.idx)] = sel; buildBoard(); });
+      svg.appendChild(hit);
+    }
+}
+
+// Extra swatch styling per tile id
+const SWATCH_STYLE = {
+  haz_mud:    {border: '1px solid #a72b28'},
+  haz_sand:   {border: '1px solid #a72b28'},
+  haz_road:   {border: '1px solid #a72b28'},
+  haz_salt:   {border: '1px solid #a72b28'},
+  ramp:       {border: '1px solid #e4c070'},
+  multi_ramp: {border: '1px solid #e4c070'},
+  off_oil:    {dot: '#222a1f'},
+  oil:        {dot: '#222a1f'},
+};
+
+function buildPalette() {
+  const pal = document.getElementById('palette');
+  TILES.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className = 'tb' + (t.id === sel ? ' sel' : '');
+    btn.id = 'tb-' + t.id;
+    const sw = document.createElement('div');
+    sw.className = 'sw';
+    sw.style.background = t.color;
+    sw.style.position = 'relative';
+    sw.style.flexShrink = '0';
+    const extra = SWATCH_STYLE[t.id] || {};
+    if (extra.border) sw.style.border = extra.border;
+    if (extra.dot) {
+      const dot = document.createElement('div');
+      dot.style.cssText = `position:absolute;width:2px;height:2px;background:${extra.dot};top:50%;left:50%;transform:translate(-50%,-50%);`;
+      sw.appendChild(dot);
+    }
+    btn.appendChild(sw);
+    btn.appendChild(document.createTextNode(t.label));
+    btn.onclick = () => {
+      sel = t.id;
+      document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+    };
+    pal.appendChild(btn);
+  });
+}
+
+function resetBoard() {
+  board = Array(48).fill('road');
+  buildBoard();
+}
+
+// ---- Export PNG ----
+// All images are pre-converted to base64 at load time (IMAGES_B64).
+// The export button is locked during export to prevent double-clicks.
+function exportPNG() {
+  const btn = document.getElementById('export-btn');
+  const label = document.getElementById('export-label');
+
+  // Check all images are truly ready before exporting
+  if (!allImagesReady()) {
+    alert('⚠ Some images are not fully loaded yet.\nPlease reload the page and try again.');
+    return;
+  }
+
+  // Lock button during export
+  btn.disabled = true;
+  label.textContent = 'Preparing…';
+
+  const svg = document.getElementById('bsvg');
+  const clone = svg.cloneNode(true);
+  clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
+  clone.setAttribute('width', '4961');
+  clone.setAttribute('height', '3508');
+
+  // SVG already contains base64 hrefs (set during buildBoard) — no replacement needed.
+  // Render SVG to canvas and download as PNG
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const canvas = document.createElement('canvas');
+  canvas.width = 4961;
+  canvas.height = 3508;
+  const img = new Image();
+  img.onload = () => {
+    label.textContent = 'Exporting…';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 4961, 3508);
+    ctx.drawImage(img, 0, 0, 4961, 3508);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(b => {
+      const a = document.createElement('a');
+      const name = document.getElementById('title-input').value.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-') || 'RoadTile';
+      a.href = URL.createObjectURL(b);
+      a.download = name + '-A3.png';
+      a.click();
+      // Unlock button after download triggered
+      btn.disabled = false;
+      label.textContent = 'Export the .png';
+    }, 'image/png');
+  };
+  img.onerror = () => {
+    btn.disabled = false;
+    label.textContent = 'Export the .png';
+    alert('Export failed — please try again.');
+  };
+  img.src = url;
+}
+
+function loadTitleImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      TITLE_IMAGE = img;
+      const warn = document.getElementById('title-img-warn');
+      warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+      document.getElementById('title-img-btn').textContent = '✓ Title image loaded';
+      document.getElementById('title-img-btn').style.color = '#4CAF50';
+      buildBoard();
+    };
+    img.onerror = function () {
+      document.getElementById('title-img-btn').textContent = '✗ Load failed';
+      document.getElementById('title-img-btn').style.color = '#E8231A';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+document.getElementById('title-input').addEventListener('input', function () {
+  const l = this.value.length;
+  const cc = document.getElementById('cc');
+  cc.textContent = l + '/20';
+  cc.style.color = l > 17 ? '#E8A84C' : '#777';
+  const td = document.getElementById('title-display');
+  if (td) td.textContent = this.value.toUpperCase() || 'NAME OF YOUR ROAD';
+  const ts = document.getElementById('title-shadow');
+  if (ts) ts.textContent = this.value.toUpperCase() || 'NAME OF YOUR ROAD';
+});
+
+// ---- Overlay sprite sources ----
+let HAZARD_1, HAZARD_2, HAZARD_3;
+let OIL_1, OIL_2;
+let RAMP, MULTI_RAMP;
+let FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6;
+let IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7;
+
+function initOverlaySources() {
+  HAZARD_1 = 'sprites/Hazard-1.png';  HAZARD_2 = 'sprites/Hazard-2.png';  HAZARD_3 = 'sprites/Hazard-3.png';
+  OIL_1    = 'sprites/Oil-1.png';     OIL_2    = 'sprites/Oil-2.png';
+  RAMP     = 'sprites/Ramp.png';      MULTI_RAMP = 'sprites/Multi-Ramp.png';
+  FIRE_1   = 'sprites/Fire!-1.png';   FIRE_2   = 'sprites/Fire!-2.png';   FIRE_3 = 'sprites/Fire!-3.png';
+  FIRE_4   = 'sprites/Fire!-4.png';   FIRE_5   = 'sprites/Fire!-5.png';   FIRE_6 = 'sprites/Fire!-6.png';
+  IMP_1    = 'sprites/Impassable-1.png'; IMP_2 = 'sprites/Impassable-2.png'; IMP_3 = 'sprites/Impassable-3.png';
+  IMP_4    = 'sprites/Impassable-4.png'; IMP_5 = 'sprites/Impassable-5.png'; IMP_6 = 'sprites/Impassable-6.png';
+  IMP_7    = 'sprites/Impassable-7.png';
+}
+initOverlaySources();
+
+// Complete list of all image paths expected in IMAGES_B64
+function allImagesReady() {
+  const required = [
+    ...Object.values(TEXTURE_PATHS),
+    HAZARD_1, HAZARD_2, HAZARD_3,
+    OIL_1, OIL_2, RAMP, MULTI_RAMP,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7,
+  ];
+  return required.every(src => !!IMAGES_B64[src]);
+}
+
+// Texture paths — used as href in SVG and as keys in IMAGES_B64 (must match exactly)
+const TEXTURE_PATHS = {
+  road:  'textures/Texture-Road.png',
+  goo:   'textures/Texture-Toxic-Goo.png',
+  mud:   'textures/Texture-Muddy.png',
+  sand:  'textures/Texture-Off-Road.png',
+  salt:  'textures/Texture-Salt-Flats.png',
+  glass: 'textures/Texture-Desert-Glass.png',
+};
+
+// ---- Load all images at startup ----
+// Strategy:
+// 1. Road texture is loaded first so the board appears immediately on launch.
+// 2. All other images load in parallel afterward.
+// 3. Each image is converted to base64 (for CORS-safe export) immediately after loading.
+// 4. The Export button unlocks only when every base64 conversion is confirmed complete.
+window.addEventListener('load', function () {
+  const btn = document.getElementById('export-btn');
+  const label = document.getElementById('export-label');
+  const progress = document.getElementById('export-progress');
+
+  const overlaySources = [
+    HAZARD_1, HAZARD_2, HAZARD_3,
+    OIL_1, OIL_2,
+    RAMP, MULTI_RAMP,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7,
+  ];
+
+  // Road loads first, then all others in parallel
+  const otherTextures = Object.entries(TEXTURE_PATHS).filter(([k]) => k !== 'road');
+  const allSources = [
+    {key:'road', src: TEXTURE_PATHS.road, type:'texture'},       // ← Road first
+    ...otherTextures.map(([key, src]) => ({key, src, type:'texture'})),
+    ...overlaySources.map(src => ({key: null, src, type:'overlay'})),
+  ];
+
+  let converted = 0;
+  let failed = 0;
+  const total = allSources.length;
+
+  function onOneDone(success) {
+    converted++;
+    if (!success) failed++;
+    const pct = Math.round(converted / total * 100);
+    progress.style.width = pct + '%';
+    label.textContent = `Loading… ${pct}%`;
+
+    if (converted === total) {
+      // All fetches done — now verify IMAGES_B64 is truly complete
+      if (allImagesReady()) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        label.textContent = 'Export the .png';
+        progress.style.width = '0%';
+      } else {
+        // Some images missing despite fetches completing — show error
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        label.textContent = '⚠ Reload page';
+        progress.style.background = 'rgba(200,0,0,0.25)';
+      }
+    }
+  }
+
+  // Load via fetch() → FileReader.readAsDataURL()
+  // Most reliable method : bypasses canvas entirely, no CORS "tainted" risk.
+  // For textures, an Image object is also created for SVG display.
+  function loadOne({key, src, type}) {
+    return new Promise(resolve => {
+      fetch(src)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.blob();
+        })
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            // Store base64 directly from FileReader — no canvas involved
+            IMAGES_B64[src] = e.target.result;
+
+            // For textures, also create an Image for SVG display
+            if (type === 'texture') {
+              const img = new Image();
+              img.onload = function () { TEXTURES[key] = img; buildBoard(); };
+              img.src = e.target.result;
+            }
+
+            onOneDone(true);
+            resolve();
+          };
+          reader.onerror = function () {
+            console.warn('FileReader failed:', src);
+            onOneDone(false);
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(e => {
+          console.warn('Fetch failed:', src, e);
+          onOneDone(false);
+          resolve();
+        });
+    });
+  }
+
+  // Load Road first so the board appears immediately, then all others in parallel
+  loadOne(allSources[0]).then(() => {
+    allSources.slice(1).forEach(item => loadOne(item));
+  });
+});
+
+buildPalette();
+buildBoard();
+</script>
+</body>
+</html>
