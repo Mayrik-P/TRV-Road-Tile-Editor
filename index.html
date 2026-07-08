@@ -420,12 +420,15 @@ function exportPNG() {
   const btn = document.getElementById('export-btn');
   const label = document.getElementById('export-label');
 
-  // Check all textures are ready before exporting
-  const missing = Object.values(TEXTURE_PATHS).filter(src => !IMAGES_B64[src]);
-  if (missing.length > 0) {
-    alert(`⚠ ${missing.length} texture(s) not fully loaded yet.\nPlease wait a moment and try again.`);
-    return;
-  }
+// Check all images (textures + overlays) are ready before exporting
+  const allPaths = [
+    ...Object.values(TEXTURE_PATHS),
+    HAZARD_1, HAZARD_2, HAZARD_3,
+    OIL_1, OIL_2, RAMP, MULTI_RAMP,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7,
+  ];
+  const missing = allPaths.filter(src => !IMAGES_B64[src]);
 
   // Lock button during export
   btn.disabled = true;
