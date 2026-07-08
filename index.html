@@ -423,6 +423,50 @@ function exportPNG() {
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
   clone.setAttribute('width', '4961');
   clone.setAttribute('height', '3508');
+
+  // Collecte toutes les images externes dans le SVG
+  const imgEls = Array.from(clone.querySelectorAll('image'));
+  const srcs = [...new Set(imgEls.map(el => el.getAttribute('href')).filter(Boolean))];
+
+  if (srcs.length === 0) {
+    renderExport(clone);
+    return;
+  }
+
+  // Convertit chaque image externe en base64
+  const b64map = {};
+  let done = 0;
+  srcs.forEach(src => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      b64map[src] = c.toDataURL('image/png');
+      if (++done === srcs.length) {
+        imgEls.forEach(el => {
+          const s = el.getAttribute('href');
+          if (b64map[s]) el.setAttribute('href', b64map[s]);
+        });
+        renderExport(clone);
+      }
+    };
+    img.onerror = function () {
+      if (++done === srcs.length) {
+        imgEls.forEach(el => {
+          const s = el.getAttribute('href');
+          if (b64map[s]) el.setAttribute('href', b64map[s]);
+        });
+        renderExport(clone);
+      }
+    };
+    img.src = src;
+  });
+}
+
+function renderExport(clone) {
   const svgStr = new XMLSerializer().serializeToString(clone);
   const blob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
   const url = URL.createObjectURL(blob);
