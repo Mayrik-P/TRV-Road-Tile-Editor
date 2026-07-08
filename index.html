@@ -587,33 +587,41 @@ window.addEventListener('load', function () {
     goo:   'textures/Texture-Toxic-Goo.png',
     mud:   'textures/Texture-Muddy.png',
     sand:  'textures/Texture-Off-Road.png',
-    salt: 'textures/Texture-Salt-Flats.png',
+    salt:  'textures/Texture-Salt-Flats.png',
     glass: 'textures/Texture-Desert-Glass.png',
   };
-let texturesLoaded = 0;
-  const totalTextures = Object.keys(textureSources).length;
-  Object.entries(textureSources).forEach(([key, src]) => {
+
+  const allSources = [
+    ...Object.entries(textureSources).map(([key, src]) => ({key, src, type:'texture'})),
+    ...Object.entries({
+      HAZARD_1, HAZARD_2, HAZARD_3,
+      OIL_1, OIL_2,
+      RAMP, MULTI_RAMP,
+      FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+      IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7
+    }).map(([key, src]) => ({key, src, type:'overlay'}))
+  ];
+
+  let loaded = 0;
+  const total = allSources.length;
+
+  function onOneLoaded() {
+    loaded++;
+    if (loaded === total) {
+      const btn = document.getElementById('export-btn');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.textContent = 'Export the .png';
+    }
+  }
+
+  allSources.forEach(({key, src, type}) => {
     const img = new Image();
     img.onload = function () {
-      TEXTURES[key] = img;
-      texturesLoaded++;
-      buildBoard();
-      if (texturesLoaded === totalTextures) {
-        const btn = document.getElementById('export-btn');
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.textContent = 'Export the .png';
-      }
+      if (type === 'texture') { TEXTURES[key] = img; buildBoard(); }
+      onOneLoaded();
     };
-    img.onerror = function () {
-      texturesLoaded++;
-      if (texturesLoaded === totalTextures) {
-        const btn = document.getElementById('export-btn');
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.textContent = 'Export the .png';
-      }
-    };
+    img.onerror = function () { onOneLoaded(); };
     img.src = src;
   });
 });
