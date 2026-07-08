@@ -581,7 +581,25 @@ function loadOverlayImages(callback) {
 
 
 // ---- Load background textures, rebuilding the board as each one arrives ----
+const IMAGES_B64 = {};
+
 window.addEventListener('load', function () {
+  const allSources = {
+    'textures/Texture-Road.png': 'texture_road',
+    'textures/Texture-Toxic-Goo.png': 'texture_goo',
+    'textures/Texture-Muddy.png': 'texture_mud',
+    'textures/Texture-Off-Road.png': 'texture_sand',
+    'textures/Texture-Salt-Flats.png': 'texture_salt',
+    'textures/Texture-Desert-Glass.png': 'texture_glass',
+    [HAZARD_1]:'HAZARD_1', [HAZARD_2]:'HAZARD_2', [HAZARD_3]:'HAZARD_3',
+    [OIL_1]:'OIL_1', [OIL_2]:'OIL_2',
+    [RAMP]:'RAMP', [MULTI_RAMP]:'MULTI_RAMP',
+    [FIRE_1]:'FIRE_1', [FIRE_2]:'FIRE_2', [FIRE_3]:'FIRE_3',
+    [FIRE_4]:'FIRE_4', [FIRE_5]:'FIRE_5', [FIRE_6]:'FIRE_6',
+    [IMP_1]:'IMP_1', [IMP_2]:'IMP_2', [IMP_3]:'IMP_3',
+    [IMP_4]:'IMP_4', [IMP_5]:'IMP_5', [IMP_6]:'IMP_6', [IMP_7]:'IMP_7',
+  };
+
   const textureSources = {
     road:  'textures/Texture-Road.png',
     goo:   'textures/Texture-Toxic-Goo.png',
@@ -591,19 +609,9 @@ window.addEventListener('load', function () {
     glass: 'textures/Texture-Desert-Glass.png',
   };
 
-  const allSources = [
-    ...Object.entries(textureSources).map(([key, src]) => ({key, src, type:'texture'})),
-    ...Object.entries({
-      HAZARD_1, HAZARD_2, HAZARD_3,
-      OIL_1, OIL_2,
-      RAMP, MULTI_RAMP,
-      FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
-      IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7
-    }).map(([key, src]) => ({key, src, type:'overlay'}))
-  ];
-
+  const entries = Object.entries(allSources);
   let loaded = 0;
-  const total = allSources.length;
+  const total = entries.length;
 
   function onOneLoaded() {
     loaded++;
@@ -615,17 +623,35 @@ window.addEventListener('load', function () {
     }
   }
 
-  allSources.forEach(({key, src, type}) => {
+  entries.forEach(([src, key]) => {
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = function () {
-      if (type === 'texture') { TEXTURES[key] = img; buildBoard(); }
+      // Stocke l'image pour l'affichage
+      const textureKey = Object.entries(textureSources).find(([k,v]) => v === src)?.[0];
+      if (textureKey) { TEXTURES[textureKey] = img; buildBoard(); }
+
+      // Convertit en base64 pour l'export
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        IMAGES_B64[src] = c.toDataURL('image/png');
+      } catch(e) {
+        console.warn('Base64 échoué pour', src, e);
+        IMAGES_B64[src] = src; // fallback
+      }
       onOneLoaded();
     };
-    img.onerror = function () { onOneLoaded(); };
+    img.onerror = function () {
+      console.warn('Erreur chargement:', src);
+      onOneLoaded();
+    };
     img.src = src;
   });
 });
-
+  
 buildPalette();
 buildBoard();
 </script>
