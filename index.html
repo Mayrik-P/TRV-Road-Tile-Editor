@@ -845,14 +845,14 @@ const EDGE_SEG_LONG_THRESHOLD = 250;
 // parfaitement centré dans le canevas 657x622, ~13-14px vers la gauche) — cette
 // constante recentre tous les overlays (Left/Right + Top/Bottom, flip compris,
 // le flip vertical n'affecte pas l'axe X). Ajuster cette seule valeur si besoin.
-const EDGE_X_NUDGE = 14;
+const EDGE_X_NUDGE = 10;
 
 // Correctif temporaire : les découpes de transparence des png actuels tombent
 // quelques px trop tôt (jointure visible avant la grille jaune). En attendant une
 // nouvelle passe de découpage côté PNG, on grossit chaque overlay de 2% autour de
 // son propre centre (la position du centre ne change pas). À retirer (repasser à 1)
 // une fois les png recoupés.
-const EDGE_SCALE = 1.02;
+const EDGE_SCALE = 1.01;
 
 function placeRoadEdge(g, edgeName, cx, cy, flipV = false) {
   const src = EDGE_PATHS[edgeName];
