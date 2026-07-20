@@ -845,7 +845,7 @@ const EDGE_SEG_LONG_THRESHOLD = 250;
 // parfaitement centré dans le canevas 657x622, ~13-14px vers la gauche) — cette
 // constante recentre tous les overlays (Left/Right + Top/Bottom, flip compris,
 // le flip vertical n'affecte pas l'axe X). Ajuster cette seule valeur si besoin.
-const EDGE_X_NUDGE = 14;
+const EDGE_X_NUDGE = 10;
 
 function placeRoadEdge(g, edgeName, cx, cy, flipV = false) {
   const src = EDGE_PATHS[edgeName];
