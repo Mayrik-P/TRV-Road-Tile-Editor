@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TRV Road Tile Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#ecd5a7;color:#ddd;min-height:100vh;}
+#app{display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:8px;}
+h1{font-size:19px;font-weight:900;color:#ececec;letter-spacing:1px;text-transform:uppercase;
+  font-family:"Bevan","Rockwell","Georgia",serif;font-style:italic;white-space:nowrap;
+  text-shadow:0.163px 0.194px 0 #000,0.326px 0.388px 0 #000,0.489px 0.583px 0 #000,
+    0.651px 0.776px 0 #000,0.814px 0.970px 0 #000,0.977px 1.164px 0 #000,
+    1.140px 1.358px 0 #000,1.302px 1.553px 0 #000,1.466px 1.747px 0 #000,
+    1.629px 1.941px 0 #000,1.791px 2.134px 0 #000,1.954px 2.329px 0 #000,
+    2.117px 2.523px 0 #000,2.280px 2.717px 0 #000,2.442px 2.911px 0 #000,
+    2.606px 3.105px 0 #000,2.768px 3.300px 0 #000,2.931px 3.493px 0 #000,
+    3.094px 3.687px 0 #000,3.257px 3.881px 0 #000;}
+/* Bandeau dédié titre + sous-titre — pensé pour être remplacé plus tard par un
+   visuel graphique unique (image) sans toucher au reste de la mise en page. */
+#title-band{background:#565558;border-radius:10px 10px 0 0;padding:12px 14px;
+  display:flex;align-items:baseline;flex-wrap:wrap;column-gap:12px;row-gap:2px;
+  border-bottom:1px solid #c8b89a;}
+#app-subtitle{font-size:13px;font-weight:700;color:#ecd5a7;letter-spacing:0.5px;
+  font-family:"Bevan","Rockwell","Georgia",serif;font-style:italic;
+  text-shadow:1px 1px 2px rgba(0,0,0,0.75);}
+#toolbar{background:#ecd5a7;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #c8b89a;}
+/* Trois groupes indépendants dans #toolbar : Load, Name+compteur, Export+Reset.
+   Chacun peut passer à sa propre ligne si la largeur manque (flex-wrap sur
+   #toolbar), et à l'inverse tous tiennent sur une seule ligne si l'écran est
+   assez large. name-field-group a la priorité sur l'espace disponible
+   (flex:3) par rapport à tb-right (flex:1), qui ne s'étire que pour garder
+   Reset collé au bord droit. */
+#tb-load{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;flex:0 0 auto;}
+#title-img-btn{flex:0 0 auto;width:130px;white-space:nowrap;}
+#name-field-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:3 1 auto;min-width:0;max-width:322px;}
+#tb-right{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 auto;}
+#reset-btn{margin-left:auto;background:#000;color:#fff;border-color:#b0956e;}
+#reset-btn:hover{background:#da613d;color:#fff;border-color:#a8492b;}
+#title-input{background:#ede3cf;border:1px solid #b0956e;color:#3a2c1a;padding:5px 9px;border-radius:5px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;flex:1 1 auto;min-width:50px;max-width:280px;width:auto;}
+#title-input::placeholder{color:#9a8060;font-weight:400;text-transform:none;letter-spacing:0;}
+#cc{font-size:11px;color:#555;min-width:36px;flex:0 0 auto;}
+.btn{background:#e8b459;border:1px solid #b0956e;color:#000;padding:6px 11px;border-radius:5px;font-size:11px;cursor:pointer;
+  box-shadow:0 2px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);}
+.btn:hover{background:#d9a34a;}
+.btn:active{box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);transform:translateY(1px);}
+.btn.p{background:#e8b459;color:#000;border-color:#b0956e;font-weight:700;}
+.btn.p:hover{background:#d9a34a;}
+.btn.p:disabled{background:#cbb187;color:#555;cursor:not-allowed;opacity:0.7;box-shadow:none;}
+#palette{background:#ecd5a7;padding:8px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-bottom:1px solid #c8b89a;}
+.tb{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#e8b459;border:2px solid #b0956e;border-radius:5px;cursor:pointer;font-size:11px;color:#000;white-space:nowrap;user-select:none;-webkit-user-select:none;
+  box-shadow:0 2px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);}
+.tb:hover{background:#d9a34a;}
+.tb:active{box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);transform:translateY(1px);}
+.tb.sel{border-color:#a8492b;background:#da613d;color:#fff;box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);}
+.sw{width:11px;height:11px;border-radius:2px;flex-shrink:0;border:1px solid rgba(255,255,255,0.15);}
+#bwrap{background:#fff;overflow:hidden;border-radius:0 0 10px 10px;}
+#bsvg{display:block;width:100%;touch-action:manipulation;}
+#hint{font-size:10px;color:#555;text-align:center;padding:6px 10px;background:#ecd5a7;border-bottom:1px solid #c8b89a;
+  display:flex;flex-wrap:wrap;justify-content:center;column-gap:6px;row-gap:2px;}
+/* Chaque phrase reste un bloc insécable : sur écran large les deux se retrouvent
+   côte à côte sur une ligne ; sur écran étroit, le retour à la ligne se fait entre
+   les deux phrases (jamais au milieu d'une phrase), grâce au flex-wrap ci-dessus. */
+.hint-part{white-space:normal;}
+/* Progress bar inside export button */
+#export-btn{position:relative;overflow:hidden;width:130px;flex:0 0 auto;}
+#export-progress{position:absolute;left:0;top:0;height:100%;width:0%;background:rgba(0,0,0,0.15);transition:width 0.2s;pointer-events:none;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="title-band">
+    <h1>TRV Road Tile Editor</h1>
+    <span id="app-subtitle">For use with Thunder Road: Vendetta</span>
+  </div>
+  <div id="toolbar">
+    <div id="tb-load">
+      <button class="btn" id="title-img-btn" onclick="document.getElementById('title-img-input').click()" title="Ideal size: 4243 × 456 px">Load title image</button>
+      <input id="title-img-input" type="file" accept="image/png,image/jpeg" style="display:none" onchange="loadTitleImage(this)"/>
+      <span id="title-img-warn" style="font-size:10px;color:#E8231A;display:none;">⚠ Image too small — may appear blurry when printed</span>
+    </div>
+    <div id="name-field-group">
+      <input id="title-input" type="text" maxlength="20" placeholder="Name of your road"/>
+      <span id="cc">0/20</span>
+    </div>
+    <div id="tb-right">
+      <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
+        <span id="export-progress"></span>
+        <span id="export-label">Loading… 0%</span>
+      </button>
+      <button class="btn" id="reset-btn" style="white-space:nowrap;" onclick="resetBoard()">Reset the road tile</button>
+    </div>
+  </div>
+  <div id="hint"><span class="hint-part">Select a space type below, then click or tap a space on the board to place it.</span><span class="hint-part">Click again on an existing Impassable, Oil, or Fire space to change its look.</span></div>
+  <div id="palette"></div>
+  <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#e8b459;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.<br>Images from Thunder Road: Vendetta are (c) Restoration Games, LLC and are used with permission.</div>
+</div>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+
+const TILES = [
+  {id:'mud',        label:'Muddy',               color:'#53413d'},
+  {id:'haz_mud',    label:'Muddy + Hazard',      color:'#53413d'},
+  {id:'sand',       label:'Off-Road',            color:'#e9b964'},
+  {id:'haz_sand',   label:'Off-Road + Hazard',   color:'#e9b964'},
+  {id:'off_oil',    label:'Off-Road + Oil',      color:'#e9b964'},
+  {id:'road',       label:'Road',                color:'#64635e'},
+  {id:'haz_road',   label:'Road + Hazard',       color:'#64635e'},
+  {id:'oil',        label:'Road + Oil',          color:'#64635e'},
+  {id:'rock',       label:'Impassable',          color:'#9b5043'},
+  {id:'goo',        label:'Toxic Goo',           color:'#82a94d'},
+  {id:'glass',      label:'Desert Glass',        color:'#a4c0c8'},
+  {id:'ramp',       label:'Ramp',                color:'#897a5b'},
+  {id:'multi_ramp', label:'MultiRamp',           color:'#897a5b'},
+  {id:'fire',       label:'Fire!',               color:'#ff3333'},
+  {id:'salt',       label:'Salt Flats',          color:'#fff8e2'},
+  {id:'haz_salt',   label:'Salt Flats + Hazard', color:'#fff8e2'},
+];
+
+// Texture inheritance: hazard/oil/fire/ramp variants reuse the base terrain texture
+const TEXTURE_BASE = {
+  haz_mud:'mud', haz_sand:'sand', haz_road:'road',
+  off_oil:'sand', oil:'road', haz_salt:'salt',
+  fire:'sand', ramp:'sand', multi_ramp:'sand',
+};
+
+function baseId(id) { return TEXTURE_BASE[id] || id; }
+
+// Board fill color override — used when a tile has no loaded texture
+const BOARD_FILL_OVERRIDE = { rock: '#000000' };
+
+function tcolor(id) { return BOARD_FILL_OVERRIDE[id] || TILES.find(t => t.id === id)?.color || '#888'; }
+
+const TEXTURES = {};    // Image objects for SVG display
+const IMAGES_B64 = {};  // base64 strings for PNG export
+let TITLE_IMAGE = null;
+let sel = 'sand';
+let board = Array(48).fill('road');
+
+// ---- Variantes d'overlay (Impassable/Oil/Fire) : cycle + mémoire par case ----
+// Avant : la variante était une pure fonction de la position (col + row*2) % N,
+// recalculée à chaque rendu — deux cases éloignées pouvaient tomber sur le même
+// visuel par hasard, et l'utilisateur n'avait aucun moyen de choisir.
+// Maintenant : chaque famille (rock/fire/oil) a son propre compteur qui avance
+// d'un cran à chaque pose ou reclic de ce type — jamais à cause d'un autre type,
+// jamais lors d'un simple rendu (buildBoard). La variante RÉSULTANTE est mémorisée
+// par case dans cellVariant (pas recalculée), afin qu'un buildBoard() complet
+// (reset, reload, changement d'image de titre) ne rebatte jamais les cartes des
+// visuels déjà posés — buildBoard() ne fait que relire cet état, jamais l'avancer.
+const OVERLAY_VARIANT_COUNTS = { rock: 7, fire: 6, oil: 8 }; // oil partage son pool avec off_oil
+let overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+let cellVariant = Array(48).fill(null);
+
+function overlayFamily(type) {
+  if (type === 'rock') return 'rock';
+  if (type === 'fire') return 'fire';
+  if (type === 'oil' || type === 'off_oil') return 'oil';
+  return null;
+}
+
+// Appelé uniquement depuis updateCell (jamais depuis buildBoard) : avance le
+// compteur de la famille concernée et mémorise la variante obtenue pour cette case.
+function assignOverlayVariant(idx, type) {
+  const fam = overlayFamily(type);
+  if (!fam) return;
+  const count = OVERLAY_VARIANT_COUNTS[fam];
+  cellVariant[idx] = overlayCycleIndex[fam] % count;
+  overlayCycleIndex[fam] = (overlayCycleIndex[fam] + 1) % count;
+}
+
+// Lecture seule, utilisée par drawImpassable/drawFire/drawOil. Filet de sécurité :
+// si une case a ce type sans variante mémorisée (ne devrait pas arriver via l'UI
+// normale), on retombe sur l'ancienne formule positionnelle plutôt que de planter.
+function getOverlayVariant(idx, fam) {
+  const count = OVERLAY_VARIANT_COUNTS[fam];
+  const v = cellVariant[idx];
+  return (v != null) ? v : (idx * 7) % count;
+}
+
+let transTexCache = {};
+// Police d'affiche condensée/grasse (Anton, Google Fonts, licence libre OFL) — remplace
+// Rockwell italique pour se rapprocher du lettrage des plateaux originaux.
+// Police d'affiche condensée/grasse à empattements (Bevan Italic, Google Fonts,
+// licence libre OFL) — a un vrai style italique dessiné, pas besoin de le simuler.
+const BEVAN_ITALIC_FONT_URL = 'https://raw.githubusercontent.com/google/fonts/main/ofl/bevan/Bevan-Italic.ttf';
+let FONT_B64_BEVAN = null;
+let FONT_READY = false; // vrai une fois que document.fonts a fini de charger la police (nécessaire pour mesurer le texte au pixel près)
+
+// ---- Board geometry (A3 @ 300dpi) ----
+const VW = 4961, VH = 3508, NOTCH = 50, CELL_SLOT = 493, COLS = 8, ROWS = 6;
+const GAME_X = 361, GAME_Y = 620, GAME_W = 4243, GAME_H = 2718;
+
+const BANDS = [
+  {top:164,  bot:620,  left:606},  // title
+  {top:620,  bot:1072, left:411},  // row1 (odd)
+  {top:1072, bot:1526, left:606},  // row2 (even)
+  {top:1526, bot:1978, left:411},  // row3 (odd)
+  {top:1978, bot:2432, left:606},  // row4 (even)
+  {top:2432, bot:2884, left:411},  // row5 (odd)
+  {top:2884, bot:3338, left:606},  // row6 (even)
+];
+
+function cellPoly(col, rowIdx) {
+  const b = BANDS[rowIdx + 1];
+  const y0 = b.top, yb = b.bot, rowH = yb - y0;
+  const x0 = b.left + col * CELL_SLOT, mid = y0 + rowH / 2, rx = x0 + CELL_SLOT + NOTCH;
+  if (col === 0) return [[x0,y0],[x0+CELL_SLOT,y0],[rx,mid],[x0+CELL_SLOT,yb],[x0,yb],[x0-NOTCH,mid]];
+  return [[x0,y0],[x0+CELL_SLOT,y0],[rx,mid],[x0+CELL_SLOT,yb],[x0,yb],[x0+NOTCH,mid]];
+}
+function pts2s(p) { return p.map(v => Math.round(v[0]) + ',' + Math.round(v[1])).join(' '); }
+
+function leftMaskPoly(i) {
+  const b = BANDS[i], y0 = b.top, yb = b.bot, mid = (y0 + yb) / 2, l = b.left;
+  return `0,${y0} ${l},${y0} ${l+NOTCH},${mid} ${l},${yb} 0,${yb}`;
+}
+function rightMaskPoly(i) {
+  const b = BANDS[i], y0 = b.top, yb = b.bot, mid = (y0 + yb) / 2, re = b.left + COLS * CELL_SLOT;
+  return `${re},${y0} ${VW},${y0} ${VW},${yb} ${re},${yb} ${re+NOTCH},${mid}`;
+}
+function mkEl(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  return e;
+}
+
+// Generic overlay placer: positions an <image> centered on (cx,cy) with given size/offset
+// Uses base64 from IMAGES_B64 if available — ensures export works without CORS issues
+function placeOverlay(svg, href, cx, cy, w, h, dx = 0, dy = 0) {
+  const img = mkEl('image', {
+    href: IMAGES_B64[href] || href,
+    x: Math.round(cx - w / 2 + dx),
+    y: Math.round(cy - h / 2 + dy),
+    width: w, height: h,
+    preserveAspectRatio: 'xMidYMid meet'
+  });
+  svg.appendChild(img);
+  return img;
+}
+
+function cellCenter(col, rowIdx, xOffset = 0) {
+  const b = BANDS[rowIdx + 1], rowH = b.bot - b.top;
+  return {
+    cx: b.left + col * CELL_SLOT + CELL_SLOT * 0.5 + NOTCH * 0.3 + xOffset,
+    cy: b.top + rowH * 0.5
+  };
+}
+
+function seededRandom(seed) {
+  let t = seed += 0x6D2B79F5;
+  t = Math.imul(t ^ t >>> 15, t | 1);
+  t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+}
+
+function cellBBox(col, row) {
+  const xs = cellPoly(col, row).map(p => p[0]);
+  return { minX: Math.min(...xs), maxX: Math.max(...xs) };
+}
+
+function cellXRange(col, row) {
+  const b = BANDS[row + 1];
+  const x0 = b.left + col * CELL_SLOT;
+  return [x0, x0 + CELL_SLOT];
+}
+
+function getNeighborPairs() {
+  const pairs = [];
+  for (let row = 0; row < ROWS; row++)
+    for (let col = 0; col < COLS; col++) {
+      if (col < COLS - 1) pairs.push([[col, row], [col + 1, row]]);
+      if (row < ROWS - 1) {
+        const bb = cellBBox(col, row);
+        for (let nc = 0; nc < COLS; nc++) {
+          const nbb = cellBBox(nc, row + 1);
+          if (Math.min(bb.maxX, nbb.maxX) - Math.max(bb.minX, nbb.minX) > 0)
+            pairs.push([[col, row], [nc, row + 1]]);
+        }
+      }
+    }
+  return pairs;
+}
+
+// Trace exact de la frontière réelle entre deux cases :
+// - même ligne : le "V" formé par la pointe du chevron (3 points)
+// - inter-lignes : la ligne droite de bande partagée, sur toute la largeur de recouvrement
+function boundaryLine(colA, rowA, colB, rowB) {
+  if (rowA === rowB) {
+    const b = BANDS[rowA + 1];
+    const leftCol = Math.min(colA, colB);
+    const x0 = b.left + leftCol * CELL_SLOT;
+    const rx = x0 + CELL_SLOT + NOTCH;
+    return [[x0 + CELL_SLOT, b.top], [rx, (b.top + b.bot) / 2], [x0 + CELL_SLOT, b.bot]];
+  }
+  const [aMin, aMax] = cellXRange(colA, rowA);
+  const [bMin, bMax] = cellXRange(colB, rowB);
+  const ox0 = Math.max(aMin, bMin), ox1 = Math.min(aMax, bMax);
+  const y = rowA < rowB ? BANDS[rowA + 1].bot : BANDS[rowB + 1].bot;
+  return [[ox0, y], [ox1, y]];
+}
+
+// Avance de la distance d (longueur d'arc) le long de la polyligne pts,
+// renvoie la position et la normale perpendiculaire à cet endroit.
+function pointAlong(pts, d) {
+  let remaining = d;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+    const segLen = Math.hypot(x2 - x1, y2 - y1);
+    if (remaining <= segLen || i === pts.length - 2) {
+      const t = segLen === 0 ? 0 : remaining / segLen;
+      const x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;
+      const len = segLen || 1;
+      return { x, y, nx: -(y2 - y1) / len, ny: (x2 - x1) / len };
+    }
+    remaining -= segLen;
+  }
+  const [x, y] = pts[pts.length - 1];
+  return { x, y, nx: 0, ny: 1 };
+}
+function polylineLength(pts) {
+  let L = 0;
+  for (let i = 0; i < pts.length - 1; i++) L += Math.hypot(pts[i+1][0]-pts[i][0], pts[i+1][1]-pts[i][1]);
+  return L;
+}
+
+// Bruit lisse mais irrégulier : fréquences ET poids relatifs tirés au hasard par frontière
+// (pas de rythme fixe qui se répète), plus une grosse bosse aléatoire ponctuelle pour casser
+// la régularité — comme les gros renflements inégaux qu'on voit sur le plateau original.
+function smoothNoise(t, seed) {
+  const p1 = seededRandom(seed) * Math.PI * 2;
+  const p2 = seededRandom(seed + 1) * Math.PI * 2;
+  const f1 = 0.8 + seededRandom(seed + 2) * 0.8;   // 0.8..1.6
+  const f2 = 1.6 + seededRandom(seed + 3) * 1.4;   // 1.6..3.0
+  const w1 = 0.5 + seededRandom(seed + 4) * 0.4;   // 0.5..0.9
+  const w2 = 1 - w1;
+  let n = Math.sin(t * Math.PI * 2 * f1 + p1) * w1
+        + Math.sin(t * Math.PI * 2 * f2 + p2) * w2;
+
+  // Une grosse bosse isolée, à une position aléatoire le long de la frontière
+  const bumpCenter = 0.2 + seededRandom(seed + 5) * 0.6; // évite les extrémités
+  const bumpWidth = 0.12 + seededRandom(seed + 6) * 0.12;
+  const bumpSign = seededRandom(seed + 7) < 0.5 ? -1 : 1;
+  const bumpStrength = 0.4 + seededRandom(seed + 8) * 0.5;
+  const d = (t - bumpCenter) / bumpWidth;
+  n += bumpSign * bumpStrength * Math.exp(-d * d);
+
+  // Grain fin par-dessus la grande vague : plus haute fréquence, amplitude bien plus petite —
+  // rend le tracé moins "propre/vectoriel" sans casser la forme générale.
+  const f3 = 6 + seededRandom(seed + 10) * 5;   // 6..11
+  const p3 = seededRandom(seed + 11) * Math.PI * 2;
+  const f4 = 12 + seededRandom(seed + 12) * 6;  // 12..18
+  const p4 = seededRandom(seed + 13) * Math.PI * 2;
+  n += Math.sin(t * Math.PI * 2 * f3 + p3) * 0.10
+     + Math.sin(t * Math.PI * 2 * f4 + p4) * 0.06;
+
+  return n;
+}
+
+// UNE seule courbe déchirée qui remplace la frontière droite d'origine.
+// Utilisée à la fois pour A et pour B : là où elle penche vers A, B peint jusqu'à
+// cette courbe (et vice versa) — comme c'est la même courbe des deux côtés, aucune
+// couture n'est possible entre les deux textures.
+function jaggedCurve(pts, amplitude, seed, samples = 50) {
+  const L = polylineLength(pts);
+  const curve = [];
+  // Intensité globale variable par frontière : certaines calmes, d'autres marquées.
+  const intensity = 0.4 + seededRandom(seed + 9) * 0.8; // 0.4..1.2
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    const { x, y, nx, ny } = pointAlong(pts, t * L);
+    // fenêtre sin(t·π) : force l'amplitude à 0 exactement aux deux extrémités,
+    // pour que la courbe rejoigne parfaitement les vrais coins de la case (pas de trou).
+    const off = amplitude * intensity * smoothNoise(t, seed) * Math.sin(t * Math.PI);
+    curve.push([x + nx * off, y + ny * off]);
+  }
+  return curve;
+}
+
+// Construit directement le contour fermé complet (ligne droite aller + courbe lissée retour)
+// en un seul passage, sans concaténation fragile de deux chemins distincts.
+function sliverPath(pts, curveReversed) {
+  let d = `M ${pts[0][0]},${pts[0][1]} `;
+  for (let i = 1; i < pts.length; i++) d += `L ${pts[i][0]},${pts[i][1]} `;
+  for (let i = 0; i < curveReversed.length - 1; i++) {
+    const cur = curveReversed[i], next = curveReversed[i + 1];
+    const mid = [(cur[0]+next[0])/2, (cur[1]+next[1])/2];
+    d += i === 0 ? `L ${mid[0]},${mid[1]} ` : `Q ${cur[0]},${cur[1]}, ${mid[0]},${mid[1]} `;
+  }
+  const lastC = curveReversed[curveReversed.length - 1];
+  d += `L ${lastC[0]},${lastC[1]} `;
+  return d + 'Z';
+}
+
+// Une seule <image> par terrain est créée (dans <defs>, jamais affichée directement),
+// puis réutilisée via <use> pour chaque transition — évite de dupliquer les données
+// base64 de la texture à chaque paire de cases (gain important en taille/performance).
+function getSharedTextureImage(defs, base) {
+  if (transTexCache[base]) return transTexCache[base];
+  const id = `trans-tex-${base}`;
+  const img = mkEl('image', {
+    id, href: IMAGES_B64[TEXTURE_PATHS[base]] || TEXTURE_PATHS[base],
+    x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H, preserveAspectRatio: 'none'
+  });
+  defs.appendChild(img);
+  transTexCache[base] = id;
+  return id;
+}
+
+// Remet toujours une paire de cases dans le même ordre canonique, quel que soit
+// celui qui a déclenché le calcul — garantit un tracé identique (même graine
+// aléatoire) que la transition vienne d'une reconstruction complète ou d'une
+// mise à jour incrémentale déclenchée par l'une ou l'autre des deux cases.
+function canonicalPair(colA, rowA, colB, rowB) {
+  const sameRow = rowA === rowB;
+  const aFirst = sameRow ? colA <= colB : rowA <= rowB;
+  return aFirst ? [colA, rowA, colB, rowB] : [colB, rowB, colA, rowA];
+}
+
+function drawTransition(target, defs, pairA, pairB) {
+  const [colA, rowA, colB, rowB] = canonicalPair(pairA[0], pairA[1], pairB[0], pairB[1]);
+  try {
+    const typeA = board[rowA * COLS + colA], typeB = board[rowB * COLS + colB];
+    const baseA = baseId(typeA), baseB = baseId(typeB);
+    if (baseA === baseB || baseA === 'road' || baseB === 'road') return;
+    if (!TEXTURES[baseA] || !TEXTURES[baseB]) return;
+
+    const uid = `${colA}-${rowA}-${colB}-${rowB}`;
+    const pairTag = `${colA},${rowA},${colB},${rowB}`;
+    const seed = colA * 31 + rowA * 97 + colB * 13 + rowB * 211;
+    const sameRow = rowA === rowB;
+    const bandH = BANDS[rowA + 1].bot - BANDS[rowA + 1].top;
+    const amp = sameRow ? CELL_SLOT * 0.13 : bandH * 0.13;
+    const pts = boundaryLine(colA, rowA, colB, rowB);
+    const curve = jaggedCurve(pts, amp, seed);
+
+    // "Sliver" = zone entre la ligne d'origine et la courbe déchirée —
+    // une seule et même forme utilisée pour les deux textures, juste clippée différemment.
+    const sliverD = sliverPath(pts, curve.slice().reverse());
+
+    const clipAId = `tcellA-${uid}`, clipBId = `tcellB-${uid}`;
+    const clipA = mkEl('clipPath', {id: clipAId});
+    clipA.appendChild(mkEl('polygon', {points: pts2s(cellPoly(colA, rowA))}));
+    defs.appendChild(clipA);
+    const clipB = mkEl('clipPath', {id: clipBId});
+    clipB.appendChild(mkEl('polygon', {points: pts2s(cellPoly(colB, rowB))}));
+    defs.appendChild(clipB);
+
+  const imgBId = getSharedTextureImage(defs, baseB);
+  const gA = mkEl('g', {'clip-path': `url(#${clipAId})`, 'data-pair': pairTag, 'data-uid': uid});
+  const sliverClipA = mkEl('clipPath', {id: `sliver-${uid}-a`});
+  sliverClipA.appendChild(mkEl('path', {d: sliverD}));
+  defs.appendChild(sliverClipA);
+  const gA2 = mkEl('g', {'clip-path': `url(#sliver-${uid}-a)`});
+  gA2.appendChild(mkEl('use', {href: `#${imgBId}`}));
+  gA.appendChild(gA2);
+  target.appendChild(gA);
+
+  const imgAId = getSharedTextureImage(defs, baseA);
+  const gB = mkEl('g', {'clip-path': `url(#${clipBId})`, 'data-pair': pairTag, 'data-uid': uid});
+  const sliverClipB = mkEl('clipPath', {id: `sliver-${uid}-b`});
+  sliverClipB.appendChild(mkEl('path', {d: sliverD}));
+  defs.appendChild(sliverClipB);
+  const gB2 = mkEl('g', {'clip-path': `url(#sliver-${uid}-b)`});
+  gB2.appendChild(mkEl('use', {href: `#${imgAId}`}));
+  gB.appendChild(gB2);
+  target.appendChild(gB);
+  } catch (e) {
+    // Une transition ratée ne doit jamais casser le reste du plateau ni l'export.
+    console.warn('Transition non affichée pour la paire', colA, rowA, colB, rowB, e);
+  }
+}
+
+// Voisins directs d'une case (même ligne + inter-lignes), pour ne recalculer
+// que les frontières concernées lors d'une modification incrémentale.
+function neighborsOf(col, row) {
+  const result = [];
+  if (col > 0) result.push([col - 1, row]);
+  if (col < COLS - 1) result.push([col + 1, row]);
+  [row - 1, row + 1].forEach(nr => {
+    if (nr < 0 || nr >= ROWS) return;
+    const bb = cellBBox(col, row);
+    for (let nc = 0; nc < COLS; nc++) {
+      const nbb = cellBBox(nc, nr);
+      if (Math.min(bb.maxX, nbb.maxX) - Math.max(bb.minX, nbb.minX) > 0) result.push([nc, nr]);
+    }
+  });
+  return result;
+}
+function pairsForCell(col, row) {
+  return neighborsOf(col, row).map(n => [[col, row], n]);
+}
+
+// Types de case qui portent déjà un overlay (hazard/oil/ramp/etc.) — jamais de
+// décoration de groupe sur ces cases-là.
+const OVERLAY_TYPES = ['haz_mud', 'haz_sand', 'haz_road', 'haz_salt', 'oil', 'off_oil', 'ramp', 'multi_ramp', 'rock', 'fire'];
+
+// Regroupe les cases connectées de même type (même logique de voisinage que les
+// transitions), pour détecter les zones homogènes de plus de 3 cases.
+function findSameTypeGroups() {
+  const visited = new Array(COLS * ROWS).fill(false);
+  const groups = [];
+  for (let start = 0; start < COLS * ROWS; start++) {
+    if (visited[start]) continue;
+    // Les cases à overlay ne rejoignent jamais un groupe et coupent la connexion —
+    // ça fragmente volontairement les zones autour d'elles, pour des décorations
+    // plus rares.
+    if (OVERLAY_TYPES.includes(board[start])) { visited[start] = true; continue; }
+    const type = board[start];
+    visited[start] = true;
+    const group = [start];
+    const stack = [start];
+    while (stack.length) {
+      const cur = stack.pop();
+      const row = Math.floor(cur / COLS), col = cur % COLS;
+      neighborsOf(col, row).forEach(([nc, nr]) => {
+        const nidx = nr * COLS + nc;
+        if (!visited[nidx] && !OVERLAY_TYPES.includes(board[nidx]) && board[nidx] === type) {
+          visited[nidx] = true;
+          group.push(nidx);
+          stack.push(nidx);
+        }
+      });
+    }
+    groups.push({type, cells: group});
+  }
+  return groups;
+}
+
+function drawHazard(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 0.40 * 1.17);
+  const symH = Math.round(symW * (264 / 233));
+  placeOverlay(svg, [HAZARD_1, HAZARD_2, HAZARD_3][(col * 7 + rowIdx * 13) % 3], cx, cy, symW, symH, 17, 0);
+}
+
+function drawOil(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 0.55 * 1.17);
+  const symH = Math.round(symW * 0.9133);
+  const idx = rowIdx * COLS + col;
+  const variant = getOverlayVariant(idx, 'oil');
+  const img = placeOverlay(svg, variant % 2 === 0 ? OIL_1 : OIL_2, cx + 17, cy, symW, symH);
+  const rot = [0, 90, 180, 270][Math.floor(variant / 2)];
+  if (rot !== 0) img.setAttribute('transform', `rotate(${rot}, ${Math.round(cx + 17)}, ${cy})`);
+}
+
+function drawRamp(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 1.1 * 1.17 * 1.25 * 0.8);
+  placeOverlay(svg, RAMP, cx, cy, symW, Math.round(symW * 1.0229), 12, -12);
+}
+
+function drawMultiRamp(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx);
+  const symW = Math.round(CELL_SLOT * 1.2 * 1.1);
+  placeOverlay(svg, MULTI_RAMP, cx, cy, symW, Math.round(symW * 0.8865), 0, -24);
+}
+
+function drawFire(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx, 39);
+  const idx = rowIdx * COLS + col;
+  const variant = getOverlayVariant(idx, 'fire');
+  const srcs = [FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6];
+  const ws   = [646, 611, 688, 664, 661, 641];
+  const hs   = [671, 678, 665, 680, 665, 718];
+  placeOverlay(svg, srcs[variant], cx, cy, ws[variant], hs[variant], 0, -70);
+}
+
+function drawImpassable(svg, col, rowIdx) {
+  const {cx, cy} = cellCenter(col, rowIdx, 13);
+  const idx = rowIdx * COLS + col;
+  const variant = getOverlayVariant(idx, 'rock');
+  const srcs = [IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7];
+  // All impassable sprites share the same base size (704×815), scaled uniformly
+  const scale = 11 / 12 * 1.05 * 0.99 * 0.99 * 0.99;
+  placeOverlay(svg, srcs[variant], cx, cy, Math.round(704 * scale) + 3, Math.round(815 * scale) + 3);
+}
+
+// Décalage d'ombre reproduisant le réglage Photoshop fourni : Angle 130°, Distance 10px
+// (conversion angle Photoshop → décalage x/y : la case cochée n'utilise pas l'éclairage
+// global, donc l'ombre est calculée uniquement à partir de cet angle et cette distance).
+const SHADOW_ANGLE_DEG = 130, SHADOW_DISTANCE = 10;
+const SHADOW_DX = -Math.cos(SHADOW_ANGLE_DEG * Math.PI / 180) * SHADOW_DISTANCE;
+const SHADOW_DY = Math.sin(SHADOW_ANGLE_DEG * Math.PI / 180) * SHADOW_DISTANCE;
+// Pas fixe entre deux copies (calé sur la densité d'origine à 24 copies pour 10px) :
+// ainsi, augmenter le nombre de copies allonge réellement l'extrusion au lieu de
+// se contenter de répartir les mêmes copies sur la même distance totale.
+const SHADOW_STEP_DIST = (SHADOW_DISTANCE / 24) * 4; // surface d'ombre x4, même angle 130°
+const SHADOW_UNIT_X = SHADOW_DX / SHADOW_DISTANCE, SHADOW_UNIT_Y = SHADOW_DY / SHADOW_DISTANCE;
+// Nombre de copies empilées — donne la profondeur de l'extrusion (50 ≈ 20px de long).
+const SHADOW_STEPS = 50;
+
+function makeTitleText(x, y, size, txt, fillColor, groupId, steps) {
+  const grp = mkEl('g', {transform: `translate(${x},0) scale(0.9,1) translate(${-x},0)`});
+  const shadowGroup = mkEl('g', {id: groupId + '-shadow-group'});
+  for (let i = 1; i <= steps; i++) {
+    const d = SHADOW_STEP_DIST * i;
+    const sh = mkEl('text', {
+      x: x + SHADOW_UNIT_X * d, y: y + SHADOW_UNIT_Y * d, fill: '#000000',
+      'font-size': size, 'font-family': "'Bevan', serif", 'font-style': 'italic'
+    });
+    sh.textContent = txt;
+    shadowGroup.appendChild(sh);
+  }
+  grp.appendChild(shadowGroup);
+  const fill = mkEl('text', {
+    x: x, y: y, fill: fillColor, 'font-size': size,
+    'font-family': "'Bevan', serif", 'font-style': 'italic', id: groupId + '-display'
+  });
+  fill.textContent = txt;
+  grp.appendChild(fill);
+  return grp;
+}
+
+function buildBoard() {
+  const svg = document.getElementById('bsvg');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+  const defs = mkEl('defs', {});
+  svg.appendChild(defs);
+  // Cache des images de texture partagées par les transitions (une seule <image> par
+  // terrain, réutilisée via <use> — évite de dupliquer les données base64 à chaque paire).
+  transTexCache = {};
+
+  // Police du titre intégrée directement dans le SVG (en base64, comme les textures) —
+  // reste valide même une fois le SVG exporté/sérialisé isolément, contrairement à un
+  // <link> externe qui ne serait pas repris dans l'image exportée.
+  if (FONT_B64_BEVAN) {
+    const style = mkEl('style', {});
+    style.textContent = `@font-face{font-family:'Bevan';src:url(${FONT_B64_BEVAN}) format('truetype');font-style:italic;font-weight:400;}`;
+    defs.appendChild(style);
+  }
+
+  // 1. White page background
+  svg.appendChild(mkEl('rect', {x:0, y:0, width:VW, height:VH, fill:'#FFFFFF'}));
+
+  // Couches persistantes, dans l'ordre d'affichage — permet de ne mettre à jour
+  // qu'une case précise (voir updateCell) sans tout reconstruire à chaque clic.
+  const gTitleBand   = mkEl('g', {id: 'layer-titleband'});   svg.appendChild(gTitleBand);
+  const gTextures    = mkEl('g', {id: 'layer-textures'});    svg.appendChild(gTextures);
+  const gTransitions = mkEl('g', {id: 'layer-transitions'}); svg.appendChild(gTransitions);
+  const gRoadEdges   = mkEl('g', {id: 'layer-roadedges'});   svg.appendChild(gRoadEdges);
+  const gFlatFill    = mkEl('g', {id: 'layer-flatfill'});    svg.appendChild(gFlatFill);
+  const gBorders     = mkEl('g', {id: 'layer-borders'});     svg.appendChild(gBorders);
+  const gOverlays    = mkEl('g', {id: 'layer-overlays'});    svg.appendChild(gOverlays);
+  const gTitleText   = mkEl('g', {id: 'layer-titletext'});   svg.appendChild(gTitleText);
+  const gMasks       = mkEl('g', {id: 'layer-masks'});       svg.appendChild(gMasks);
+  const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
+  const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
+
+  renderAllTextures(gTextures, defs);
+  renderAllTransitions(gTransitions, defs);
+  renderAllRoadEdges(gRoadEdges);
+  renderFlatFillAndBorders(gFlatFill, gBorders);
+  renderTitleBand(gTitleBand);
+  renderAllOverlays(gOverlays);
+  renderTitleText(gTitleText, defs);
+  renderMasks(gMasks);
+  renderHits(gHits);
+  renderAllDecorations(gDecor);
+}
+
+// ---- 2. Texture layers — one clipPath+image per base terrain type ----
+function renderAllTextures(g, defs) {
+  const baseTypes = [...new Set(TILES.map(t => baseId(t.id)))];
+  baseTypes.forEach(base => {
+    if (!TEXTURES[base]) return;
+    const clipId = 'tex-clip-' + base;
+    const cp = mkEl('clipPath', {id: clipId});
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++) {
+        if (baseId(board[row * COLS + col]) !== base) continue;
+        cp.appendChild(mkEl('polygon', {points: pts2s(cellPoly(col, row)), 'data-cell': row * COLS + col}));
+      }
+    defs.appendChild(cp);
+    // Use base64 directly in SVG — avoids any CORS issue during export
+    // Falls back to TEXTURE_PATHS if base64 not yet ready (first render)
+    g.appendChild(mkEl('image', {
+      id: 'tex-image-' + base,
+      href: IMAGES_B64[TEXTURE_PATHS[base]] || TEXTURE_PATHS[base],
+      x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H,
+      'clip-path': `url(#${clipId})`,
+      preserveAspectRatio: 'none'
+    }));
+  });
+}
+
+// ---- 2b. Organic procedural transitions between adjacent non-Road terrains ----
+function renderAllTransitions(g, defs) {
+  getNeighborPairs().forEach(([A, B]) => drawTransition(g, defs, A, B));
+}
+
+// ---- 3+4. Remplissage plat (cases sans texture) + bordure (cases texturées) ----
+// Les deux parcourent exactement les mêmes 48 cases dans le même ordre — une
+// case tombe toujours dans l'un ou l'autre cas, jamais les deux — donc une seule
+// passe suffit ; chacune va simplement dans sa propre couche (gFlatFill / gBorders).
+function renderFlatFillAndBorders(gFlatFill, gBorders) {
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const idx = row * COLS + col, type = board[idx];
+      const hasTexture = !!TEXTURES[baseId(type)];
+      const g = hasTexture ? gBorders : gFlatFill;
+      g.appendChild(mkEl('polygon', {
+        points: pts2s(cellPoly(col, row)),
+        fill: hasTexture ? 'none' : tcolor(type),
+        stroke: '#C07820', 'stroke-width': '2.5', 'stroke-linejoin': 'round',
+        'data-cell': idx
+      }));
+    }
+}
+
+// ---- 5. Title band background (brown) + optional user image ----
+function renderTitleBand(g) {
+  const tb = BANDS[0], tbMid = (tb.top + tb.bot) / 2, tbR = tb.left + COLS * CELL_SLOT;
+  g.appendChild(mkEl('polygon', {
+    points: `${tb.left},${tb.top} ${tbR},${tb.top} ${tbR+NOTCH},${tbMid} ${tbR},${tb.bot} ${tb.left},${tb.bot} ${tb.left-NOTCH},${tbMid}`,
+    fill: '#6B3A2A'
+  }));
+  if (TITLE_IMAGE) {
+    g.appendChild(mkEl('image', {
+      href: TITLE_IMAGE.src,
+      x: tb.left - NOTCH, y: tb.top,
+      width: tbR - tb.left + NOTCH * 2, height: tb.bot - tb.top,
+      preserveAspectRatio: 'xMidYMid slice'
+    }));
+  }
+}
+
+// ---- 6+7. Overlays (hazard/oil/ramp/multiramp/rock/fire), one <g data-cell> per cell ----
+// Rang isométrique d'une case : croissant de la case la plus en haut à droite
+// (dessinée en premier, donc en dessous) vers la plus en bas à gauche (dessinée
+// en dernier, donc au-dessus). Sert à insérer un élément au bon endroit lors
+// d'une mise à jour incrémentale (updateCell), sans devoir tout reconstruire —
+// un simple appendChild placerait toujours l'élément modifié au-dessus de tout,
+// ce qui casserait l'ordre dès qu'une case "derrière" elle existe déjà.
+function overlayRank(idx) {
+  const row = Math.floor(idx / COLS), col = idx % COLS;
+  return row * COLS + (COLS - 1 - col);
+}
+
+function insertInIsometricOrder(g, el, idx) {
+  const rank = overlayRank(idx);
+  const next = [...g.children].find(child => {
+    const cellAttr = child.dataset.cell;
+    return cellAttr !== undefined && overlayRank(parseInt(cellAttr)) > rank;
+  });
+  if (next) g.insertBefore(el, next);
+  else g.appendChild(el);
+}
+
+function renderAllOverlays(g) {
+  // Ordre isométrique unique pour TOUS les types d'overlay (Hazard/Oil/Ramp/
+  // MultiRamp/Impassable/Fire) : lignes de haut en bas, colonnes de droite à
+  // gauche — la case la plus en bas à gauche est dessinée en dernier et
+  // recouvre visuellement les cases derrière elle (haut/droite), comme une
+  // vraie vue isométrique. Une seule boucle pour que l'ordre soit respecté
+  // aussi ENTRE catégories différentes (pas seulement au sein d'une même
+  // catégorie) : deux boucles séparées empêchaient par exemple une case Rock
+  // de bien s'intercaler avec une case Hazard voisine selon leur position réelle.
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const t = board[row * COLS + col];
+      const wrap = mkEl('g', {'data-cell': row * COLS + col});
+      if (['haz_mud', 'haz_sand', 'haz_road', 'haz_salt'].includes(t)) drawHazard(wrap, col, row);
+      if (t === 'oil' || t === 'off_oil') drawOil(wrap, col, row);
+      if (t === 'ramp')       drawRamp(wrap, col, row);
+      if (t === 'multi_ramp') drawMultiRamp(wrap, col, row);
+      if (t === 'rock')       drawImpassable(wrap, col, row);
+      if (t === 'fire')       drawFire(wrap, col, row);
+      if (wrap.childNodes.length) g.appendChild(wrap);
+    }
+}
+
+// Mesure la largeur réelle d'un texte avec la police Bevan italique, via un canvas
+// caché — nécessaire pour aligner precisement le "Name of the road" par rapport à
+// "THE" (les métriques exactes des lettres ne sont connues qu'une fois la police
+// vraiment chargée dans le navigateur, impossible à deviner à l'avance).
+function measureTextWidth(txt, sizePx) {
+  const canvas = measureTextWidth._canvas || (measureTextWidth._canvas = document.createElement('canvas'));
+  const ctx = canvas.getContext && canvas.getContext('2d');
+  if (!ctx) return sizePx * txt.length * 0.6; // repli grossier, ne devrait pas arriver dans un vrai navigateur
+  ctx.font = `italic ${sizePx}px 'Bevan', serif`;
+  return ctx.measureText(txt).width;
+}
+
+// ---- 8. Title text — above the board content ----
+function renderTitleText(svg, defs) {
+  const tb = BANDS[0], tbH = tb.bot - tb.top;
+  const titleVal = document.getElementById('title-input').value.toUpperCase() || 'NAME OF YOUR ROAD';
+  const mainSize = Math.round(tbH * 0.78 * 0.76), capH = mainSize * 0.72;
+  const textLeft = tb.left + Math.round(tbH * 0.08) + 331;
+
+  // "THE" ne bouge jamais : sa position (theX, theY) est calculée en premier et de
+  // façon totalement indépendante du reste — rien d'autre ne doit influencer sa valeur.
+  const theSize = Math.round(mainSize * 0.42), theX = textLeft - 236;
+  const theCapH = theSize * 0.72;
+  const theY = Math.round(tb.top + tbH / 2 + theCapH / 2) + 9 - 10; // bloc des 3 écritures remonté de 10px
+
+  // Centre vertical du "Name of the road" calé sur le centre vertical de "THE"
+  // (chacun mesuré comme baseline − demi hauteur de capitale), d'où le titre en
+  // découle plutôt que l'inverse.
+  const theCenterY = theY - theCapH / 2;
+  const titleY = Math.round(theCenterY + capH / 2);
+
+  const chapSize = Math.round(tbH * 0.22), chapY = Math.round(titleY - capH - tbH * 0.04);
+
+  const cg = makeTitleText(textLeft + 35, chapY, chapSize, 'FAN-MADE CHAPTER', '#BBB3A2', 'chapter', 20);
+  svg.appendChild(cg);
+
+  const tg = makeTitleText(theX, theY, theSize, 'THE', '#BBB3A2', 'the', 20);
+  svg.appendChild(tg);
+
+  // Le bord gauche du "Name of the road" est calé exactement sur le bord droit de
+  // "THE" (après le même resserrement scale(0.9,1)) — tant que la police n'est pas
+  // encore chargée, on retombe sur l'ancienne position approximative, corrigée dès
+  // que la police devient disponible (buildBoard() est rappelé à ce moment-là).
+  const roadNameX = FONT_READY
+    ? Math.round(theX + 0.9 * measureTextWidth('THE', theSize))
+    : textLeft;
+  // Descendu de 19px par rapport au reste (uniquement ce texte, chapY/theY inchangés).
+  const roadNameY = titleY + 19;
+
+  const mg = makeTitleText(roadNameX, roadNameY, mainSize, titleVal, '#F8F0D0', 'title', 40);
+  svg.appendChild(mg);
+}
+
+// ---- 9. White chevron masks — clip cell tips into margins ----
+function renderMasks(svg) {
+  svg.appendChild(mkEl('rect', {x:0, y:0, width:VW, height:BANDS[0].top, fill:'#FFFFFF'}));
+  svg.appendChild(mkEl('rect', {x:0, y:BANDS[6].bot, width:VW, height:VH-BANDS[6].bot, fill:'#FFFFFF'}));
+  for (let i = 0; i < 7; i++) {
+    svg.appendChild(mkEl('polygon', {points: leftMaskPoly(i), fill: '#FFFFFF'}));
+    svg.appendChild(mkEl('polygon', {points: rightMaskPoly(i), fill: '#FFFFFF'}));
+  }
+}
+
+// ---- 10. Clickable hit areas (transparent, on top) ----
+function renderHits(svg) {
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      const hit = mkEl('polygon', {points: pts2s(cellPoly(col, row)), fill: 'transparent', stroke: 'none'});
+      hit.dataset.idx = row * COLS + col;
+      hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', function () { this.setAttribute('fill', 'rgba(255,255,255,0.22)'); });
+      hit.addEventListener('mouseleave', function () { this.setAttribute('fill', 'transparent'); });
+      hit.addEventListener('click', function () { updateCell(parseInt(this.dataset.idx), sel); });
+      svg.appendChild(hit);
+    }
+}
+
+// ---- 11. Décorations de groupe — un seul petit élément par zone homogène de plus
+// de 3 cases, posé à une intersection de cases, par-dessus tout le reste (y compris
+// le quadrillage orange) pour casser la monotonie des grandes zones uniformes.
+// Cherche toutes les paires de cases adjacentes, de même nature (dans le même
+// groupe) et sans overlay des deux côtés — les seules frontières valables pour
+// poser une décoration "entre deux cases".
+function findEligiblePairsInGroup(grp) {
+  const groupSet = new Set(grp.cells);
+  const seen = new Set();
+  const pairs = [];
+  grp.cells.forEach(idx => {
+    if (OVERLAY_TYPES.includes(board[idx])) return;
+    const row = Math.floor(idx / COLS), col = idx % COLS;
+    neighborsOf(col, row).forEach(([nc, nr]) => {
+      const nidx = nr * COLS + nc;
+      if (!groupSet.has(nidx) || OVERLAY_TYPES.includes(board[nidx])) return;
+      const key = idx < nidx ? `${idx}-${nidx}` : `${nidx}-${idx}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      pairs.push([[col, row], [nc, nr]]);
+    });
+  });
+  return pairs;
+}
+
+// Point d'ancrage sur la frontière entre deux cases : sur la ligne d'interligne
+// pour deux cases de lignes différentes, ou juste au-dessus de la pointe du
+// chevron (jamais dessus) pour deux cases de la même ligne.
+function pairDecorAnchor(colA, rowA, colB, rowB) {
+  const pts = boundaryLine(colA, rowA, colB, rowB);
+  if (rowA === rowB) {
+    // pts = [coin haut, pointe, coin bas] — on prend un point sur le segment
+    // supérieur, proche de la pointe mais nettement au-dessus.
+    const [top, tip] = pts;
+    const t = 0.7;
+    return {x: top[0] + (tip[0] - top[0]) * t, y: top[1] + (tip[1] - top[1]) * t};
+  }
+  // pts = [gauche, droite] sur la ligne d'interligne — le milieu convient très bien.
+  return {x: (pts[0][0] + pts[1][0]) / 2, y: (pts[0][1] + pts[1][1]) / 2};
+}
+
+// ---- Débordement Route <-> Autre texture ----
+// 7 png (dossier "edges", canevas fixe 657x622, toujours centrés sur la case Route) :
+// LeftEdge / RightEdge pour les frontières intra-ligne (jamais de scission, les
+// colonnes d'une même ligne sont alignées), + 5 variantes pour les frontières
+// inter-lignes (TopEdgeFull / TopEdgeLeftLong / TopEdgeLeftShort / TopEdgeRightLong /
+// TopEdgeRightShort), réutilisées pour le bas via une simple symétrie verticale
+// (translate+scale autour de cy) — aucun calcul de position différent, juste un
+// centrage identique à chaque fois.
+//
+// Le décalage de 195px entre lignes en quinconce scinde la frontière haute/basse
+// d'une case (largeur CELL_SLOT=493) en exactement deux segments sans chevauchement
+// ni trou : 195px ("Short") + 298px ("Long"). Le côté qui reçoit Short vs Long dépend
+// du sens du décalage entre la ligne courante et la ligne voisine (calculé, pas
+// codé en dur). Sur les colonnes de bord de plateau, un seul des deux segments existe
+// — toujours le "Long". "Full" s'utilise uniquement quand les deux segments touchent
+// une texture Autre, pour éviter une couture visible entre deux png accolés.
+const EDGE_PATHS = {
+  LeftEdge: 'edges/LeftEdge.png',
+  RightEdge: 'edges/RightEdge.png',
+  TopEdgeFull: 'edges/TopEdgeFull.png',
+  TopEdgeLeftLong: 'edges/TopEdgeLeftLong.png',
+  TopEdgeLeftShort: 'edges/TopEdgeLeftShort.png',
+  TopEdgeRightLong: 'edges/TopEdgeRightLong.png',
+  TopEdgeRightShort: 'edges/TopEdgeRightShort.png',
+};
+const EDGE_W = 657, EDGE_H = 622;
+// Au-delà de cette largeur de segment (px), on considère le côté "Long" plutôt que
+// "Short" — les deux seules valeurs possibles sont 195 et 298, 250 est donc une
+// marge confortable entre les deux.
+const EDGE_SEG_LONG_THRESHOLD = 250;
+
+// Les png edges ont un léger décalage de cadrage (le contenu opaque n'est pas
+// parfaitement centré dans le canevas 657x622, ~13-14px vers la gauche) — cette
+// constante recentre tous les overlays (Left/Right + Top/Bottom, flip compris,
+// le flip vertical n'affecte pas l'axe X). Ajuster cette seule valeur si besoin.
+const EDGE_X_NUDGE = 10;
+
+// Correctif temporaire : les découpes de transparence des png actuels tombent
+// quelques px trop tôt (jointure visible avant la grille jaune). En attendant une
+// nouvelle passe de découpage côté PNG, on grossit chaque overlay de 2% autour de
+// son propre centre (la position du centre ne change pas). À retirer (repasser à 1)
+// une fois les png recoupés.
+const EDGE_SCALE = 1.015;
+
+function placeRoadEdge(g, edgeName, cx, cy, flipV = false) {
+  const src = EDGE_PATHS[edgeName];
+  const ew = EDGE_W * EDGE_SCALE, eh = EDGE_H * EDGE_SCALE;
+  const attrs = {
+    href: IMAGES_B64[src] || src,
+    x: cx - ew / 2 + EDGE_X_NUDGE, y: cy - eh / 2, width: ew, height: eh,
+    'pointer-events': 'none'
+  };
+  // Symétrie verticale autour du centre de la case : un TopEdge* flippé donne
+  // exactement le motif attendu en bas, sans recalcul de position (la géométrie
+  // du quinconce est symétrique entre la ligne au-dessus et celle en-dessous).
+  if (flipV) attrs.transform = `translate(0, ${2 * cy}) scale(1, -1)`;
+  g.appendChild(mkEl('image', attrs));
+}
+
+// Détermine les cases de la ligne "targetRow" dont la frontière plate (largeur
+// CELL_SLOT, sans les pointes de chevron) chevauche celle de (col,row) — et de
+// quel côté (gauche/droite) ainsi que la largeur exacte du chevauchement.
+function crossRowSegments(col, row, targetRow) {
+  if (targetRow < 0 || targetRow >= ROWS) return [];
+  const curBand = BANDS[row + 1], tgtBand = BANDS[targetRow + 1];
+  const x0cur = curBand.left + col * CELL_SLOT;
+  const segs = [];
+  for (let nc = 0; nc < COLS; nc++) {
+    const x0nb = tgtBand.left + nc * CELL_SLOT;
+    const overlap = Math.min(x0cur + CELL_SLOT, x0nb + CELL_SLOT) - Math.max(x0cur, x0nb);
+    if (overlap > 1) segs.push({ nc, side: x0nb < x0cur ? 'left' : 'right', width: overlap });
+  }
+  segs.sort((a, b) => (a.side === 'left' ? 0 : 1) - (b.side === 'left' ? 0 : 1));
+  return segs;
+}
+
+function placeCrossRowEdge(g, col, row, targetRow, cx, cy, flipV, isOther) {
+  const segs = crossRowSegments(col, row, targetRow);
+  if (segs.length === 0) return;
+
+  const sideLabel = s => (s.side === 'left' ? 'Left' : 'Right') + (s.width > EDGE_SEG_LONG_THRESHOLD ? 'Long' : 'Short');
+
+  if (segs.length === 1) {
+    // Bord de plateau : un seul segment existe, toujours le "Long".
+    const s = segs[0];
+    if (isOther(targetRow * COLS + s.nc)) placeRoadEdge(g, 'TopEdge' + sideLabel(s), cx, cy, flipV);
+    return;
+  }
+
+  const left = segs.find(s => s.side === 'left');
+  const right = segs.find(s => s.side === 'right');
+  const leftOther = left && isOther(targetRow * COLS + left.nc);
+  const rightOther = right && isOther(targetRow * COLS + right.nc);
+
+  if (leftOther && rightOther) placeRoadEdge(g, 'TopEdgeFull', cx, cy, flipV);
+  else if (leftOther) placeRoadEdge(g, 'TopEdge' + sideLabel(left), cx, cy, flipV);
+  else if (rightOther) placeRoadEdge(g, 'TopEdge' + sideLabel(right), cx, cy, flipV);
+}
+
+function renderAllRoadEdges(g) {
+  // Une case Impassable ne compte ni comme Route ni comme "Autre" pour ce système —
+  // jamais de débordement de part et d'autre d'une case impassable.
+  const isOther = idx => { const b = baseId(board[idx]); return b !== 'road' && b !== 'rock'; };
+
+  for (let row = 0; row < ROWS; row++)
+    for (let col = COLS - 1; col >= 0; col--) {
+      if (baseId(board[row * COLS + col]) !== 'road') continue;
+      const {cx, cy} = cellCenter(col, row);
+
+      if (col > 0 && isOther(row * COLS + col - 1)) placeRoadEdge(g, 'LeftEdge', cx, cy);
+      if (col < COLS - 1 && isOther(row * COLS + col + 1)) placeRoadEdge(g, 'RightEdge', cx, cy);
+
+      placeCrossRowEdge(g, col, row, row - 1, cx, cy, false, isOther);
+      placeCrossRowEdge(g, col, row, row + 1, cx, cy, true, isOther);
+    }
+}
+
+function renderAllDecorations(g) {
+  const groups = findSameTypeGroups();
+  groups.forEach(grp => {
+    if (grp.cells.length <= 3) return;
+    const pairs = findEligiblePairsInGroup(grp);
+    if (!pairs.length) return;
+    // Préférence pour l'interligne quand le groupe s'étend sur plusieurs lignes.
+    const crossRowPairs = pairs.filter(([[, rowA], [, rowB]]) => rowA !== rowB);
+    const pool = crossRowPairs.length ? crossRowPairs : pairs;
+    // Choix déterministe (mais varié d'un groupe à l'autre) parmi les paires possibles.
+    const seed = seededRandom(grp.cells[0] * 97 + grp.cells.length * 13);
+    const [[colA, rowA], [colB, rowB]] = pool[Math.floor(seed * pool.length)];
+    const {x, y} = pairDecorAnchor(colA, rowA, colB, rowB);
+    // Les png Items- sont dessinés sur un canevas fixe de 378x378 px, à la même
+    // échelle 300ppp que le reste du plateau (A3 @ 300dpi) — donc leur taille native
+    // est déjà la bonne, pas besoin de la réduire par rapport à la case.
+    const size = 378;
+    // Choix aléatoire (mais reproductible) parmi les 12 png de décoration.
+    const itemSeed = seededRandom(grp.cells[0] * 53 + grp.cells.length * 29 + 7);
+    const itemSrc = ITEM_PATHS[Math.floor(itemSeed * ITEM_PATHS.length)];
+    g.appendChild(mkEl('image', {
+      href: IMAGES_B64[itemSrc] || itemSrc,
+      x: x - size / 2, y: y - size / 2, width: size, height: size,
+      'pointer-events': 'none', 'data-decor-cell': rowA * COLS + colA
+    }));
+  });
+}
+
+// ---- Mise à jour incrémentale : ne retouche que la case modifiée et ses voisines ----
+// directement concernées par une transition, au lieu de tout reconstruire (buildBoard()).
+// C'est ce qui règle la lenteur qui grandissait avec le nombre de transitions sur le plateau.
+// Vide entièrement une couche (par id) puis la reconstruit via la fonction de
+// rendu fournie — factorise un motif utilisé pour les couches qu'il est plus
+// simple de toujours recalculer en entier (décorations, edges route) plutôt
+// que de patcher au cas par cas, vu leur coût négligeable (48 cases).
+function rebuildLayer(layerId, renderFn) {
+  const g = document.getElementById(layerId);
+  while (g.firstChild) g.removeChild(g.firstChild);
+  renderFn(g);
+}
+
+function updateCell(idx, newType) {
+  const oldType = board[idx];
+  const fam = overlayFamily(newType);
+  // Un clic sur une case déjà du même type ne fait normalement rien — sauf pour les
+  // types à variantes (Impassable/Oil/Fire), où c'est justement le geste qui permet
+  // à l'utilisateur de faire défiler le visuel jusqu'au suivant.
+  if (oldType === newType && !fam) return;
+  const row = Math.floor(idx / COLS), col = idx % COLS;
+  board[idx] = newType;
+  if (fam) assignOverlayVariant(idx, newType);
+
+  const svg = document.getElementById('bsvg');
+  const defs = svg.querySelector('defs');
+  const gTextures    = document.getElementById('layer-textures');
+  const gTransitions = document.getElementById('layer-transitions');
+  const gFlatFill    = document.getElementById('layer-flatfill');
+  const gBorders     = document.getElementById('layer-borders');
+  const gOverlays    = document.getElementById('layer-overlays');
+
+  const oldBase = baseId(oldType), newBase = baseId(newType);
+
+  // --- Appartenance aux calques de texture (clip union par type) ---
+  if (oldBase !== newBase) {
+    if (TEXTURES[oldBase]) {
+      const oldClip = defs.querySelector(`#tex-clip-${oldBase}`);
+      if (oldClip) {
+        const poly = oldClip.querySelector(`[data-cell="${idx}"]`);
+        if (poly) oldClip.removeChild(poly);
+      }
+    }
+    if (TEXTURES[newBase]) {
+      let newClip = defs.querySelector(`#tex-clip-${newBase}`);
+      if (!newClip) {
+        newClip = mkEl('clipPath', {id: 'tex-clip-' + newBase});
+        defs.appendChild(newClip);
+        gTextures.appendChild(mkEl('image', {
+          id: 'tex-image-' + newBase,
+          href: IMAGES_B64[TEXTURE_PATHS[newBase]] || TEXTURE_PATHS[newBase],
+          x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H,
+          'clip-path': `url(#tex-clip-${newBase})`,
+          preserveAspectRatio: 'none'
+        }));
+      }
+      newClip.appendChild(mkEl('polygon', {points: pts2s(cellPoly(col, row)), 'data-cell': idx}));
+    }
+  }
+
+  // --- Transitions : on retire celles qui touchaient cette case, puis on ne
+  // recalcule que ses voisines directes (au lieu de tout le plateau) ---
+  [...gTransitions.querySelectorAll('[data-pair]')].forEach(el => {
+    const [ca, ra, cb, rb] = el.dataset.pair.split(',').map(Number);
+    if ((ca === col && ra === row) || (cb === col && rb === row)) {
+      const uid = el.dataset.uid;
+      ['tcellA-' + uid, 'tcellB-' + uid, 'sliver-' + uid + '-a', 'sliver-' + uid + '-b'].forEach(id => {
+        const d = defs.querySelector('#' + id);
+        if (d) d.remove();
+      });
+      el.remove();
+    }
+  });
+  pairsForCell(col, row).forEach(([A, B]) => drawTransition(gTransitions, defs, A, B));
+
+  // --- Remplissage plat / bordure pour cette case uniquement ---
+  [gFlatFill, gBorders].forEach(g => {
+    const el = g.querySelector(`[data-cell="${idx}"]`);
+    if (el) el.remove();
+  });
+  if (!TEXTURES[newBase]) {
+    gFlatFill.appendChild(mkEl('polygon', {
+      points: pts2s(cellPoly(col, row)), fill: tcolor(newType),
+      stroke: '#C07820', 'stroke-width': '2.5', 'stroke-linejoin': 'round', 'data-cell': idx
+    }));
+  } else {
+    gBorders.appendChild(mkEl('polygon', {
+      points: pts2s(cellPoly(col, row)), fill: 'none',
+      stroke: '#C07820', 'stroke-width': '2.5', 'stroke-linejoin': 'round', 'data-cell': idx
+    }));
+  }
+
+  // --- Overlay (hazard/oil/ramp/multiramp/rock/fire) pour cette case uniquement ---
+  const oldOverlay = gOverlays.querySelector(`[data-cell="${idx}"]`);
+  if (oldOverlay) oldOverlay.remove();
+  const wrap = mkEl('g', {'data-cell': idx});
+  if (['haz_mud', 'haz_sand', 'haz_road', 'haz_salt'].includes(newType)) drawHazard(wrap, col, row);
+  if (newType === 'oil' || newType === 'off_oil') drawOil(wrap, col, row);
+  if (newType === 'ramp')       drawRamp(wrap, col, row);
+  if (newType === 'multi_ramp') drawMultiRamp(wrap, col, row);
+  if (newType === 'rock')       drawImpassable(wrap, col, row);
+  if (newType === 'fire')       drawFire(wrap, col, row);
+  if (wrap.childNodes.length) insertInIsometricOrder(gOverlays, wrap, idx);
+
+  // --- Décorations de groupe : dépendent de la connectivité globale (un seul
+  // changement peut fusionner/scinder des groupes ailleurs sur le plateau), donc
+  // on les recalcule entièrement à chaque modification — opération peu coûteuse
+  // (48 cases), contrairement aux transitions.
+  rebuildLayer('layer-decor', renderAllDecorations);
+
+  // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
+  // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
+  rebuildLayer('layer-roadedges', renderAllRoadEdges);
+}
+
+// Extra swatch styling per tile id
+const SWATCH_STYLE = {
+  haz_mud:    {border: '1px solid #a72b28'},
+  haz_sand:   {border: '1px solid #a72b28'},
+  haz_road:   {border: '1px solid #a72b28'},
+  haz_salt:   {border: '1px solid #a72b28'},
+  ramp:       {border: '1px solid #e4c070'},
+  multi_ramp: {border: '1px solid #e4c070'},
+  off_oil:    {dot: '#222a1f'},
+  oil:        {dot: '#222a1f'},
+};
+
+function buildPalette() {
+  const pal = document.getElementById('palette');
+  TILES.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className = 'tb' + (t.id === sel ? ' sel' : '');
+    btn.id = 'tb-' + t.id;
+    const sw = document.createElement('div');
+    sw.className = 'sw';
+    sw.style.background = t.color;
+    sw.style.position = 'relative';
+    sw.style.flexShrink = '0';
+    const extra = SWATCH_STYLE[t.id] || {};
+    if (extra.border) sw.style.border = extra.border;
+    if (extra.dot) {
+      const dot = document.createElement('div');
+      dot.style.cssText = `position:absolute;width:2px;height:2px;background:${extra.dot};top:50%;left:50%;transform:translate(-50%,-50%);`;
+      sw.appendChild(dot);
+    }
+    btn.appendChild(sw);
+    btn.appendChild(document.createTextNode(t.label));
+    btn.onclick = () => {
+      sel = t.id;
+      document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+    };
+    pal.appendChild(btn);
+  });
+}
+
+function resetBoard() {
+  const ok = confirm(
+    'This will reset all board spaces back to Road.\n\n' +
+    'It will NOT change the road name or the title image — those stay as they are.'
+  );
+  if (!ok) return;
+  board = Array(48).fill('road');
+  cellVariant = Array(48).fill(null);
+  overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  buildBoard();
+}
+
+// ---- Export PNG ----
+// All images are pre-converted to base64 at load time (IMAGES_B64).
+// The export button is locked during export to prevent double-clicks.
+function exportPNG() {
+  const btn = document.getElementById('export-btn');
+  const label = document.getElementById('export-label');
+
+  // Check all images are truly ready before exporting
+  if (!allImagesReady()) {
+    alert('⚠ Some images are not fully loaded yet.\nPlease reload the page and try again.');
+    return;
+  }
+
+  // Lock button during export
+  btn.disabled = true;
+  label.textContent = 'Preparing…';
+
+  const svg = document.getElementById('bsvg');
+  const clone = svg.cloneNode(true);
+  clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
+  clone.setAttribute('width', '4961');
+  clone.setAttribute('height', '3508');
+
+  // SVG already contains base64 hrefs (set during buildBoard) — no replacement needed.
+  // Render SVG to canvas and download as PNG
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const canvas = document.createElement('canvas');
+  canvas.width = 4961;
+  canvas.height = 3508;
+  const img = new Image();
+
+  function paintAndDownload() {
+    label.textContent = 'Exporting…';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 4961, 3508);
+    ctx.drawImage(img, 0, 0, 4961, 3508);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(b => {
+      const a = document.createElement('a');
+      const name = document.getElementById('title-input').value.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-') || 'RoadTile';
+      a.href = URL.createObjectURL(b);
+      a.download = name + '-A3.png';
+      a.click();
+      // Unlock button after download triggered
+      btn.disabled = false;
+      label.textContent = 'Export the .png';
+    }, 'image/png');
+  }
+
+  img.onload = () => {
+    // img.onload alone isn't a strong enough guarantee on Safari: for an SVG
+    // containing embedded base64 images, WebKit can fire onload before those
+    // inner images are fully decoded, producing an export with blank/missing
+    // textures on the very first attempt (works afterwards once the browser's
+    // image cache already holds fully-decoded copies of those same data URIs).
+    // img.decode() explicitly waits for full decode before we paint to canvas.
+    if (img.decode) {
+      img.decode()
+        .then(() => requestAnimationFrame(() => requestAnimationFrame(paintAndDownload)))
+        .catch(() => requestAnimationFrame(() => requestAnimationFrame(paintAndDownload)));
+    } else {
+      paintAndDownload();
+    }
+  };
+  img.onerror = () => {
+    btn.disabled = false;
+    label.textContent = 'Export the .png';
+    alert('Export failed — please try again.');
+  };
+  img.src = url;
+}
+
+function loadTitleImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      TITLE_IMAGE = img;
+      const warn = document.getElementById('title-img-warn');
+      warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+      document.getElementById('title-img-btn').textContent = '✓ Title image loaded';
+      document.getElementById('title-img-btn').style.color = '#4CAF50';
+      buildBoard();
+    };
+    img.onerror = function () {
+      document.getElementById('title-img-btn').textContent = '✗ Load failed';
+      document.getElementById('title-img-btn').style.color = '#E8231A';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+document.getElementById('title-input').addEventListener('input', function () {
+  const l = this.value.length;
+  const cc = document.getElementById('cc');
+  cc.textContent = l + '/20';
+  cc.style.color = l > 17 ? '#E8A84C' : '#777';
+  const newText = this.value.toUpperCase() || 'NAME OF YOUR ROAD';
+  const td = document.getElementById('title-display');
+  if (td) td.textContent = newText;
+  const tsg = document.getElementById('title-shadow-group');
+  if (tsg) tsg.querySelectorAll('text').forEach(t => { t.textContent = newText; });
+});
+
+// ---- Overlay sprite sources ----
+let HAZARD_1, HAZARD_2, HAZARD_3;
+let OIL_1, OIL_2;
+let RAMP, MULTI_RAMP;
+let FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6;
+let IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7;
+// Décorations de groupe (bidon, cactus, roue, pare-choc...) — 12 png dans le dossier Items/.
+const ITEM_PATHS = Array.from({length: 12}, (_, i) => `items/Item-${i + 1}.png`);
+
+function initOverlaySources() {
+  HAZARD_1 = 'sprites/Hazard-1.png';  HAZARD_2 = 'sprites/Hazard-2.png';  HAZARD_3 = 'sprites/Hazard-3.png';
+  OIL_1    = 'sprites/Oil-1.png';     OIL_2    = 'sprites/Oil-2.png';
+  RAMP     = 'sprites/Ramp.png';      MULTI_RAMP = 'sprites/Multi-Ramp.png';
+  FIRE_1   = 'sprites/Fire!-1.png';   FIRE_2   = 'sprites/Fire!-2.png';   FIRE_3 = 'sprites/Fire!-3.png';
+  FIRE_4   = 'sprites/Fire!-4.png';   FIRE_5   = 'sprites/Fire!-5.png';   FIRE_6 = 'sprites/Fire!-6.png';
+  IMP_1    = 'sprites/Impassable-1.png'; IMP_2 = 'sprites/Impassable-2.png'; IMP_3 = 'sprites/Impassable-3.png';
+  IMP_4    = 'sprites/Impassable-4.png'; IMP_5 = 'sprites/Impassable-5.png'; IMP_6 = 'sprites/Impassable-6.png';
+  IMP_7    = 'sprites/Impassable-7.png';
+}
+initOverlaySources();
+
+// Complete list of all image paths expected in IMAGES_B64
+function allImagesReady() {
+  const required = [
+    ...Object.values(TEXTURE_PATHS),
+    HAZARD_1, HAZARD_2, HAZARD_3,
+    OIL_1, OIL_2, RAMP, MULTI_RAMP,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7,
+    ...ITEM_PATHS,
+    ...Object.values(EDGE_PATHS),
+  ];
+  const fetchesOk = required.every(src => !!IMAGES_B64[src]);
+  // Le fetch/base64 ne suffit pas : il faut aussi que le décodage <Image> de
+  // chaque texture soit terminé, sinon le SVG peut encore référencer un chemin
+  // de fichier brut au moment de l'export (voir checkFullyReady).
+  const texturesOk = Object.keys(TEXTURE_PATHS).every(key => !!TEXTURES[key]);
+  return fetchesOk && texturesOk && FONT_READY;
+}
+
+// Texture paths — used as href in SVG and as keys in IMAGES_B64 (must match exactly)
+const TEXTURE_PATHS = {
+  road:  'textures/Texture-Road.png',
+  goo:   'textures/Texture-Toxic-Goo.png',
+  mud:   'textures/Texture-Muddy.png',
+  sand:  'textures/Texture-Off-Road.png',
+  salt:  'textures/Texture-Salt-Flats.png',
+  glass: 'textures/Texture-Desert-Glass.png',
+};
+
+// ---- Load all images at startup ----
+// Strategy:
+// 1. Road texture is loaded first so the board appears immediately on launch.
+// 2. All other images load in parallel afterward.
+// 3. Each image is converted to base64 (for CORS-safe export) immediately after loading.
+// 4. The Export button unlocks only when every base64 conversion is confirmed complete.
+window.addEventListener('load', function () {
+  const btn = document.getElementById('export-btn');
+  const label = document.getElementById('export-label');
+  const progress = document.getElementById('export-progress');
+
+  const overlaySources = [
+    HAZARD_1, HAZARD_2, HAZARD_3,
+    OIL_1, OIL_2,
+    RAMP, MULTI_RAMP,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7,
+    ...ITEM_PATHS,
+    ...Object.values(EDGE_PATHS),
+  ];
+
+  // Road loads first, then all others in parallel
+  const otherTextures = Object.entries(TEXTURE_PATHS).filter(([k]) => k !== 'road');
+  const allSources = [
+    {key:'road', src: TEXTURE_PATHS.road, type:'texture'},       // ← Road first
+    ...otherTextures.map(([key, src]) => ({key, src, type:'texture'})),
+    ...overlaySources.map(src => ({key: null, src, type:'overlay'})),
+    {key: 'bevan', src: BEVAN_ITALIC_FONT_URL, type:'font'},
+  ];
+
+  let converted = 0;
+  let failed = 0;
+  const total = allSources.length;
+
+  // Le décodage des images <Image> (utilisées pour l'affichage ET l'export) est
+  // asynchrone et séparé du téléchargement/conversion base64 — il faut attendre
+  // les deux avant de débloquer l'export, sinon l'export peut partir avec une
+  // texture encore non rafraîchie dans le SVG (bug observé sur Safari, plus lent
+  // à décoder, où la fenêtre de course entre les deux devient visible).
+  const textureKeys = Object.keys(TEXTURE_PATHS);
+  let texturesDecoded = 0;
+
+  function checkFullyReady() {
+    if (converted !== total || texturesDecoded !== textureKeys.length || !FONT_READY) return;
+    if (allImagesReady()) {
+      // Reconstruction finale pour garantir que le SVG (et donc l'export) ne
+      // référence plus aucun chemin de fichier brut, seulement du base64.
+      buildBoard();
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      label.textContent = 'Export the .png';
+      progress.style.width = '0%';
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      label.textContent = '⚠ Reload page';
+      progress.style.background = 'rgba(200,0,0,0.25)';
+    }
+  }
+
+  function onOneDone(success) {
+    converted++;
+    if (!success) failed++;
+    const pct = Math.round(converted / total * 100);
+    progress.style.width = pct + '%';
+    label.textContent = `Loading… ${pct}%`;
+    checkFullyReady();
+  }
+
+  // Load via fetch() → FileReader.readAsDataURL()
+  // Most reliable method : bypasses canvas entirely, no CORS "tainted" risk.
+  // For textures, an Image object is also created for SVG display.
+  function loadOne({key, src, type}) {
+    return new Promise(resolve => {
+      fetch(src)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.blob();
+        })
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            // Store base64 directly from FileReader — no canvas involved
+            IMAGES_B64[src] = e.target.result;
+
+            // For textures, also create an Image for SVG display
+            if (type === 'texture') {
+              const img = new Image();
+              img.onload = function () {
+                TEXTURES[key] = img;
+                texturesDecoded++;
+                buildBoard();
+                checkFullyReady();
+              };
+              img.onerror = function () {
+                // Le décodage a échoué : on compte quand même l'étape comme "traitée"
+                // pour ne pas bloquer indéfiniment, allImagesReady() détectera le manque.
+                texturesDecoded++;
+                checkFullyReady();
+              };
+              img.src = e.target.result;
+            }
+
+            // For the title font: embed it in the SVG right away (for display/export),
+            // AND register it via the FontFace API so document.fonts truly has it
+            // loaded — required both for canvas measureText() (pixel-precise title
+            // alignment) and to guarantee export never fires before it's really ready.
+            if (type === 'font') {
+              FONT_B64_BEVAN = e.target.result;
+              buildBoard();
+              try {
+                const face = new FontFace('Bevan', `url(${e.target.result})`, {style: 'italic', weight: '400'});
+                face.load().then(loaded => {
+                  document.fonts.add(loaded);
+                  FONT_READY = true;
+                  buildBoard();
+                  checkFullyReady();
+                }).catch(() => { checkFullyReady(); });
+              } catch (e) {
+                checkFullyReady();
+              }
+            }
+
+            onOneDone(true);
+            resolve();
+          };
+          reader.onerror = function () {
+            console.warn('FileReader failed:', src);
+            onOneDone(false);
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(e => {
+          console.warn('Fetch failed:', src, e);
+          onOneDone(false);
+          resolve();
+        });
+    });
+  }
+
+  // Load Road first so the board appears immediately, then all others in parallel
+  loadOne(allSources[0]).then(() => {
+    allSources.slice(1).forEach(item => loadOne(item));
+  });
+});
+
+buildPalette();
+buildBoard();
+</script>
+</body>
+</html>
