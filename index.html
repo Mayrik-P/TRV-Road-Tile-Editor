@@ -384,6 +384,35 @@ const OVERLAY_VARIANT_COUNTS = { rock: 8, fire: 6, oil: 8 }; // oil partage son 
 let overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
 let cellVariant = Array(COLS * ROWS).fill(null);
 
+// ---- Persistance locale (survit au rafraîchissement de page) ----
+const STORAGE_KEY = 'trv-road-tile-state';
+
+function saveBoardState() {
+  try {
+    const customTitleImage = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      boardType: BOARD_TYPE, board, cellVariant, overlayCycleIndex,
+      titleName: document.getElementById('title-input').value,
+      boardNumber: document.getElementById('board-number-input').value,
+      // ponytail: localStorage has a ~5-10MB quota; a large custom title image
+      // can silently fail to persist (caught below) — move to IndexedDB if that
+      // turns out to matter in practice.
+      titleImageSrc: customTitleImage ? TITLE_IMAGE.src : null,
+    }));
+  } catch (e) {}
+}
+
+function loadBoardState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const type = BOARD_TYPES[saved.boardType];
+    if (!type || !Array.isArray(saved.board) || saved.board.length !== type.cols * ROWS) return null;
+    return saved;
+  } catch (e) {
+    return null;
+  }
+}
+
 function overlayFamily(type) {
   if (type === 'rock') return 'rock';
   if (type === 'fire') return 'fire';
@@ -1577,6 +1606,8 @@ function updateCell(idx, newType) {
   // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
   // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
   rebuildLayer('layer-roadedges', renderAllRoadEdges);
+
+  saveBoardState();
 }
 
 // Extra swatch styling per tile id
@@ -1750,6 +1781,7 @@ function loadTitleImage(input) {
       document.getElementById('title-img-label').textContent = '✓ Title image loaded';
       document.getElementById('title-img-btn').style.color = '#4CAF50';
       buildBoard();
+      saveBoardState();
     };
     img.onerror = function () {
       document.getElementById('title-img-label').textContent = '✗ Load failed';
@@ -1772,6 +1804,7 @@ function resetTitleImage() {
   document.getElementById('title-img-label').textContent = 'Load title image';
   document.getElementById('title-img-btn').style.color = '';
   buildBoard();
+  saveBoardState();
 }
 
 document.getElementById('title-input').addEventListener('input', function () {
@@ -1784,12 +1817,14 @@ document.getElementById('title-input').addEventListener('input', function () {
   if (td) td.textContent = newText;
   const tsg = document.getElementById('title-shadow-group');
   if (tsg) tsg.querySelectorAll('text').forEach(t => { t.textContent = newText; });
+  saveBoardState();
 });
 
 // Champ numéro de plateau (Ignition uniquement) : chiffres uniquement, 3 max.
 document.getElementById('board-number-input').addEventListener('input', function () {
   this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);
   buildBoard();
+  saveBoardState();
 });
 
 // ---- Overlay sprite sources ----
@@ -2135,16 +2170,22 @@ window.addEventListener('resize', fitAllTitleStacks);
 
 // Le plateau/la palette ne se construisent qu'une fois le format choisi (voir
 // l'écran de sélection Vendetta/Ignition) — pas d'appel direct ici.
-function chooseBoardType(type) {
+function chooseBoardType(type, restored) {
   BOARD_TYPE = type;
   COLS = BOARD_TYPES[type].cols;
   VW   = BOARD_TYPES[type].vw;
   BANDS = computeBands();
   const rect = computeGameRect();
   GAME_X = rect.x; GAME_Y = rect.y; GAME_W = rect.w; GAME_H = rect.h;
-  board = Array(COLS * ROWS).fill('road');
-  cellVariant = Array(COLS * ROWS).fill(null);
-  overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  if (restored) {
+    board = restored.board;
+    cellVariant = restored.cellVariant;
+    overlayCycleIndex = restored.overlayCycleIndex;
+  } else {
+    board = Array(COLS * ROWS).fill('road');
+    cellVariant = Array(COLS * ROWS).fill(null);
+    overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  }
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
   // Résolution conseillée pour l'image de titre : dépend de la largeur réelle
@@ -2159,6 +2200,41 @@ function chooseBoardType(type) {
   buildPalette();
   buildBoard();
   fitAllTitleStacks();
+  saveBoardState();
+}
+
+// Restaure automatiquement le plateau sauvegardé (s'il existe) au chargement de
+// la page, en contournant l'écran de choix Vendetta/Ignition — c'est ce qui fait
+// survivre les modifications de cases (et le nom/numéro/image de titre) à un
+// rafraîchissement de page.
+const savedBoardState = loadBoardState();
+if (savedBoardState) {
+  // Nom/numéro restaurés AVANT chooseBoardType() : celui-ci sauvegarde l'état
+  // en sortie, il faut donc que les champs DOM soient déjà à jour à ce moment
+  // pour ne pas réécrire le stockage avec un nom/numéro vide.
+  if (savedBoardState.titleName) {
+    const ti = document.getElementById('title-input');
+    ti.value = savedBoardState.titleName;
+    ti.dispatchEvent(new Event('input'));
+  }
+  if (savedBoardState.boardNumber) {
+    const ni = document.getElementById('board-number-input');
+    ni.value = savedBoardState.boardNumber;
+    ni.dispatchEvent(new Event('input'));
+  }
+  chooseBoardType(savedBoardState.boardType, savedBoardState);
+  if (savedBoardState.titleImageSrc) {
+    const img = new Image();
+    img.onload = function () {
+      TITLE_IMAGE = img;
+      document.getElementById('title-img-warn').style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+      document.getElementById('title-img-label').textContent = '✓ Title image loaded';
+      document.getElementById('title-img-btn').style.color = '#4CAF50';
+      buildBoard();
+      saveBoardState();
+    };
+    img.src = savedBoardState.titleImageSrc;
+  }
 }
 </script>
 </body>
