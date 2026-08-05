@@ -260,6 +260,7 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
   <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#e8b459;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.<br>Images from Thunder Road: Vendetta are (c) Restoration Games, LLC and are used with permission.</div>
 </div>
+<script src="storage.js"></script>
 <script>
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -1577,6 +1578,8 @@ function updateCell(idx, newType) {
   // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
   // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
   rebuildLayer('layer-roadedges', renderAllRoadEdges);
+
+  saveBoardState();
 }
 
 // Extra swatch styling per tile id
@@ -1643,6 +1646,9 @@ function resetBoard() {
   document.getElementById('title-img-label').textContent = 'Load title image';
   document.getElementById('title-img-btn').style.color = '';
   document.getElementById('board-type-picker').style.display = 'flex';
+  // Sans ça, un rechargement fait pendant que l'écran de choix est affiché
+  // restaurerait le plateau qu'on vient justement de remettre à zéro.
+  clearBoardState();
 }
 
 // ---- Export PNG ----
@@ -1737,20 +1743,26 @@ function exportPNG() {
   img.src = url;
 }
 
+// Adopte une image de titre déjà décodée : appelé aussi bien après un choix de
+// fichier par l'utilisateur (ci-dessous) qu'après une restauration depuis le
+// stockage local (storage.js).
+function applyTitleImage(img) {
+  TITLE_IMAGE = img;
+  const warn = document.getElementById('title-img-warn');
+  warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+  document.getElementById('title-img-label').textContent = '✓ Title image loaded';
+  document.getElementById('title-img-btn').style.color = '#4CAF50';
+  buildBoard();
+  saveBoardState();
+}
+
 function loadTitleImage(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function (e) {
     const img = new Image();
-    img.onload = function () {
-      TITLE_IMAGE = img;
-      const warn = document.getElementById('title-img-warn');
-      warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
-      document.getElementById('title-img-label').textContent = '✓ Title image loaded';
-      document.getElementById('title-img-btn').style.color = '#4CAF50';
-      buildBoard();
-    };
+    img.onload = function () { applyTitleImage(img); };
     img.onerror = function () {
       document.getElementById('title-img-label').textContent = '✗ Load failed';
       document.getElementById('title-img-btn').style.color = '#E8231A';
@@ -1772,6 +1784,7 @@ function resetTitleImage() {
   document.getElementById('title-img-label').textContent = 'Load title image';
   document.getElementById('title-img-btn').style.color = '';
   buildBoard();
+  saveBoardState();
 }
 
 document.getElementById('title-input').addEventListener('input', function () {
@@ -1784,12 +1797,14 @@ document.getElementById('title-input').addEventListener('input', function () {
   if (td) td.textContent = newText;
   const tsg = document.getElementById('title-shadow-group');
   if (tsg) tsg.querySelectorAll('text').forEach(t => { t.textContent = newText; });
+  saveBoardState();
 });
 
 // Champ numéro de plateau (Ignition uniquement) : chiffres uniquement, 3 max.
 document.getElementById('board-number-input').addEventListener('input', function () {
   this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);
   buildBoard();
+  saveBoardState();
 });
 
 // ---- Overlay sprite sources ----
@@ -2135,16 +2150,22 @@ window.addEventListener('resize', fitAllTitleStacks);
 
 // Le plateau/la palette ne se construisent qu'une fois le format choisi (voir
 // l'écran de sélection Vendetta/Ignition) — pas d'appel direct ici.
-function chooseBoardType(type) {
+function chooseBoardType(type, restored) {
   BOARD_TYPE = type;
   COLS = BOARD_TYPES[type].cols;
   VW   = BOARD_TYPES[type].vw;
   BANDS = computeBands();
   const rect = computeGameRect();
   GAME_X = rect.x; GAME_Y = rect.y; GAME_W = rect.w; GAME_H = rect.h;
-  board = Array(COLS * ROWS).fill('road');
-  cellVariant = Array(COLS * ROWS).fill(null);
-  overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  if (restored) {
+    board = restored.board;
+    cellVariant = restored.cellVariant;
+    overlayCycleIndex = restored.overlayCycleIndex;
+  } else {
+    board = Array(COLS * ROWS).fill('road');
+    cellVariant = Array(COLS * ROWS).fill(null);
+    overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  }
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
   // Résolution conseillée pour l'image de titre : dépend de la largeur réelle
@@ -2159,7 +2180,12 @@ function chooseBoardType(type) {
   buildPalette();
   buildBoard();
   fitAllTitleStacks();
+  saveBoardState();
 }
+
+// Restaure le plateau sauvegardé (voir storage.js) — doit rester la toute
+// dernière ligne : dépend de tout ce qui est défini au-dessus.
+restoreBoardState();
 </script>
 </body>
 </html>
