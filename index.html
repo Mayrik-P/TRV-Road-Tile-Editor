@@ -260,6 +260,7 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
   <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#e8b459;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.<br>Images from Thunder Road: Vendetta are (c) Restoration Games, LLC and are used with permission.</div>
 </div>
+<script src="keyboard.js"></script>
 <script>
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -946,6 +947,7 @@ function buildBoard() {
   const gMasks       = mkEl('g', {id: 'layer-masks'});       svg.appendChild(gMasks);
   const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
   const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
+  const gCursor      = mkEl('g', {id: 'layer-cursor'});      svg.appendChild(gCursor);
 
   renderAllTextures(gTextures, defs);
   renderAllTransitions(gTransitions, defs);
@@ -958,6 +960,7 @@ function buildBoard() {
   renderMasks(gMasks);
   renderHits(gHits);
   renderAllDecorations(gDecor);
+  renderCursor(); // defined in keyboard.js
 }
 
 // ---- 2. Texture layers — one clipPath+image per base terrain type ----
@@ -1267,7 +1270,10 @@ function renderHits(svg) {
       const hit = mkEl('polygon', {points: pts2s(cellPoly(col, row)), fill: 'transparent', stroke: 'none'});
       hit.dataset.idx = row * COLS + col;
       hit.style.cursor = 'pointer';
-      hit.addEventListener('mouseenter', function () { this.setAttribute('fill', 'rgba(255,255,255,0.22)'); });
+      hit.addEventListener('mouseenter', function () {
+        this.setAttribute('fill', 'rgba(255,255,255,0.22)');
+        recordHover(parseInt(this.dataset.idx)); // defined in keyboard.js
+      });
       hit.addEventListener('mouseleave', function () { this.setAttribute('fill', 'transparent'); });
       hit.addEventListener('click', function () { updateCell(parseInt(this.dataset.idx), sel); });
       svg.appendChild(hit);
@@ -1483,6 +1489,7 @@ function updateCell(idx, newType) {
   // types à variantes (Impassable/Oil/Fire), où c'est justement le geste qui permet
   // à l'utilisateur de faire défiler le visuel jusqu'au suivant.
   if (oldType === newType && !fam) return;
+  recordPlacement(idx, oldType); // defined in keyboard.js
   const row = Math.floor(idx / COLS), col = idx % COLS;
   board[idx] = newType;
   if (fam) assignOverlayVariant(idx, newType);
@@ -1613,13 +1620,15 @@ function buildPalette() {
     }
     btn.appendChild(sw);
     btn.appendChild(document.createTextNode(t.label));
-    btn.onclick = () => {
-      sel = t.id;
-      document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
-      btn.classList.add('sel');
-    };
+    btn.onclick = () => selectTileType(t.id);
     pal.appendChild(btn);
   });
+}
+
+function selectTileType(id) {
+  sel = id;
+  document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
+  document.getElementById('tb-' + id)?.classList.add('sel');
 }
 
 function resetBoard() {
@@ -1665,6 +1674,7 @@ function exportPNG() {
   const svg = document.getElementById('bsvg');
   const clone = svg.cloneNode(true);
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
+  clone.querySelector('#layer-cursor')?.remove();
   clone.setAttribute('width', String(VW));
   clone.setAttribute('height', String(VH));
 
@@ -2145,6 +2155,7 @@ function chooseBoardType(type) {
   board = Array(COLS * ROWS).fill('road');
   cellVariant = Array(COLS * ROWS).fill(null);
   overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  resetKeyboardNavState(); // defined in keyboard.js
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
   // Résolution conseillée pour l'image de titre : dépend de la largeur réelle
