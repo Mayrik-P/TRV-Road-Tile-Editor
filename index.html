@@ -260,6 +260,7 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
   <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#e8b459;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.<br>Images from Thunder Road: Vendetta are (c) Restoration Games, LLC and are used with permission.</div>
 </div>
+<script src="storage.js"></script>
 <script>
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -383,35 +384,6 @@ let board = Array(COLS * ROWS).fill('road');
 const OVERLAY_VARIANT_COUNTS = { rock: 8, fire: 6, oil: 8 }; // oil partage son pool avec off_oil
 let overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
 let cellVariant = Array(COLS * ROWS).fill(null);
-
-// ---- Persistance locale (survit au rafraîchissement de page) ----
-const STORAGE_KEY = 'trv-road-tile-state';
-
-function saveBoardState() {
-  try {
-    const customTitleImage = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      boardType: BOARD_TYPE, board, cellVariant, overlayCycleIndex,
-      titleName: document.getElementById('title-input').value,
-      boardNumber: document.getElementById('board-number-input').value,
-      // ponytail: localStorage has a ~5-10MB quota; a large custom title image
-      // can silently fail to persist (caught below) — move to IndexedDB if that
-      // turns out to matter in practice.
-      titleImageSrc: customTitleImage ? TITLE_IMAGE.src : null,
-    }));
-  } catch (e) {}
-}
-
-function loadBoardState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    const type = BOARD_TYPES[saved.boardType];
-    if (!type || !Array.isArray(saved.board) || saved.board.length !== type.cols * ROWS) return null;
-    return saved;
-  } catch (e) {
-    return null;
-  }
-}
 
 function overlayFamily(type) {
   if (type === 'rock') return 'rock';
@@ -1674,6 +1646,9 @@ function resetBoard() {
   document.getElementById('title-img-label').textContent = 'Load title image';
   document.getElementById('title-img-btn').style.color = '';
   document.getElementById('board-type-picker').style.display = 'flex';
+  // Sans ça, un rechargement fait pendant que l'écran de choix est affiché
+  // restaurerait le plateau qu'on vient justement de remettre à zéro.
+  clearBoardState();
 }
 
 // ---- Export PNG ----
@@ -1768,21 +1743,26 @@ function exportPNG() {
   img.src = url;
 }
 
+// Adopte une image de titre déjà décodée : appelé aussi bien après un choix de
+// fichier par l'utilisateur (ci-dessous) qu'après une restauration depuis le
+// stockage local (storage.js).
+function applyTitleImage(img) {
+  TITLE_IMAGE = img;
+  const warn = document.getElementById('title-img-warn');
+  warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+  document.getElementById('title-img-label').textContent = '✓ Title image loaded';
+  document.getElementById('title-img-btn').style.color = '#4CAF50';
+  buildBoard();
+  saveBoardState();
+}
+
 function loadTitleImage(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function (e) {
     const img = new Image();
-    img.onload = function () {
-      TITLE_IMAGE = img;
-      const warn = document.getElementById('title-img-warn');
-      warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
-      document.getElementById('title-img-label').textContent = '✓ Title image loaded';
-      document.getElementById('title-img-btn').style.color = '#4CAF50';
-      buildBoard();
-      saveBoardState();
-    };
+    img.onload = function () { applyTitleImage(img); };
     img.onerror = function () {
       document.getElementById('title-img-label').textContent = '✗ Load failed';
       document.getElementById('title-img-btn').style.color = '#E8231A';
@@ -2203,39 +2183,9 @@ function chooseBoardType(type, restored) {
   saveBoardState();
 }
 
-// Restaure automatiquement le plateau sauvegardé (s'il existe) au chargement de
-// la page, en contournant l'écran de choix Vendetta/Ignition — c'est ce qui fait
-// survivre les modifications de cases (et le nom/numéro/image de titre) à un
-// rafraîchissement de page.
-const savedBoardState = loadBoardState();
-if (savedBoardState) {
-  // Nom/numéro restaurés AVANT chooseBoardType() : celui-ci sauvegarde l'état
-  // en sortie, il faut donc que les champs DOM soient déjà à jour à ce moment
-  // pour ne pas réécrire le stockage avec un nom/numéro vide.
-  if (savedBoardState.titleName) {
-    const ti = document.getElementById('title-input');
-    ti.value = savedBoardState.titleName;
-    ti.dispatchEvent(new Event('input'));
-  }
-  if (savedBoardState.boardNumber) {
-    const ni = document.getElementById('board-number-input');
-    ni.value = savedBoardState.boardNumber;
-    ni.dispatchEvent(new Event('input'));
-  }
-  chooseBoardType(savedBoardState.boardType, savedBoardState);
-  if (savedBoardState.titleImageSrc) {
-    const img = new Image();
-    img.onload = function () {
-      TITLE_IMAGE = img;
-      document.getElementById('title-img-warn').style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
-      document.getElementById('title-img-label').textContent = '✓ Title image loaded';
-      document.getElementById('title-img-btn').style.color = '#4CAF50';
-      buildBoard();
-      saveBoardState();
-    };
-    img.src = savedBoardState.titleImageSrc;
-  }
-}
+// Restaure le plateau sauvegardé (voir storage.js) — doit rester la toute
+// dernière ligne : dépend de tout ce qui est défini au-dessus.
+restoreBoardState();
 </script>
 </body>
 </html>
