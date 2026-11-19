@@ -4,9 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TRV Road Tile Editor</title>
-<link rel="stylesheet" href="css/app.css?v=97380ae25b"/>
+<link rel="stylesheet" href="css/app.css?v=6b318bd6af"/>
 <!-- Style TRV-Pocket (phase 3, validé par Mayrik le 19/11) : surcharge css/app.css. -->
-<link rel="stylesheet" href="css/paper-ui.css?v=9531adbba5"/>
+<link rel="stylesheet" href="css/paper-ui.css?v=b31406a8be"/>
 </head>
 <body>
 <div id="board-type-picker">
@@ -59,7 +59,7 @@
   <div id="toolbar">
     <button class="btn" id="home-btn" onclick="goHome()" title="Back to the home screen (nothing is lost)">Home</button>
     <div id="tb-load">
-      <button class="btn" id="title-img-btn" onclick="document.getElementById('title-img-input').click()" aria-label="Ideal size: 4243 × 456 px"><span id="title-img-label">Load title image</span><span class="tooltip" id="title-img-tooltip">Ideal size: 4243 × 456 px</span></button>
+      <span class="tip-wrap"><button class="btn" id="title-img-btn" onclick="document.getElementById('title-img-input').click()" aria-describedby="title-img-tooltip"><span id="title-img-label">Load title image</span></button><span class="tooltip" id="title-img-tooltip" role="tooltip">Ideal size: 4243 × 456 px</span></span>
       <input id="title-img-input" type="file" accept="image/png,image/jpeg" style="display:none" onchange="loadTitleImage(this)"/>
       <button class="btn" id="reset-title-btn" style="white-space:nowrap;" onclick="resetTitleImage()">Reset title image</button>
       <span id="title-img-warn" style="font-size:10px;color:#E8231A;display:none;">⚠ Image too small — may appear blurry when printed</span>
@@ -145,7 +145,7 @@
 <script src="js/export.js?v=72d61886cb"></script>
 <script src="js/assets.js?v=be72f3726f"></script>
 <script src="js/credits.js?v=6591fb753b"></script>
-<script src="js/ui.js?v=9d54cb22dd"></script>
+<script src="js/ui.js?v=f80f1ad1df"></script>
 <script src="js/autosave.js?v=441e263230"></script>
 <script src="js/project.js?v=80f3589417"></script>
 <script src="js/vendor/howler-2.2.4.min.js?v=736c339444"></script>

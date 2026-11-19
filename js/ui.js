@@ -90,7 +90,6 @@ function applyBoardType(type) {
   // ci-dessus) — la hauteur (456px) ne change jamais (ne dépend que de ROWS).
   const idealW = Math.round(GAME_W), idealH = BANDS[0].bot - BANDS[0].top;
   const idealText = `Ideal size: ${idealW} × ${idealH} px`;
-  document.getElementById('title-img-btn').setAttribute('aria-label', idealText);
   document.getElementById('title-img-tooltip').textContent = idealText;
 }
 

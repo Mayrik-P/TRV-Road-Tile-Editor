@@ -145,12 +145,15 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
 /* Info-bulle custom : le délai natif du navigateur pour l'attribut title (souvent
    1 à 1.5s) est trop long pour être vu par la plupart des utilisateurs — on le
    remplace par une bulle CSS qui apparaît après un délai bien plus court (0.2s). */
-#title-img-btn .tooltip{
+#tb-load .tooltip{
   position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(-4px);
   background:#222;color:#fff;font-size:10px;font-weight:400;padding:4px 8px;border-radius:4px;
   white-space:nowrap;opacity:0;pointer-events:none;
   transition:opacity 0.15s ease 0.2s;z-index:10;}
-#title-img-btn:hover .tooltip{opacity:1;}
+/* Bulle posée À CÔTÉ du bouton (dans .tip-wrap), pas dedans : le chevron du bouton (clip-path,
+   paper-ui.css) masquerait tout ce qui dépasse. Visible au survol et au focus clavier. */
+.tip-wrap{position:relative;display:inline-flex;}
+#tb-load .tip-wrap:hover .tooltip,#tb-load .tip-wrap:focus-within .tooltip{opacity:1;}
 #name-field-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:3 1 auto;min-width:0;max-width:322px;}
 #number-field-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:0 0 auto;}
 #board-number-input{background:#ede3cf;border:1px solid #b0956e;color:#3a2c1a;padding:5px 9px;

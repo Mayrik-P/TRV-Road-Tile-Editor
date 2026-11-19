@@ -103,6 +103,17 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   await exportTo(path.join(tmp, 'visible.png'));
   check('export identique avec ou sans curseur affiché',
         Buffer.compare(fs.readFileSync(path.join(tmp, 'hidden.png')), fs.readFileSync(path.join(tmp, 'visible.png'))) === 0);
+  // Bulle « Ideal size » de Load title image : posée hors du bouton (son chevron la masquait, 19/11)
+  const tipOpacity = () => p.evaluate(() => getComputedStyle(document.getElementById('title-img-tooltip')).opacity);
+  await p.mouse.move(2, 2); await p.waitForTimeout(400);
+  const tipRest = await tipOpacity();
+  await p.hover('#title-img-btn'); await p.waitForTimeout(500);
+  const tip = await p.evaluate(() => { const t = document.getElementById('title-img-tooltip').getBoundingClientRect(),
+    btn = document.getElementById('title-img-btn'), clip = btn.getBoundingClientRect();
+    return { text: document.getElementById('title-img-tooltip').textContent, outside: t.bottom <= clip.top + 1, inBtn: btn.contains(document.getElementById('title-img-tooltip')) }; });
+  check(`Load title image : bulle cachée au repos, visible au survol (« ${tip.text} »)`,
+        tipRest === '0' && (await tipOpacity()) === '1' && /^Ideal size: \d+ × \d+ px$/.test(tip.text));
+  check('bulle hors du bouton découpé en chevron (sinon elle serait masquée)', tip.outside && !tip.inBtn);
   check('aucune erreur JavaScript', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);
