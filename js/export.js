@@ -259,13 +259,30 @@ function exportPNG(format = 'png') {
   img.src = url;
 }
 
+// Avertissement « image trop petite » (19/11) : résolution réelle de l'image une fois posée dans son
+// cadre (titleImageBox, js/render-layers.js). Elle remplit tout le cadre (preserveAspectRatio
+// « slice ») : le côté le plus juste fixe l'agrandissement. Seuil 225 dpi = 75 % de la taille
+// conseillée (les imprimeurs visent 300 dpi, 150 dpi est un plancher souvent visible). Recalculé à
+// chaque changement de format (applyBoardType) : le cadre n'a pas la même largeur.
+const TITLE_IMAGE_MIN_DPI = 225;
+function titleImageDpi(img) {
+  const box = titleImageBox();
+  return 300 / Math.max(box.w / img.width, box.h / img.height);
+}
+function refreshTitleImageWarning() {
+  const warn = document.getElementById('title-img-warn');
+  const custom = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
+  const dpi = custom ? titleImageDpi(TITLE_IMAGE) : 300;
+  warn.textContent = `⚠ Image too small (about ${Math.round(dpi)} dpi when printed) — may appear blurry`;
+  warn.style.display = dpi < TITLE_IMAGE_MIN_DPI ? 'inline' : 'none';
+}
+
 // Adopte une image de titre déjà décodée (en data: URL, seule forme utilisable dans le SVG
 // exporté) : après un choix de fichier (loadTitleImage) ou une restauration (autosave.js).
 // Idée reprise de la PR #1 de ChessMess.
 function applyTitleImage(img) {
   TITLE_IMAGE = img;
-  const warn = document.getElementById('title-img-warn');
-  warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+  refreshTitleImageWarning();
   document.getElementById('title-img-label').textContent = '✓ Title image loaded';
   document.getElementById('title-img-btn').style.color = '#4CAF50';
   buildBoard();

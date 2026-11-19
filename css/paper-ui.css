@@ -122,7 +122,8 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .btn.ghost::before, #title-img-btn::before, #undo-btn::before, #redo-btn::before, #reset-title-btn::before, #shortcut-help-close::before {
   content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #title-img-btn:hover::before, #undo-btn:hover::before, #redo-btn:hover::before, #reset-title-btn:hover::before, #shortcut-help-close:hover::before { background: var(--paper-2); }
-#title-img-btn:hover, #undo-btn:hover, #redo-btn:hover, #reset-title-btn:hover, #shortcut-help-close:hover { background: var(--ink); }
+/* couleur du texte aussi : app.css passait celui de « Reset title image » en blanc au survol (vu par Mayrik, 19/11) */
+#title-img-btn:hover, #undo-btn:hover, #redo-btn:hover, #reset-title-btn:hover, #shortcut-help-close:hover { background: var(--ink); color: var(--ink); }
 #undo-btn { clip-path: var(--chev-back); } /* annuler = revenir en arrière (idée de Mayrik, 19/11) */
 #undo-group .btn:disabled { opacity: .35; cursor: default; transform: none; }
 #undo-group .btn:disabled:hover { background: var(--ink); }
@@ -154,6 +155,11 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #title-img-btn { width: auto; }
 #tb-load .tooltip { font-family: var(--text); font-size: 13px; background: var(--ink); color: var(--paper); border-radius: 0; clip-path: none; }
 #title-img-warn { font-family: var(--text); font-size: 13px !important; color: var(--red) !important; }
+/* avertissement sur sa propre ligne, sous les deux boutons : il était coupé au bord de l'écran sur téléphone.
+   Grille de deux colonnes (et non flex qui passe à la ligne, dont la largeur serait boutons + message) :
+   largeur = la plus grande des deux lignes, plafonnée à l'écran (le message passe alors à la ligne). */
+#tb-load { display: grid; grid-template-columns: auto auto; justify-content: start; align-items: center; max-width: 100%; }
+#title-img-warn { grid-column: 1 / -1; }
 
 /* ---- Champs de texte ---- */
 #title-input, #board-number-input { background: var(--paper-2); border: 2px solid var(--ink); border-radius: 0;

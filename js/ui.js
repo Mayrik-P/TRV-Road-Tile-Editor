@@ -90,6 +90,7 @@ function applyBoardType(type) {
   const box = titleImageBox(), idealW = Math.round(box.w), idealH = Math.round(box.h);
   const idealText = `Ideal size: ${idealW} × ${idealH} px`;
   document.getElementById('title-img-tooltip').textContent = idealText;
+  refreshTitleImageWarning(); // même image, autre cadre : autre résolution (js/export.js)
 }
 
 // Masque l'écran d'accueil, affiche l'éditeur et (re)dessine palette et plateau.

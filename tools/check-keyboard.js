@@ -118,6 +118,28 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   const drawn = await p.evaluate(() => { const im = [...document.querySelectorAll('#bsvg image')].find(i => /itle/.test(i.getAttribute('href') || ''));
     return `${Math.round(+im.getAttribute('width'))} × ${Math.round(+im.getAttribute('height'))}`; });
   check(`taille annoncée = cadre réel de l'image de titre (${drawn} px)`, tip.text === `Ideal size: ${drawn} px`);
+  // Avertissement « image trop petite » : résolution réelle dans le cadre (seuil 225 dpi)
+  const png = (w, h) => p.evaluate(([w, h]) => { const c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.getContext('2d').fillRect(0, 0, w, h); return c.toDataURL('image/png').split(',')[1]; }, [w, h]);
+  const loadTitle = async (w, h) => {
+    await p.setInputFiles('#title-img-input', { name: `t${w}x${h}.png`, mimeType: 'image/png', buffer: Buffer.from(await png(w, h), 'base64') });
+    await p.waitForFunction(([w, h]) => TITLE_IMAGE && TITLE_IMAGE.width === w && TITLE_IMAGE.height === h, [w, h]);
+    return p.evaluate(() => { const e = document.getElementById('title-img-warn'); return e.style.display === 'inline' ? e.textContent : ''; });
+  };
+  for (const [w, h, want] of [[4044, 456, false], [3100, 350, false], [2000, 456, true], [4044, 300, true]]) {
+    const msg = await loadTitle(w, h);
+    check(`image de titre ${w} × ${h} (Vendetta) : ${want ? 'avertissement' : 'pas d\'avertissement'}${msg ? ' (« ' + msg + ' »)' : ''}`, !!msg === want);
+  }
+  // Téléphone : l'avertissement passe à la ligne au lieu d'élargir la page
+  { const q = await b.newPage({ viewport: { width: 411, height: 900 }, isMobile: true, hasTouch: true }); q.on('pageerror', e => errs.push(e.message));
+    await q.goto(new URL('index.html', base).href); await q.click('#board-type-vendetta');
+    const buf = Buffer.from(await q.evaluate(() => { const c = document.createElement('canvas'); c.width = 2000; c.height = 456;
+      c.getContext('2d').fillRect(0, 0, 2000, 456); return c.toDataURL('image/png').split(',')[1]; }), 'base64');
+    await q.setInputFiles('#title-img-input', { name: 't.png', mimeType: 'image/png', buffer: buf });
+    await q.waitForFunction(() => document.getElementById('title-img-warn').style.display === 'inline');
+    const m = await q.evaluate(() => ({ w: innerWidth, sw: document.documentElement.scrollWidth, right: document.getElementById('title-img-warn').getBoundingClientRect().right }));
+    check(`téléphone : avertissement affiché sans élargir la page (page ${m.w} px, contenu ${m.sw} px)`, m.w === 411 && m.sw === 411 && m.right <= 411);
+    await q.close(); }
   check('aucune erreur JavaScript', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);
