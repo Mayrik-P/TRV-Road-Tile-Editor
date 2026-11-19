@@ -227,6 +227,11 @@ du téléchargement des originaux ; son bouton « Download PNG » se débloque q
 aucun logiciel d'impression ne propose 100 % de lui-même (Aperçu ≈ 97-98 %, Acrobat « Ajuster »). Test
 `tools/check-export-dialog.js` (13 contrôles sur connexion lente, vérifié par sabotage). **5b se fera dans
 cette fenêtre** (choix International / US, idée de Mayrik).
+**Échelle de contrôle (19/11, idée de Mayrik)** : rectangle de 1 cm de large dans le blanc à gauche de la
+6e rangée (décalage du quinconce, 16,5 × 38 mm, DANS la zone imprimée quel que soit le papier — une
+réglette dans la marge aurait été coupée en papier US, marges de 5,3 mm) ; échelle double comme sur les
+cartes : 3 cm (un trait par cm) à gauche, 1 in (un trait par demi-pouce) à droite. Mesuré dans le PNG :
+traits à 0 / 9,99 / 19,98 / 29,97 mm et 0 / 12,7 / 25,36 mm.
 **Calcul fait sur l'export réel** (zone imprimée : 268,7 mm de haut pour les deux plateaux) :
 
 | Plateau | Papier US | Taille | Marges obtenues | Verdict |

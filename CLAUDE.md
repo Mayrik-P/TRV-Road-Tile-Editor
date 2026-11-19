@@ -111,6 +111,8 @@ Le lire avant tout travail.
   l'ouvre ; elle donne la consigne d'impression (100 % / Actual size) et contient le vrai bouton
   d'export `#export-btn` (« Download PNG », débloqué quand les originaux sont chargés). Le PNG porte
   300 dpi (bloc `pHYs`, `withPngDpi`). Clavier et Ctrl+Z inactifs tant qu'elle est ouverte.
+- **Échelle de contrôle (`renderScaleBar`, calque `layer-scale`)** : 3 cm / 1 in à gauche de la 6e
+  rangée, dans la zone imprimée ; visible à l'écran et dans l'export.
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 

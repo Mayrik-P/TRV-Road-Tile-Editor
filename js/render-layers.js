@@ -298,6 +298,38 @@ function renderTitleTextIgnition(svg, defs) {
   })).textContent = numVal;
 }
 
+// ---- 9 bis. Échelle de contrôle d'impression (19/11, idée de Mayrik) ----
+// Imprimé à 100 %, ce rectangle mesure exactement 3 cm (bord gauche, un trait par cm) et 1 in
+// (bord droit, un trait par demi-pouce) : on vérifie l'échelle à la règle, sans tuile du jeu.
+// Échelle double comme sur les cartes (km / miles) : chacun mesure dans son unité. Placée dans
+// le blanc à gauche de la 6e rangée (décalage du quinconce : 16,5 mm × 38 mm), DANS la zone
+// imprimée quel que soit le papier (pas dans les marges, que les imprimantes n'impriment pas,
+// surtout en papier US). Un mode « ajusté » par erreur (≈ 97 %) y donne ~1 mm d'écart, visible.
+const PX_PER_MM = 300 / 25.4;
+function renderScaleBar(g) {
+  const lastRow = BANDS[ROWS], prevRow = BANDS[ROWS - 1];
+  const freeLeft = Math.min(lastRow.left, prevRow.left), freeRight = Math.max(lastRow.left, prevRow.left);
+  const w = 10 * PX_PER_MM, cm = 10 * PX_PER_MM, inch = 300; // 1 in = 300 px exactement à 300 dpi
+  const h = 3 * cm, tick = 3 * PX_PER_MM, stroke = 3;
+  const x = (freeLeft + freeRight) / 2 - w / 2;
+  const y = lastRow.top + (lastRow.bot - lastRow.top - h) / 2 + 12;
+  const ink = '#1d1426';
+  g.appendChild(mkEl('rect', {x, y, width: w, height: h, fill: '#ffffff', stroke: ink, 'stroke-width': stroke}));
+  for (let k = 1; k < 3; k++)
+    g.appendChild(mkEl('line', {x1: x, y1: y + k * cm, x2: x + tick, y2: y + k * cm, stroke: ink, 'stroke-width': stroke}));
+  [[inch / 2, tick * 0.6], [inch, tick]].forEach(([dy, len]) =>
+    g.appendChild(mkEl('line', {x1: x + w - len, y1: y + dy, x2: x + w, y2: y + dy, stroke: ink, 'stroke-width': stroke})));
+  // repère de fin du pouce prolongé sur toute la largeur, pour le distinguer du bas des 3 cm
+  g.appendChild(mkEl('line', {x1: x + w * 0.5, y1: y + inch, x2: x + w, y2: y + inch, stroke: ink, 'stroke-width': stroke}));
+  const label = (txt, lx, anchor) => {
+    const t = mkEl('text', {x: lx, y: y - 10, 'font-family': "'OswaldBold', Arial, sans-serif", 'font-weight': 700,
+      'font-size': 34, fill: ink, 'text-anchor': anchor});
+    t.textContent = txt; g.appendChild(t);
+  };
+  label('3 cm', x - 6, 'start');
+  label('1 in', x + w + 6, 'end');
+}
+
 // ---- 9. White chevron masks — clip cell tips into margins ----
 function renderMasks(svg) {
   svg.appendChild(mkEl('rect', {x:0, y:0, width:VW, height:BANDS[0].top, fill:'#FFFFFF'}));

@@ -181,6 +181,8 @@ function buildBoard() {
   const gOverlays    = mkEl('g', {id: 'layer-overlays'});    svg.appendChild(gOverlays);
   const gTitleText   = mkEl('g', {id: 'layer-titletext'});   svg.appendChild(gTitleText);
   const gMasks       = mkEl('g', {id: 'layer-masks'});       svg.appendChild(gMasks);
+  // Échelle de contrôle d'impression (cm / in), au-dessus des masques blancs du bord.
+  const gScale       = mkEl('g', {id: 'layer-scale'});       svg.appendChild(gScale);
   const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
   const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
   // Curseur du clavier (js/keyboard.js) : tout en haut, retiré de la copie exportée.
@@ -195,6 +197,7 @@ function buildBoard() {
   if (BOARD_TYPE === 'ignition') renderTitleTextIgnition(gTitleText, defs);
   else renderTitleText(gTitleText, defs);
   renderMasks(gMasks);
+  renderScaleBar(gScale);
   renderHits(gHits);
   renderAllDecorations(gDecor);
   renderCursor();
