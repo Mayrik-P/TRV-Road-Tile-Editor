@@ -58,7 +58,7 @@ function updateCell(idx, newType) {
         gTextures.appendChild(mkEl('image', {
           id: 'tex-image-' + newBase,
           href: displayHref(TEXTURE_PATHS[newBase]),
-          x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H,
+          x: textureRect().x, y: textureRect().y, width: textureRect().w, height: textureRect().h,
           'clip-path': `url(#tex-clip-${newBase})`,
           preserveAspectRatio: 'none'
         }));

@@ -205,7 +205,7 @@ function getSharedTextureImage(defs, base) {
   const id = `trans-tex-${base}`;
   const img = mkEl('image', {
     id, href: displayHref(TEXTURE_PATHS[base]),
-    x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H, preserveAspectRatio: 'none'
+    x: textureRect().x, y: textureRect().y, width: textureRect().w, height: textureRect().h, preserveAspectRatio: 'none'
   });
   defs.appendChild(img);
   transTexCache[base] = id;

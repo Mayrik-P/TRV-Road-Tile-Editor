@@ -121,9 +121,11 @@ clique sur Export avant la fin (aujourd'hui : bouton grisé avec « Loading… %
 **Constaté en chemin (v1.00)** : chaque texture est ajustée à toute la zone des cases sans garder ses
 proportions (`preserveAspectRatio="none"`). Vendetta : agrandie ×1,41 dans les deux sens (environ
 212 dpi réels à l'impression). **Ignition : déformée**, ×0,76 en largeur et ×1,41 en hauteur (motifs
-étirés en hauteur d'un facteur 1,9). Correction possible plus tard, avec l'accord de Mayrik car elle
-change l'aspect des plateaux Ignition : recadrage en gardant les proportions (`xMidYMid slice`,
-l'équivalent SVG de `object-fit: cover`).
+étirés en hauteur d'un facteur 1,9). **Corrigé le 19/11** (`textureRect()`, `js/config.js`) : la
+texture garde partout la taille de la zone Vendetta, centrée ; Vendetta inchangé (exports identiques
+octet par octet), Ignition à la même échelle que Vendetta. **Suite** : Mayrik a ses textures sources en
+4243 × 2718 px (= zone Vendetta à 300 dpi) ; les mettre dans `textures/source/` et les poser à leur
+taille exacte (1 pixel de texture = 1 pixel imprimé) pour de vraies textures à 300 dpi.
 
 Méthode éprouvée des **logiciels de montage vidéo** (fichiers « proxy » de Premiere, DaVinci, Nuke) :
 on travaille sur des copies légères et on n'utilise les originaux qu'au moment de l'export. TRV-Pocket

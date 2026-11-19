@@ -113,6 +113,20 @@ function computeGameRect() {
 }
 let { x: GAME_X, y: GAME_Y, w: GAME_W, h: GAME_H } = computeGameRect();
 
+// Rectangle sur lequel chaque texture de terrain est posée, puis découpée case par
+// case. Les cases ont la même taille physique dans tous les formats : la texture
+// garde donc TOUJOURS la taille de la zone des cases Vendetta (8 colonnes, 4239 ×
+// 2718 px à 300 dpi), centrée sur la zone des cases du format en cours (Ignition
+// n'en montre que la partie centrale). Avant (v1.00), la texture était ajustée à la
+// zone du format : en Ignition elle était écrasée à 0,76 en largeur pour 1,41 en
+// hauteur (motifs étirés en hauteur d'un facteur 1,9) — effet de bord de la
+// généralisation de ce rectangle à COLS, constaté le 19/11.
+const TEXTURE_RECT_COLS = 8;
+function textureRect() {
+  const w = TEXTURE_RECT_COLS * CELL_SLOT + 2 * QUINCONCE_HALF_SHIFT + 2 * NOTCH;
+  return { x: GAME_X + (GAME_W - w) / 2, y: GAME_Y, w, h: GAME_H };
+}
+
 let sel = 'sand';
 let board = Array(COLS * ROWS).fill('road');
 

@@ -24,7 +24,7 @@ function renderAllTextures(g, defs) {
     g.appendChild(mkEl('image', {
       id: 'tex-image-' + base,
       href: displayHref(TEXTURE_PATHS[base]),
-      x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H,
+      x: textureRect().x, y: textureRect().y, width: textureRect().w, height: textureRect().h,
       'clip-path': `url(#${clipId})`,
       preserveAspectRatio: 'none'
     }));
