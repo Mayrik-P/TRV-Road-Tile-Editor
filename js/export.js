@@ -27,6 +27,7 @@ function exportPNG() {
   const svg = document.getElementById('bsvg');
   const clone = svg.cloneNode(true);
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
+  clone.querySelector('#layer-cursor')?.remove(); // curseur du clavier : jamais exporté
   clone.setAttribute('width', String(VW));
   clone.setAttribute('height', String(VH));
 

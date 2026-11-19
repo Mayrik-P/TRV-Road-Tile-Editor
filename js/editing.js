@@ -157,7 +157,12 @@ function buildPalette() {
       sw.appendChild(dot);
     }
     btn.appendChild(sw);
-    btn.appendChild(document.createTextNode(t.label));
+    // Libellé dans un <span> : sa 1re lettre est soulignée (raccourci clavier, js/keyboard.js).
+    const lbl = document.createElement('span');
+    lbl.className = 'tb-label';
+    lbl.textContent = t.label;
+    btn.appendChild(lbl);
+    btn.title = 'Shortcut: ' + t.label[0].toUpperCase();
     btn.onclick = () => selectTileType(t.id);
     pal.appendChild(btn);
   });

@@ -155,6 +155,10 @@ format annulables ; image de titre personnalisée non annulable (hors de la phot
 getCoalescedEvents, tracé entre positions successives des éditeurs de pixels, annulation du trait au
 toucher non voulu documentée par Android). Test `tools/check-brush.js` (17 contrôles, vérifié par
 sabotage). 2c (tactile) incluse : un doigt peint, pincement à deux doigts conservé.
+**2d faite (19/11)** : clavier (`js/keyboard.js`), réécriture de la PR #2 (flèches, lettres, Entrée),
+plus Espace, Suppr, panneau `?` et lettres soulignées dans la palette ; Échap ne remplace plus
+Ctrl+Z. Test `tools/check-keyboard.js` (22 contrôles, vérifié par sabotage). Reste 2e (remplissage),
+facultative.
 
 | Tranche | Contenu | Référence |
 |---|---|---|

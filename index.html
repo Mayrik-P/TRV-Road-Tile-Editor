@@ -64,10 +64,24 @@
       </div>
     </div>
   </div>
-  <div id="hint"><span class="hint-part">Select a space type below, then click or tap a space on the board to place it.</span><span class="hint-part">Click again on an existing Impassable, Oil, or Fire space to change its look.</span></div>
+  <div id="hint"><span class="hint-part">Select a space type below, then click or tap a space on the board to place it.</span><span class="hint-part">Click again on an existing Impassable, Oil, or Fire space to change its look.</span><span class="hint-part hint-keys">Press <kbd>?</kbd> for keyboard shortcuts.</span></div>
   <div id="palette"></div>
   <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#e8b459;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.<br>Images from Thunder Road: Vendetta are (c) Restoration Games, LLC and are used with permission.</div>
+</div>
+<div id="shortcut-help" role="dialog" aria-modal="true" aria-labelledby="shortcut-help-title" hidden onclick="if (event.target === this) toggleShortcutHelp(false)">
+  <div id="shortcut-help-box">
+    <h2 id="shortcut-help-title">Keyboard shortcuts</h2>
+    <table>
+      <tr><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Move the cursor from space to space</td></tr>
+      <tr><td><kbd>D</kbd> <kbd>F</kbd> <kbd>I</kbd> <kbd>M</kbd> <kbd>O</kbd> <kbd>R</kbd> <kbd>S</kbd> <kbd>T</kbd></td><td>Pick the space type starting with that letter and place it (underlined in the palette). Press again on the same space to cycle through types sharing the letter</td></tr>
+      <tr><td><kbd>Enter</kbd> or <kbd>Space</kbd></td><td>Place the selected type (again on Impassable, Oil or Fire: next look)</td></tr>
+      <tr><td><kbd>Delete</kbd> or <kbd>Backspace</kbd></td><td>Clear the space back to <span id="help-default-tile">Off-Road</span></td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / Redo (<kbd>⌘</kbd>+<kbd>Z</kbd> / <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>Z</kbd> on Mac)</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show or hide this help</td></tr>
+    </table>
+    <button class="btn" id="shortcut-help-close" onclick="toggleShortcutHelp(false)">Close</button>
+  </div>
 </div>
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
@@ -77,6 +91,7 @@
 <script src="js/render-layers.js"></script>
 <script src="js/editing.js"></script>
 <script src="js/brush.js"></script>
+<script src="js/keyboard.js"></script>
 <script src="js/export.js"></script>
 <script src="js/assets.js"></script>
 <script src="js/ui.js"></script>

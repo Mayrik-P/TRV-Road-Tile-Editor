@@ -183,6 +183,8 @@ function buildBoard() {
   const gMasks       = mkEl('g', {id: 'layer-masks'});       svg.appendChild(gMasks);
   const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
   const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
+  // Curseur du clavier (js/keyboard.js) : tout en haut, retiré de la copie exportée.
+  const gCursor      = mkEl('g', {id: 'layer-cursor'});      svg.appendChild(gCursor);
 
   renderAllTextures(gTextures, defs);
   renderAllTransitions(gTransitions, defs);
@@ -195,5 +197,6 @@ function buildBoard() {
   renderMasks(gMasks);
   renderHits(gHits);
   renderAllDecorations(gDecor);
+  renderCursor();
 }
 

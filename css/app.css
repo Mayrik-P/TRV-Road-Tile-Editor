@@ -163,6 +163,20 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
 #undo-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;}
 #undo-group .btn:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none;transform:none;}
 #undo-group .btn:disabled:hover{background:#e8b459;}
+/* Clavier (js/keyboard.js) : 1re lettre des types soulignée, panneau des raccourcis. */
+.tb-label{display:inline-block;}
+.tb-label::first-letter{text-decoration:underline;text-underline-offset:2px;}
+#shortcut-help{position:fixed;inset:0;background:rgba(20,16,24,0.55);display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px;}
+#shortcut-help[hidden]{display:none;}
+#shortcut-help-box{background:#ecd5a7;color:#000;border:2px solid #b0956e;border-radius:8px;padding:18px 20px;max-width:620px;width:100%;max-height:90vh;overflow:auto;display:grid;gap:12px;}
+#shortcut-help-box h2{font-family:"OswaldBold",Arial,sans-serif;font-size:18px;margin:0;}
+#shortcut-help-box table{border-collapse:collapse;font-size:13px;}
+#shortcut-help-box td{padding:6px 10px 6px 0;vertical-align:top;border-bottom:1px solid #c8b89a;}
+#shortcut-help-box td:first-child{white-space:nowrap;}
+#shortcut-help-close{justify-self:end;}
+kbd{display:inline-block;min-width:1.4em;padding:1px 5px;border:1px solid #8a7556;border-bottom-width:2px;border-radius:4px;background:#f5ecd8;font:600 11px/1.4 Arial,sans-serif;text-align:center;color:#000;}
+/* Sur écran tactile seul, pas de clavier : on n'affiche pas l'invitation « ? ». */
+@media (hover:none) and (pointer:coarse){.hint-keys{display:none;}}
 #reset-group{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;}
 #reset-title-btn,#reset-btn{background:#000;color:#fff;border-color:#b0956e;}
 #reset-title-btn:hover,#reset-btn:hover{background:#da613d;color:#fff;border-color:#a8492b;}

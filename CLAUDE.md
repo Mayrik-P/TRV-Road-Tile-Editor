@@ -69,6 +69,10 @@ Le lire avant tout travail.
   par case) ; un coup de pinceau = une étape ; 1re case = un clic (visuel suivant d'une case à
   variantes), cases déjà du bon type ignorées en glissant ; doigt : `touch-action: pinch-zoom`, un 2e
   doigt annule le coup en cours (`cancelAction`).
+- **Clavier (tranche 2d, `js/keyboard.js`, réécriture de la PR #2)** : flèches = curseur (calque
+  `layer-cursor`, retiré de l'export), lettres = choisir et poser (défilement des types de même lettre
+  sur la même case), Entrée / Espace = poser, Suppr / Retour arrière = remettre en `DEFAULT_TILE`,
+  `?` = panneau des raccourcis (`#shortcut-help`). Le curseur suit le signal (`cell`).
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt). Jamais de police chargée depuis Internet.
 - `textures/`, `sprites/`, `items/`, `edges/` : images à 300 dpi chargées par la page, en **WebP qualité
@@ -108,6 +112,8 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
 - **`node tools/check-undo.js [url]`** : Annuler / Rétablir avec de vrais clics et de vraies touches.
 - **`node tools/check-brush.js [url]`** : pinceau avec de vrais gestes (souris lente / rapide, doigt,
   pincement à deux doigts).
+- **`node tools/check-keyboard.js [url]`** : clavier avec de vraies touches (curseur, lettres, aide,
+  export sans curseur).
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.
