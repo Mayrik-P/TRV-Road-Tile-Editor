@@ -76,6 +76,15 @@ function ignitionBlasonGeometry(tb, tbH) {
   return { blasonFullSize, blasonSize, blasonLeft, blasonCx };
 }
 
+// Cadre où l'image de titre est posée (bande de titre et ses deux pointes), en pixels à 300 dpi.
+// SEULE source de la taille conseillée de l'image (bulle de « Load title image », js/ui.js) : une
+// image de cette taille exacte est posée sans être rognée ni agrandie. Corrigé le 19/11 : la bulle
+// annonçait la largeur de toute la zone de jeu (GAME_W, ~195 px de plus), d'où une image rognée.
+function titleImageBox() {
+  const tb = BANDS[0];
+  return { x: tb.left - NOTCH, y: tb.top, w: COLS * CELL_SLOT + 2 * NOTCH, h: tb.bot - tb.top };
+}
+
 function renderTitleBand(g) {
   const tb = BANDS[0], tbMid = (tb.top + tb.bot) / 2, tbR = tb.left + COLS * CELL_SLOT, tbH = tb.bot - tb.top;
   g.appendChild(mkEl('polygon', {
@@ -85,15 +94,16 @@ function renderTitleBand(g) {
   // Image de fond décorative de la bande de titre — chargée par l'utilisateur
   // (Load title image), affichée dans les deux formats de plateau. Seule la
   // résolution conseillée (infobulle) diffère selon le format, voir
-  // titleImageIdealSize().
+  // titleImageBox().
   // Image par défaut (aucune image de l'utilisateur) : son aperçu, affiché dès qu'il
   // est téléchargé ; une image de l'utilisateur est affichée telle quelle.
   const userTitleImage = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
   {
+    const box = titleImageBox();
     g.appendChild(mkEl('image', {
       href: userTitleImage ? TITLE_IMAGE.src : displayHref(DEFAULT_TITLE_IMAGE_PATH),
-      x: tb.left - NOTCH, y: tb.top,
-      width: tbR - tb.left + NOTCH * 2, height: tbH,
+      x: box.x, y: box.y,
+      width: box.w, height: box.h,
       preserveAspectRatio: 'xMidYMid slice'
     }));
   }

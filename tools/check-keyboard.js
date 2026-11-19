@@ -114,6 +114,10 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   check(`Load title image : bulle cachée au repos, visible au survol (« ${tip.text} »)`,
         tipRest === '0' && (await tipOpacity()) === '1' && /^Ideal size: \d+ × \d+ px$/.test(tip.text));
   check('bulle hors du bouton découpé en chevron (sinon elle serait masquée)', tip.outside && !tip.inBtn);
+  // Taille annoncée = taille réelle du cadre de l'image de titre dans le plateau (Vendetta ici)
+  const drawn = await p.evaluate(() => { const im = [...document.querySelectorAll('#bsvg image')].find(i => /itle/.test(i.getAttribute('href') || ''));
+    return `${Math.round(+im.getAttribute('width'))} × ${Math.round(+im.getAttribute('height'))}`; });
+  check(`taille annoncée = cadre réel de l'image de titre (${drawn} px)`, tip.text === `Ideal size: ${drawn} px`);
   check('aucune erreur JavaScript', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);

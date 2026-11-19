@@ -85,10 +85,9 @@ function applyBoardType(type) {
   setDisplayVariant(); // aperçus adaptés à la taille affichée de ce format (assets.js)
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
-  // Résolution conseillée pour l'image de titre : dépend de la largeur réelle
-  // de la bande, qui change selon le format de plateau (GAME_W, déjà recalculé
-  // ci-dessus) — la hauteur (456px) ne change jamais (ne dépend que de ROWS).
-  const idealW = Math.round(GAME_W), idealH = BANDS[0].bot - BANDS[0].top;
+  // Résolution conseillée pour l'image de titre : la taille exacte du cadre où elle est posée
+  // (titleImageBox, js/render-layers.js), qui change avec le format (8 ou 4 colonnes).
+  const box = titleImageBox(), idealW = Math.round(box.w), idealH = Math.round(box.h);
   const idealText = `Ideal size: ${idealW} × ${idealH} px`;
   document.getElementById('title-img-tooltip').textContent = idealText;
 }
