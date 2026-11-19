@@ -49,7 +49,10 @@ Le lire avant tout travail.
 ## 2. Organisation du dépôt (depuis la tranche 0a)
 
 - `index.html` : structure de la page seulement.
-- `css/app.css` : styles.
+- `css/app.css` : styles d'origine, **surchargés** par `css/paper-ui.css` (chargée après) : style de
+  TRV-Pocket (phase 3, validé le 19/11) — papier grainé, Anton (titres, boutons) et D-DIN Condensed
+  (textes) dans `fonts/anton/` et `fonts/d-din/`, boutons en chevron (Undo vers la gauche), palette à
+  sélection orange. Toute nouvelle règle d'interface va dans `paper-ui.css`.
 - `js/*.js` : **scripts classiques** (pas de modules) qui partagent la même portée globale, chargés
   dans l'**ordre fixe des `<script>` de `index.html`** (seule référence). Le code exécuté au chargement
   d'un fichier ne peut utiliser que ce qui est déclaré dans ce fichier ou les précédents.
@@ -74,7 +77,8 @@ Le lire avant tout travail.
   sur la même case), Entrée / Espace = poser, Suppr / Retour arrière = remettre en `DEFAULT_TILE`,
   `?` = panneau des raccourcis (`#shortcut-help`). Le curseur suit le signal (`cell`).
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
-  Hewitt). Jamais de police chargée depuis Internet.
+  Hewitt pour le plateau ; Anton, D-DIN Condensed pour l'interface). Jamais de police chargée depuis
+  Internet.
 - `textures/`, `sprites/`, `items/`, `edges/` : images à 300 dpi chargées par la page, en **WebP qualité
   95** (tranche 1a). Originaux sans perte (PNG) dans `<dossier>/source/`, jamais chargés par la page ;
   **`python3 tools/make-webp.py [dossier]`** en tire les WebP (à relancer dès qu'un original change ou

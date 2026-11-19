@@ -173,8 +173,9 @@ peindre plusieurs cases en glissant, est couverte par le pinceau). **Phase 2 ter
 (`DEFAULT_TILE`, `js/config.js`) ; Road sélectionné au départ dans la palette ; texte du Reset à jour.
 
 ### Phase 3 — Style inspiré de TRV-Pocket et netteté des textes
-**Essai en cours (19/11)** : `css/paper-ui.css`, chargée après `css/app.css` (surcharge), active
-seulement avec `?style=paper` dans l'adresse le temps de la comparaison. Polices Anton et D-DIN
+**Faite et validée par Mayrik (19/11)** : `css/paper-ui.css`, chargée après `css/app.css` (surcharge ;
+`app.css` gardée en dessous, nettoyage éventuel plus tard avec l'accord de Mayrik). Ajustements de
+Mayrik : touche `?` alignée dans la ligne d'explication, bouton Undo en chevron vers la gauche. Polices Anton et D-DIN
 Condensed copiées de TRV-Pocket (`fonts/anton/`, `fonts/d-din/`, licences OFL). Charte `.paper-ui` :
 papier grainé, titres « livret » (relief en pixels entiers : nets), boutons en chevron (encre, contour,
 rouge pour Reset road tile), palette en boutons de choix (sélection orange). Export inchangé (vérifié).
@@ -264,6 +265,20 @@ dans TRV-Pocket. Le fichier de projet de la Phase 4d rend cet export très simpl
 construire maintenant.
 
 ---
+
+## 3 bis. Idées en attente (backlog)
+
+Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles reviennent souvent.
+
+- **Plateau sans bande de titre, avec une 7e rangée de cases** (demande d'utilisateurs, 19/11 : place
+  en plus pour des parties personnalisées, un joueur supplémentaire). Faisable : la bande de titre
+  (456 px) a presque la hauteur d'une rangée (452 à 456 px), donc même taille de page et mêmes papiers ;
+  le quinconce se prolonge naturellement. Coût : (1) les 6 textures à prolonger par Mayrik sous
+  Photoshop à **3174 px de haut** (au lieu de 2718) ; (2) une à deux tranches de code — nombre de
+  rangées et présence du titre paramétrables (géométrie, masques, bords de route, curseur, sauvegarde,
+  annulation), choix sur l'écran d'accueil, nouvelle version du format de sauvegarde ; (3) chaque
+  chantier suivant (décorations, barricades, export TRV-Pocket) à tester dans les deux variantes.
+  Décision de Mayrik : pas maintenant.
 
 ## 4. Décisions de Mayrik (19/11)
 
