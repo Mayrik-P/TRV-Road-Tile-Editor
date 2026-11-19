@@ -76,6 +76,12 @@ Le lire avant tout travail.
   `layer-cursor`, retiré de l'export), lettres = choisir et poser (défilement des types de même lettre
   sur la même case), Entrée / Espace = poser, Suppr / Retour arrière = remettre en `DEFAULT_TILE`,
   `?` = panneau des raccourcis (`#shortcut-help`). Le curseur suit le signal (`cell`).
+- **Sauvegarde automatique (tranches 4a + 4b, `js/autosave.js`, d'après la PR #1)** : plateau dans
+  `localStorage` (clé `trv_road_tile_board_v1`) à chaque modification, image de titre personnalisée
+  dans IndexedDB (`idb-keyval` 6.2.1, `js/vendor/`, licence Apache 2.0) ; écran d'accueil avec
+  « Continue » ; nouveau plateau depuis l'accueil = Ctrl+Z ramène l'ancien (`setHistoryBaseline`) ;
+  stockage interdit ou sauvegarde abîmée : l'appli marche sans. Toute évolution de la photo du plateau
+  change `BOARD_STATE_VERSION` (et la clé) avec une conversion des anciennes sauvegardes.
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt pour le plateau ; Anton, D-DIN Condensed pour l'interface). Jamais de police chargée depuis
   Internet.
@@ -118,6 +124,8 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   pincement à deux doigts).
 - **`node tools/check-keyboard.js [url]`** : clavier avec de vraies touches (curseur, lettres, aide,
   export sans curseur).
+- **`node tools/check-autosave.js [url]`** : sauvegarde et « Continue » avec de vrais rechargements
+  (grande image de titre, sauvegarde abîmée, stockage interdit).
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.

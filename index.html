@@ -20,11 +20,15 @@
     </div>
     <h2>Choose your board format</h2>
     <div id="board-type-options">
-      <button class="board-type-btn" id="board-type-vendetta" onclick="chooseBoardType('vendetta')">
+      <button class="board-type-btn" id="board-type-continue" onclick="continueSavedBoard()" hidden>
+        <span class="board-type-name">Continue</span>
+        <span class="board-type-desc" id="board-type-continue-desc"></span>
+      </button>
+      <button class="board-type-btn" id="board-type-vendetta" onclick="startNewBoard('vendetta')">
         <span class="board-type-name">Vendetta</span>
         <span class="board-type-desc">8 spaces wide — A3 landscape</span>
       </button>
-      <button class="board-type-btn" id="board-type-ignition" onclick="chooseBoardType('ignition')">
+      <button class="board-type-btn" id="board-type-ignition" onclick="startNewBoard('ignition')">
         <span class="board-type-name">Ignition</span>
         <span class="board-type-desc">4 spaces wide — A4 portrait</span>
       </button>
@@ -88,6 +92,7 @@
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
 <script src="js/history.js"></script>
+<script src="js/vendor/idb-keyval-6.2.1.js"></script>
 <script src="js/geometry.js"></script>
 <script src="js/build-board.js"></script>
 <script src="js/render-layers.js"></script>
@@ -97,5 +102,6 @@
 <script src="js/export.js"></script>
 <script src="js/assets.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/autosave.js"></script>
 </body>
 </html>

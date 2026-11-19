@@ -69,6 +69,10 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .board-type-name, #board-type-vendetta .board-type-name { font-family: var(--display); font-size: 30px; line-height: 1;
   text-transform: uppercase; letter-spacing: .03em; color: var(--paper); transform: none; text-shadow: none; }
 .board-type-desc { font-family: var(--text); font-weight: 700; font-size: 15px; opacity: .9; }
+/* « Continue » (js/autosave.js) : orange et encre, la couleur de sélection de TRV-Pocket */
+#board-type-continue, #board-type-continue .board-type-name { background: var(--orange); color: var(--ink); }
+#board-type-continue:hover { background: #e0841f; }
+#board-type-continue[hidden] { display: none; }
 #version-tag { font-family: var(--text); font-size: 13px; color: var(--muted); opacity: 1; }
 
 /* ---- Éditeur : bandes ---- */

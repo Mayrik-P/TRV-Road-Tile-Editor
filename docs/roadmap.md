@@ -190,6 +190,12 @@ redessiner ensuite.
 | 3d | **Titre imprimé sur le plateau** (Alfa Slab One, « FAN-MADE CHAPTER », « THE ») : il imite les vrais plateaux, donc on ne change **pas** son dessin. On vérifie seulement sa netteté à l'écran et à l'export *(décision à confirmer, voir § 4)* |
 
 ### Phase 4 — Sauvegarde automatique, accueil et Reset
+**4a + 4b faites ensemble (19/11)** : `js/autosave.js` (d'après la PR #1), image de titre dans IndexedDB
+(`idb-keyval` 6.2.1 copiée dans `js/vendor/`), bouton « Continue » sur l'accueil, nouveau plateau
+annulable par Ctrl+Z. Test `tools/check-autosave.js` (14 contrôles, dont une image de titre de 5,8 Mo
+et le stockage interdit ; vérifié par sabotage). Restent 4c (Clear board / Home) et 4d (fichier de
+projet).
+
 | Tranche | Contenu |
 |---|---|
 | 4a | Sauvegarde automatique, d'après la PR #1 : état du plateau dans `localStorage` (petit, lecture immédiate), **image de titre dans IndexedDB** (`idb-keyval`), sauvegarde avec `version: 1` |

@@ -118,21 +118,26 @@ function exportPNG() {
   img.src = url;
 }
 
+// Adopte une image de titre déjà décodée (en data: URL, seule forme utilisable dans le SVG
+// exporté) : après un choix de fichier (loadTitleImage) ou une restauration (autosave.js).
+// Idée reprise de la PR #1 de ChessMess.
+function applyTitleImage(img) {
+  TITLE_IMAGE = img;
+  const warn = document.getElementById('title-img-warn');
+  warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
+  document.getElementById('title-img-label').textContent = '✓ Title image loaded';
+  document.getElementById('title-img-btn').style.color = '#4CAF50';
+  buildBoard();
+  notifyBoardChange('title-image');
+}
+
 function loadTitleImage(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function (e) {
     const img = new Image();
-    img.onload = function () {
-      TITLE_IMAGE = img;
-      const warn = document.getElementById('title-img-warn');
-      warn.style.display = (img.width < 2000 || img.height < 200) ? 'inline' : 'none';
-      document.getElementById('title-img-label').textContent = '✓ Title image loaded';
-      document.getElementById('title-img-btn').style.color = '#4CAF50';
-      buildBoard();
-      notifyBoardChange('title-image');
-    };
+    img.onload = function () { applyTitleImage(img); };
     img.onerror = function () {
       document.getElementById('title-img-label').textContent = '✗ Load failed';
       document.getElementById('title-img-btn').style.color = '#E8231A';

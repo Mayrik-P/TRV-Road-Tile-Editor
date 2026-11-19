@@ -198,5 +198,6 @@ function resetBoard() {
   document.getElementById('title-img-btn').style.color = '';
   document.getElementById('board-type-picker').style.display = 'flex';
   notifyBoardChange('title-image');
+  refreshContinueButton();
 }
 

@@ -41,10 +41,20 @@ function recordState(reason) {
 
 boardEvents.addEventListener('change', e => {
   const reason = e.detail.reason;
+  // Restauration venue d'ailleurs (sauvegarde, fichier) : nouveau point de départ.
+  if (reason === 'restore' && !undoHistory.applying) { setHistoryBaseline(getBoardState()); return; }
   if (undoHistory.applying || reason === 'restore' || reason === 'title-image') return;
   if (undoHistory.batch > 0) { undoHistory.batchDirty = true; return; }
   recordState(reason);
 });
+
+// Historique vidé, avec cet état comme point de départ (restauration, ou plateau en cours
+// avant « nouveau plateau » depuis l'accueil : autosave.js).
+function setHistoryBaseline(state) {
+  undoHistory.past = []; undoHistory.future = [];
+  undoHistory.current = state; undoHistory.lastReason = null;
+  updateHistoryButtons();
+}
 
 // Geste en plusieurs modifications (coup de pinceau…) : une seule étape d'annulation.
 function beginAction() { undoHistory.batch++; }
