@@ -65,10 +65,7 @@
         <button class="btn" id="redo-btn" onclick="redo()" disabled title="Redo (Ctrl+Y)" aria-label="Redo">↷ Redo</button>
       </div>
       <button class="btn" id="save-project-btn" onclick="saveProject()" title="Download a .trvtile file to reopen this board later, on any device">Save project</button>
-      <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
-        <span id="export-progress"></span>
-        <span id="export-label">Loading… 0%</span>
-      </button>
+      <button class="btn p" id="export-open-btn" onclick="openExportDialog()">Export the .png</button>
       <div id="reset-group">
         <button class="btn" id="clear-btn" style="white-space:nowrap;" onclick="clearBoard()">Clear board</button>
       </div>
@@ -78,6 +75,26 @@
   <div id="palette"></div>
   <div id="bwrap"><svg id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div style="font-size:10px;color:#000000;text-align:center;padding:6px 12px;background:#e8b459;border-radius:5px;margin-top:4px;line-height:1.4;">This app uses excerpts from the original graphics, which are the property of their respective creators; therefore, the exported files are intended for personal use only.<br>Images from Thunder Road: Vendetta are (c) Restoration Games, LLC and are used with permission.</div>
+</div>
+<div id="export-dialog" class="modal" role="dialog" aria-modal="true" aria-labelledby="export-dialog-title" hidden onclick="if (event.target === this) closeExportDialog()">
+  <div class="modal-box">
+    <h2 id="export-dialog-title">Print at true game size</h2>
+    <p>In your print window, choose:</p>
+    <ul class="print-rules">
+      <li class="yes">Scale: <b>100%</b> (or <b>Actual size</b>)</li>
+      <li class="no">Not <b>Fit</b> / <b>Print entire image</b></li>
+      <li class="no">Not <b>Fill</b> / <b>Fill entire paper</b></li>
+      <li class="paper">Paper: <b id="export-paper">A3, landscape</b></li>
+    </ul>
+    <p class="modal-note">The board keeps white margins, so nothing gets cut at 100%.</p>
+    <div class="modal-actions">
+      <button class="btn" id="export-cancel-btn" onclick="closeExportDialog()">Cancel</button>
+      <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
+        <span id="export-progress"></span>
+        <span id="export-label">Preparing high-res… 0%</span>
+      </button>
+    </div>
+  </div>
 </div>
 <div id="shortcut-help" role="dialog" aria-modal="true" aria-labelledby="shortcut-help-title" hidden onclick="if (event.target === this) toggleShortcutHelp(false)">
   <div id="shortcut-help-box">

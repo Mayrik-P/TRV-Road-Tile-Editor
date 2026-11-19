@@ -151,14 +151,14 @@ function updateExportButton() {
     btn.style.opacity = '0.5';
     const pct = LOAD.total ? Math.round(LOAD.done / LOAD.total * 100) : 0;
     progress.style.width = pct + '%';
-    label.textContent = `Loading… ${pct}%`;
+    label.textContent = `Preparing high-res… ${pct}%`;
     return;
   }
   btn.disabled = false;
   btn.style.opacity = '1';
   progress.style.width = '0%';
   if (allImagesReady()) {
-    label.textContent = 'Export the .png';
+    label.textContent = 'Download PNG';
   } else {
     label.textContent = '⚠ Reload page';
     progress.style.background = 'rgba(200,0,0,0.25)';

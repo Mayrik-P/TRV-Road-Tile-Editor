@@ -48,6 +48,23 @@ function withPngDpi(blob, dpi) {
   }).catch(() => blob); // en cas d'imprévu, on exporte le PNG tel quel plutôt que rien
 }
 
+// ---- Fenêtre d'export (consigne d'impression, demande de Mayrik du 19/11) ----
+// Les logiciels d'impression ne proposent jamais 100 % d'eux-mêmes (Aperçu : « Imprimer
+// toute l'image » ≈ 97-98 % ; Acrobat Reader : « Ajuster ») ; la pratique du print & play est
+// une consigne « 100 % / Taille réelle ». Elle s'affiche au clic sur « Export the .png », et la
+// fenêtre occupe le temps du téléchargement des originaux : son bouton « Download PNG »
+// (#export-btn, logique d'export inchangée) se débloque quand tout est prêt.
+function openExportDialog() {
+  document.getElementById('export-paper').textContent = BOARD_TYPE === 'ignition' ? 'A4, portrait' : 'A3, landscape';
+  document.getElementById('export-dialog').hidden = false;
+  const dl = document.getElementById('export-btn');
+  (dl.disabled ? document.getElementById('export-cancel-btn') : dl).focus();
+}
+function closeExportDialog() { document.getElementById('export-dialog').hidden = true; }
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('export-dialog').hidden) { e.preventDefault(); closeExportDialog(); }
+});
+
 // ---- Export PNG ----
 // À l'écran, le plateau affiche des aperçus (displayHref, tranche 1c) ; dans la copie
 // exportée, chaque image est remplacée par son original en pleine définition, déjà
@@ -87,7 +104,7 @@ function exportPNG() {
   if (missing.length) {
     console.warn('Export: originals missing', missing);
     btn.disabled = false;
-    label.textContent = 'Export the .png';
+    label.textContent = 'Download PNG';
     alert('⚠ Some high-resolution images are missing.\nPlease reload the page and try again.');
     return;
   }
@@ -116,9 +133,10 @@ function exportPNG() {
       a.href = URL.createObjectURL(b);
       a.download = name + '-' + paperSize + '.png';
       a.click();
+      closeExportDialog(); // téléchargement lancé : la consigne a été lue
       // Unlock button after download triggered
       btn.disabled = false;
-      label.textContent = 'Export the .png';
+      label.textContent = 'Download PNG';
     }), 'image/png');
   }
 
@@ -153,7 +171,7 @@ function exportPNG() {
   };
   img.onerror = () => {
     btn.disabled = false;
-    label.textContent = 'Export the .png';
+    label.textContent = 'Download PNG';
     alert('Export failed — please try again.');
   };
   img.src = url;

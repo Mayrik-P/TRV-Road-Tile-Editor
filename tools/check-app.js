@@ -40,7 +40,8 @@ function scenario(cols, tileIds) {
 
 async function exportTo(page, file) {
   await page.mouse.move(2, 2); // pas de survol au moment de l'export
-  await page.waitForFunction(() => !document.getElementById('export-btn').disabled);
+  await page.click('#export-open-btn'); // fenêtre d'export (consigne d'impression)
+  await page.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 180000 });
   const [download] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
   await download.saveAs(file);
 }
@@ -58,7 +59,7 @@ async function paintAndExport(browser, format) {
     boardEvents.addEventListener('change', e => { const r = e.detail.reason; window.__changes[r] = (window.__changes[r] || 0) + 1; });
   });
   await page.click('#board-type-' + format);
-  await page.waitForFunction(() => /Export/.test(document.getElementById('export-label').textContent), null, { timeout: 180000 });
+  await page.waitForFunction(() => Object.keys(TEXTURES).length === Object.keys(TEXTURE_PATHS).length, null, { timeout: 180000 });
 
   const { cols, tileIds, initial } = await page.evaluate(() => ({ cols: COLS, tileIds: TILES.map(t => t.id),
     initial: typeof DEFAULT_TILE !== 'undefined' ? DEFAULT_TILE : 'road' }));

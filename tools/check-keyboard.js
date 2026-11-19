@@ -93,8 +93,8 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   check('souris sur le plateau : curseur caché, placé sur la case survolée', !c.visible && c.idx === 20);
   // Export : le curseur n'y figure jamais (export curseur visible = export curseur caché)
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'kb-'));
-  await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
-  const exportTo = async f => { await p.mouse.move(2, 2); await p.waitForFunction(() => !document.getElementById('export-btn').disabled);
+  const exportTo = async f => { await p.mouse.move(2, 2); await p.click('#export-open-btn');
+    await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
     const [d] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]); await d.saveAs(f); };
   await exportTo(path.join(tmp, 'hidden.png'));
   await p.evaluate(() => document.activeElement.blur());

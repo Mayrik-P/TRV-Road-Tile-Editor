@@ -107,6 +107,10 @@ Le lire avant tout travail.
   `?display=quarter|half|full`. Les originaux sont téléchargés en arrière-plan après les aperçus,
   gardés en base64 (`IMAGES_B64`, jamais décodés), et `exportPNG` remplace chaque aperçu par son
   original dans la copie exportée (un original manquant arrête l'export).
+- **Fenêtre d'export (`#export-dialog`, `js/export.js`)** : « Export the .png » (`#export-open-btn`)
+  l'ouvre ; elle donne la consigne d'impression (100 % / Actual size) et contient le vrai bouton
+  d'export `#export-btn` (« Download PNG », débloqué quand les originaux sont chargés). Le PNG porte
+  300 dpi (bloc `pHYs`, `withPngDpi`). Clavier et Ctrl+Z inactifs tant qu'elle est ouverte.
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 
@@ -133,6 +137,8 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   (grande image de titre, sauvegarde abîmée, stockage interdit).
 - **`node tools/check-project.js [url]`** : fichier de projet (enregistrer, rouvrir dans un autre
   navigateur, fichiers refusés).
+- **`node tools/check-export-dialog.js [url]`** : fenêtre d'export sur connexion lente.
+- Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.

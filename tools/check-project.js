@@ -41,7 +41,8 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const proj = JSON.parse(fs.readFileSync(file, 'utf8'));
   check('fichier signé et versionné (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 1);
   check('fichier : plateau complet et image de titre intégrée', JSON.stringify(proj.board) === saved && typeof proj.titleImage === 'string' && proj.titleImage.startsWith('data:image/png'));
-  await A.p.waitForFunction(() => /Export/.test(document.getElementById('export-label').textContent), null, { timeout: 120000 });
+  await A.p.click('#export-open-btn');
+  await A.p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [dl2] = await Promise.all([A.p.waitForEvent('download'), A.p.click('#export-btn')]);
   check(`nom du PNG inchangé : ${dl2.suggestedFilename()}`, dl2.suggestedFilename() === 'DUST-BOWL-A3.png');
   check('enregistrement : aucune erreur JavaScript', A.errs.length === 0);
