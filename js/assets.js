@@ -2,7 +2,7 @@
 // déblocage du bouton Export quand tout est prêt.
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, geometry,
+// globale et sont chargés par index.html dans un ordre fixe — config, state, geometry,
 // build-board, render-layers, editing, export, assets, ui. Ne pas changer cet ordre :
 // le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré
 // dans ce fichier ou dans les précédents.

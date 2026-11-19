@@ -1,7 +1,7 @@
 // ===== js/export.js — Export PNG à 300 dpi, image de titre personnalisée, champs nom / numéro.
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, geometry,
+// globale et sont chargés par index.html dans un ordre fixe — config, state, geometry,
 // build-board, render-layers, editing, export, assets, ui. Ne pas changer cet ordre :
 // le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré
 // dans ce fichier ou dans les précédents.
@@ -111,6 +111,7 @@ function loadTitleImage(input) {
       document.getElementById('title-img-label').textContent = '✓ Title image loaded';
       document.getElementById('title-img-btn').style.color = '#4CAF50';
       buildBoard();
+      notifyBoardChange('title-image');
     };
     img.onerror = function () {
       document.getElementById('title-img-label').textContent = '✗ Load failed';
@@ -133,23 +134,31 @@ function resetTitleImage() {
   document.getElementById('title-img-label').textContent = 'Load title image';
   document.getElementById('title-img-btn').style.color = '';
   buildBoard();
+  notifyBoardChange('title-image');
 }
 
-document.getElementById('title-input').addEventListener('input', function () {
-  const l = this.value.length;
+// Compteur de caractères du nom de route (aussi appelé par setBoardState).
+function refreshTitleCounter() {
+  const l = document.getElementById('title-input').value.length;
   const cc = document.getElementById('cc');
   cc.textContent = l + '/20';
   cc.style.color = l > 17 ? '#E8A84C' : '#777';
+}
+
+document.getElementById('title-input').addEventListener('input', function () {
+  refreshTitleCounter();
   const newText = this.value.toUpperCase() || 'NAME OF YOUR ROAD';
   const td = document.getElementById('title-display');
   if (td) td.textContent = newText;
   const tsg = document.getElementById('title-shadow-group');
   if (tsg) tsg.querySelectorAll('text').forEach(t => { t.textContent = newText; });
+  notifyBoardChange('title');
 });
 
 // Champ numéro de plateau (Ignition uniquement) : chiffres uniquement, 3 max.
 document.getElementById('board-number-input').addEventListener('input', function () {
   this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);
   buildBoard();
+  notifyBoardChange('number');
 });
 

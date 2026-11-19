@@ -2,7 +2,7 @@
 // format de plateau (écran d'accueil).
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, geometry,
+// globale et sont chargés par index.html dans un ordre fixe — config, state, geometry,
 // build-board, render-layers, editing, export, assets, ui. Ne pas changer cet ordre :
 // le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré
 // dans ce fichier ou dans les précédents.
@@ -63,16 +63,25 @@ window.addEventListener('resize', fitAllTitleStacks);
 
 // Le plateau/la palette ne se construisent qu'une fois le format choisi (voir
 // l'écran de sélection Vendetta/Ignition) — pas d'appel direct ici.
+// Nouveau plateau vierge (tout en Road) du format choisi.
 function chooseBoardType(type) {
+  applyBoardType(type);
+  board = Array(COLS * ROWS).fill('road');
+  cellVariant = Array(COLS * ROWS).fill(null);
+  overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
+  showEditor();
+  notifyBoardChange('new-board');
+}
+
+// Géométrie et champs propres à un format (Vendetta / Ignition), sans toucher au
+// contenu des cases — partagé par chooseBoardType et setBoardState (state.js).
+function applyBoardType(type) {
   BOARD_TYPE = type;
   COLS = BOARD_TYPES[type].cols;
   VW   = BOARD_TYPES[type].vw;
   BANDS = computeBands();
   const rect = computeGameRect();
   GAME_X = rect.x; GAME_Y = rect.y; GAME_W = rect.w; GAME_H = rect.h;
-  board = Array(COLS * ROWS).fill('road');
-  cellVariant = Array(COLS * ROWS).fill(null);
-  overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
   // Résolution conseillée pour l'image de titre : dépend de la largeur réelle
@@ -82,6 +91,10 @@ function chooseBoardType(type) {
   const idealText = `Ideal size: ${idealW} × ${idealH} px`;
   document.getElementById('title-img-btn').setAttribute('aria-label', idealText);
   document.getElementById('title-img-tooltip').textContent = idealText;
+}
+
+// Masque l'écran d'accueil, affiche l'éditeur et (re)dessine palette et plateau.
+function showEditor() {
   document.getElementById('board-type-picker').style.display = 'none';
   document.getElementById('app').style.display = '';
   buildPalette();

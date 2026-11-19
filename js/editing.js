@@ -2,7 +2,7 @@
 // palette des types de cases, remise à zéro.
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, geometry,
+// globale et sont chargés par index.html dans un ordre fixe — config, state, geometry,
 // build-board, render-layers, editing, export, assets, ui. Ne pas changer cet ordre :
 // le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré
 // dans ce fichier ou dans les précédents.
@@ -121,6 +121,8 @@ function updateCell(idx, newType) {
   // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
   // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
   rebuildLayer('layer-roadedges', renderAllRoadEdges);
+
+  notifyBoardChange('cell', { idx, oldType, newType });
 }
 
 // Extra swatch styling per tile id
@@ -157,13 +159,17 @@ function buildPalette() {
     }
     btn.appendChild(sw);
     btn.appendChild(document.createTextNode(t.label));
-    btn.onclick = () => {
-      sel = t.id;
-      document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
-      btn.classList.add('sel');
-    };
+    btn.onclick = () => selectTileType(t.id);
     pal.appendChild(btn);
   });
+}
+
+// Point d'entrée unique du choix du type de case (palette, et plus tard clavier) —
+// idée reprise de la PR #2 de ChessMess.
+function selectTileType(id) {
+  sel = id;
+  document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
+  document.getElementById('tb-' + id)?.classList.add('sel');
 }
 
 function resetBoard() {
@@ -187,5 +193,6 @@ function resetBoard() {
   document.getElementById('title-img-label').textContent = 'Load title image';
   document.getElementById('title-img-btn').style.color = '';
   document.getElementById('board-type-picker').style.display = 'flex';
+  notifyBoardChange('title-image');
 }
 

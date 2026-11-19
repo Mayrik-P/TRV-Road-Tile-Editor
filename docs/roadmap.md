@@ -90,7 +90,12 @@ dont dépendent plusieurs demandes (fichiers séparés, état unique, Annuler/R�
 Les deux chantiers qui demandent des graphismes neufs (décorations libres, barricades) viennent en dernier :
 cela laisse à Mayrik le temps de préparer les images.
 
-### Phase 0 — Fondations (aucun changement visible)
+### Phase 0 — Fondations (aucun changement visible) — TERMINÉE le 19/11
+0a, 0b, 0c et 0d faites (exports identiques octet par octet à la v1.00 à chaque tranche). Écart
+constaté dès la v1.00 : la mise à jour case par case et le redessin complet du plateau diffèrent de
+1/255 au plus sur quelques dizaines de pixels (arrondis de lissage, invisible), toléré par
+`tools/check-app.js`.
+
 | Tranche | Contenu | Pourquoi |
 |---|---|---|
 | 0a | Sortir le CSS et le JS de `index.html` vers `css/app.css` et quelques `js/*.js` par rôle (plateau, rendu, export, chargement), en scripts classiques. **Aucune ligne de logique modifiée** | Même méthode que les 2 PR et que TRV-Pocket (« un petit fichier par rôle »). Toujours sans étape de construction : GitHub Pages sert les fichiers tels quels |
