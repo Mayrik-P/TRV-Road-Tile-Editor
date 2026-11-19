@@ -96,7 +96,7 @@ const SPY = () => {
   await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
   await dl.path();
-  check('export terminé : drapeau d\'arrivée seul', (await files()) === 'finish-flag');
+  { const r = await take(); check(`export terminé : drapeau d'arrivée seul, à 50 % du volume (${r.map(x => x.file + ' ' + x.volume).join(', ')})`, r.length === 1 && r[0].file === 'finish-flag' && r[0].volume === 0.5); }
 
   // Fichier refusé (depuis l'accueil)
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'snd-')); const bad = path.join(tmp, 'bad.trvtile');

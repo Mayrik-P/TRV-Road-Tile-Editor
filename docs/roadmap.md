@@ -303,11 +303,18 @@ Code juste sur GitHub ; cause = copies périmées en cache de trois fichiers mod
 nouveau `index.html`. Remède éprouvé : **empreinte du contenu dans l'adresse** de chaque CSS / JS
 (`tools/stamp-assets.py`, comme le « content hash » de webpack ou Vite).
 
-### Phase 6 bis — Page de crédits (demande de Mayrik du 19/11)
-Bouton « Credits » sur l'écran d'accueil, comme dans TRV-Pocket : textes de licence (polices OFL,
-idb-keyval Apache 2.0, jsPDF et howler.js MIT), mention de Restoration Games, sons freesound.org CC0,
-remerciements aux contributeurs GitHub (ChessMess, PR #1 et #2). Une seule liste des crédits, comme
-`tools/v2/credits.js` de TRV-Pocket.
+### Phase 6 bis — Page de crédits — FAITE le 19/11 (demande de Mayrik)
+Comme dans TRV-Pocket : en bas de l'accueil, mention courte + bouton « Credits » ; fenêtre `<dialog>`
+native qui défile (Return, Échap, clic à côté). **Seule liste des crédits : `js/credits.js`** (données
+seules, retouchables sans toucher au code ; affichage `openCredits` dans `js/ui.js`) : projet, contributeurs
+(ChessMess, PR #1 et #2), crédits du livret de Thunder Road: Vendetta (repris de TRV-Pocket), sons CC0,
+polices, bibliothèques, mentions légales (d'après `LICENSE` : diffusion gratuite autorisée par Restoration
+Games). Licences repliées, comme la liste « Open source licenses » d'Android : texte lu dans le fichier
+livré avec chaque ressource, donc toujours exact ; texte complet de la licence Apache 2.0 ajouté
+(`js/vendor/apache-2.0.txt`, exigé par la licence d'idb-keyval). Test `tools/check-credits.js` (24
+vérifications, dont le garde-fou : chaque police et bibliothèque du dépôt y figure).
+Même jour : son d'export (`finish-flag`) baissé à 50 % (≈ −6 dB), jugé trop fort par Mayrik ; volume
+propre à chaque son dans `SOUND_TABLE`, comme TRV-Pocket.
 
 ### Phase 7 — Décorations libres (remplace le placement automatique)
 | Tranche | Contenu |

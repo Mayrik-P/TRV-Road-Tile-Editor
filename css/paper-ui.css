@@ -227,3 +227,37 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
   .btn { font-size: 14px; }
   .tb { font-size: 14px; }
 }
+
+/* ---- Crédits (phase 6 bis, js/credits.js + openCredits dans js/ui.js) : repris de TRV-Pocket
+   (#credits.paper-ui) — fenêtre papier qui défile, titre « livret », intertitres terre brûlée ---- */
+#home-credits { display: flex; align-items: center; gap: 14px; width: min(400px, 100%); margin-top: 26px;
+  padding-top: 12px; border-top: 1.5px solid rgba(29,20,38,.25); }
+#home-notice { flex: 1; margin: 0; font-family: var(--text); font-size: 12px; line-height: 1.25; text-transform: uppercase;
+  color: #3a2d36; white-space: pre-line; text-align: left; }
+#credits-btn { flex: none; color: var(--ink); background: var(--ink); font-size: 16px; }
+#credits-btn::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
+#credits-btn:hover::before { background: var(--paper-2); }
+#credits { margin: auto; /* centrage natif des <dialog>, annulé par le « * { margin: 0 } » de app.css */
+  width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; flex-direction: column;
+  background: var(--paper); background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain);
+  color: var(--ink); border: 2.5px solid var(--ink); border-radius: 0; box-shadow: 6px 6px 0 rgba(29,20,38,.45); }
+#credits[open] { display: flex; }
+#credits::backdrop { background: rgba(29,20,38,.72); }
+#credits-body { overflow-y: auto; padding: 18px 20px 6px; font-family: var(--text); font-size: 16px; line-height: 1.3; text-align: center; }
+#credits .credits-title { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.05; margin: 0 0 10px; color: var(--tan);
+  -webkit-text-stroke: 1.6px var(--ink); text-shadow: var(--extrude-text); text-transform: uppercase; transform: skew(-6deg); }
+#credits .credits-app { font-family: var(--display); font-size: 22px; text-transform: uppercase; letter-spacing: .03em; }
+#credits .credits-tagline { color: var(--muted); margin: 2px 0 10px; }
+#credits .credits-notice { color: var(--rust); font-weight: 700; font-size: 15px; margin: 0 0 6px; }
+#credits section { border-top: 2px solid var(--ink); padding: 10px 0 6px; margin-top: 8px; }
+#credits h3 { font-family: var(--display); font-weight: 400; font-size: 17px; letter-spacing: .03em; text-transform: uppercase; color: var(--rust); margin: 0 0 6px; }
+#credits .credits-role { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; margin-top: 6px; }
+#credits p { margin: 0 0 4px; }
+#credits details { text-align: left; border-top: 1.5px solid rgba(29,20,38,.25); padding: 6px 0; }
+#credits summary { cursor: pointer; font-weight: 700; }
+#credits summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+#credits .credits-license { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--text); font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+#credits-close { flex: none; align-self: center; margin: 10px auto 14px; min-width: 130px; font-size: 18px; clip-path: var(--chev-back);
+  color: var(--ink); background: var(--ink); }
+#credits-close::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
+#credits-close:hover::before { background: var(--paper-2); }

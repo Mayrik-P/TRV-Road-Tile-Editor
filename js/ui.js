@@ -102,3 +102,58 @@ function showEditor() {
   buildBoard();
   fitAllTitleStacks();
 }
+
+// ===== Crédits (phase 6 bis, d'après TRV-Pocket) : fenêtre <dialog> native qui défile, construite
+// depuis CREDITS (js/credits.js) ; fermée par « Return », Échap (natif) ou un clic à côté.
+// Licences repliées (<details>), texte lu dans le fichier livré avec la ressource à la 1re ouverture.
+function buildCredits() {
+  const C = CREDITS, body = document.getElementById('credits-body');
+  body.textContent = '';
+  const add = (parent, tag, cls, text) => {
+    const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text;
+    parent.appendChild(e); return e;
+  };
+  add(body, 'h2', 'credits-title', C.title).id = 'credits-title';
+  add(body, 'div', 'credits-app', C.app);
+  add(body, 'p', 'credits-tagline', C.tagline);
+  for (const n of C.notice) add(body, 'p', 'credits-notice', n);
+  for (const sec of C.sections) {
+    const box = add(body, 'section');
+    add(box, 'h3', null, sec.title);
+    for (const line of sec.lines) {
+      if (Array.isArray(line)) { add(box, 'div', 'credits-role', line[0]); add(box, 'p', null, line[1]); }
+      else add(box, 'p', null, line);
+    }
+  }
+  const lic = add(body, 'section', 'credits-licenses');
+  add(lic, 'h3', null, 'Licenses');
+  for (const l of C.licenses) {
+    const d = add(lic, 'details');
+    add(d, 'summary', null, l.title);
+    const pre = add(d, 'pre', 'credits-license', 'Loading…');
+    d.addEventListener('toggle', () => {
+      if (!d.open || d.dataset.loaded) return;
+      d.dataset.loaded = '1';
+      fetch(l.file).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(t => { pre.textContent = t.trim(); })
+        .catch(() => { delete d.dataset.loaded; pre.textContent = 'This license could not be loaded. It is included with the app as ' + l.file + '.'; });
+    });
+  }
+  document.getElementById('credits-close').textContent = C.close;
+}
+
+function openCredits() {
+  const dlg = document.getElementById('credits');
+  if (!document.getElementById('credits-body').childElementCount) buildCredits();
+  document.getElementById('credits-body').scrollTop = 0;
+  if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+}
+
+function closeCredits() {
+  const dlg = document.getElementById('credits');
+  if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open');
+}
+
+// Clic sur le fond assombri (en dehors de la fenêtre) : ferme, comme la fenêtre d'export
+document.getElementById('credits').addEventListener('click', e => { if (e.target.id === 'credits') closeCredits(); });
+document.getElementById('home-notice').textContent = CREDITS.homeNotice;

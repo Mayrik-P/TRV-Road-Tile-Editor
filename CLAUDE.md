@@ -88,12 +88,16 @@ Le lire avant tout travail.
   contenu augmente `formatVersion` avec une conversion des anciens fichiers. Toute évolution de la photo du plateau
   change `BOARD_STATE_VERSION` (et la clé) avec une conversion des anciennes sauvegardes.
 - **Sons (phase 6, `js/sounds.js`)** : howler.js 2.2.4 (`js/vendor/`, MIT), MP3 de TRV-Pocket dans
-  `sounds/` (CC0, `sounds/CREDITS.md`) ; table des moments `SOUND_TABLE`, un seul point de passage
+  `sounds/` (CC0, `sounds/CREDITS.md`) ; table des moments `SOUND_TABLE` (volume propre possible : export à 50 %), un seul point de passage
   `playSound(moment)` (70 ms au moins entre deux mêmes sons). Sources : le signal du plateau (pose,
   pinceau et Clear board lus dans `undoHistory.actionKind`, posé par `beginAction(kind)` ; Annuler /
   Rétablir), un seul écouteur de clic pour tous les boutons (`data-sound="palette"` / `"none"`), l'export
   terminé, et `warnUser(message)` (son de refus + `alert`, à utiliser pour tout message d'erreur).
   Bouton haut-parleur `#sound-btn` dans la bande du titre, choix retenu (`trv_road_tile_sound_v1`).
+- **Crédits (phase 6 bis, `js/credits.js`)** : SEULE liste des crédits (comme TRV-Pocket) : toute ressource
+  ajoutée (son, image, police, bibliothèque) s'y inscrit, avec son fichier de licence (texte affiché tel
+  quel, replié). Bouton « Credits » de l'accueil, fenêtre `<dialog id="credits">` (`openCredits`,
+  `js/ui.js`). `tools/check-credits.js` échoue si une police ou une bibliothèque du dépôt n'y est pas.
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt pour le plateau ; Anton, D-DIN Condensed pour l'interface). Jamais de police chargée depuis
   Internet.
@@ -165,6 +169,7 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   navigateur, fichiers refusés).
 - **`node tools/check-export-dialog.js [url]`** : fenêtre d'export sur connexion lente.
 - **`node tools/check-sounds.js [url]`** : sons (espion de howler.js : fichier, volume, hauteur de chaque son).
+- **`node tools/check-credits.js [url]`** : crédits (fenêtre, textes exacts des licences, polices et bibliothèques toutes citées).
 - Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le

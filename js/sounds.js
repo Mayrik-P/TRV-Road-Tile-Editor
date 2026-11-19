@@ -18,7 +18,8 @@ const SOUND_TABLE = {
   place:   'sounds/card-flip.mp3',       // pose d'une case (clic, pinceau, clavier)
   undo:    'sounds/tap-back.mp3',        // Annuler / Rétablir
   clear:   'sounds/stamp.mp3',           // « Clear board » confirmé
-  export:  'sounds/finish-flag.mp3',     // export terminé (PNG ou PDF)
+  export:  { src: 'sounds/finish-flag.mp3', volume: 0.5 }, // export terminé (PNG ou PDF) ; à 50 % (≈ −6 dB) :
+                                         // le plus fort et le plus long, il surprenait (Mayrik, 19/11)
   refuse:  'sounds/tap-refuse.mp3',      // fichier ou image refusé, erreur d'export
   button:  'sounds/tap-menu-button.mp3', // autres boutons
 };
@@ -34,8 +35,10 @@ try { sounds.muted = localStorage.getItem(SOUND_KEY) === 'off'; } catch (e) { /*
 function loadSounds() {
   if (typeof Howl === 'undefined') return; // bibliothèque absente : l'éditeur marche sans son
   Howler.mute(sounds.muted);
-  for (const [moment, src] of Object.entries(SOUND_TABLE)) {
+  for (const [moment, entry] of Object.entries(SOUND_TABLE)) {
+    const { src, volume = 1 } = typeof entry === 'string' ? { src: entry } : entry; // volume propre au son (TRV-Pocket)
     sounds.howls[moment] = new Howl({ src: [src], preload: true });
+    sounds.howls[moment].baseVolume = volume;
   }
 }
 
@@ -46,7 +49,7 @@ function playSound(moment, opts = {}) {
   if (now - (sounds.lastAt[moment] || -Infinity) < SOUND_MIN_GAP_MS) return;
   sounds.lastAt[moment] = now;
   const id = h.play();
-  h.volume(opts.volume ?? 1, id);
+  h.volume(h.baseVolume * (opts.volume ?? 1), id);
   h.rate(opts.rate ?? 1, id);
 }
 
