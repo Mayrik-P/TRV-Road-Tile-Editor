@@ -212,18 +212,19 @@ construire maintenant.
 
 ---
 
-## 4. Décisions à prendre par Mayrik
+## 4. Décisions de Mayrik (19/11)
 
-1. **Ordre des phases** : 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (→ 9). À valider ou réordonner.
-2. **Pinceau sur écran tactile** : un doigt sur le plateau = peindre (la page ne défile plus quand on
-   glisse sur le plateau, mais on peut défiler en dehors). C'est le choix des applis de dessin. D'accord ?
-3. **Titre imprimé du plateau** : garder son dessin actuel (calé sur les vrais plateaux) et ne passer que
-   l'**interface** au style de TRV-Pocket ?
-4. **Sons** : reprendre des sons de TRV-Pocket (CC0, freesound) ? OGG + MP3 automatique pour Safari ?
-   Son coupé par défaut (usage courant des outils web) ou activé ?
-5. **Papier US** : Tabloid + Letter (+ Legal pour Ignition) suffisent-ils, ou ajouter Vendetta sur
-   2 feuilles Letter ?
-6. **PR de ChessMess** : les fermer avec un mot de remerciement une fois leur contenu réécrit ?
+1. **Ordre des phases** : validé, 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (→ 9).
+2. **Pinceau sur écran tactile** : validé, un doigt sur le plateau peint (on défile en dehors du plateau).
+3. **Style** : seulement l'**interface** au style de TRV-Pocket ; le titre imprimé du plateau garde son dessin.
+4. **Sons** : sons de TRV-Pocket repris ; OGG + copie MP3 générée automatiquement (Safari) ; **son activé
+   par défaut**. Un petit bouton haut-parleur (muet mémorisé) est gardé quand même : usage courant des
+   outils web (bureau, transports), coût minime puisque le moteur de TRV-Pocket le gère déjà.
+5. **Papier US** : Tabloid (Vendetta) et Letter (Ignition) seulement, pas d'assemblage sur 2 feuilles
+   (option 5e abandonnée). Legal reste à confirmer au moment de la Phase 5.
+6. **PR de ChessMess** : fermées une fois leur contenu réécrit, avec un commentaire de remerciement et le
+   lien vers le commit ; crédit par une ligne `Co-authored-by` dans le commit (GitHub affiche alors
+   l'auteur comme co-auteur). Texte du commentaire montré à Mayrik avant publication.
 
 ---
 
