@@ -298,6 +298,11 @@ CC0, `sounds/CREDITS.md`). Fait :
   navigateurs, Safari d'avant macOS 15.4 / iOS 18.4 compris ; un seul fichier par son. Silence de fin coupé.
 - Test : `tools/check-sounds.js` (22 vérifications, saboté trois fois).
 
+Correctif du 19/11 : chez Mayrik, la palette et l'export restaient muets et le haut-parleur mal dessiné.
+Code juste sur GitHub ; cause = copies périmées en cache de trois fichiers modifiés, servies avec le
+nouveau `index.html`. Remède éprouvé : **empreinte du contenu dans l'adresse** de chaque CSS / JS
+(`tools/stamp-assets.py`, comme le « content hash » de webpack ou Vite).
+
 ### Phase 6 bis — Page de crédits (demande de Mayrik du 19/11)
 Bouton « Credits » sur l'écran d'accueil, comme dans TRV-Pocket : textes de licence (polices OFL,
 idb-keyval Apache 2.0, jsPDF et howler.js MIT), mention de Restoration Games, sons freesound.org CC0,

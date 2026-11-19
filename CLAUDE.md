@@ -131,6 +131,12 @@ Le lire avant tout travail.
   suit la même règle pour choisir les aperçus.
 - **Échelle de contrôle (`renderScaleBar`, calque `layer-scale`)** : 3 cm / 1 in à gauche de la 6e
   rangée, dans la zone imprimée ; visible à l'écran et dans l'export.
+- **Empreintes contre le cache (`tools/stamp-assets.py`)** : chaque CSS / JS de `index.html` est appelé
+  avec `?v=<empreinte du contenu>` ; un fichier modifié change d'adresse et ne peut plus être servi en
+  copie périmée (vu le 19/11 : ancien `paper-ui.css`, `editing.js` et `export.js` avec le nouveau
+  `index.html`). **Lancer `python3 tools/stamp-assets.py` avant chaque commit** qui touche `css/` ou
+  `js/` ; `--check` échoue si une empreinte est périmée. Tout nouveau fichier CSS / JS de la page est
+  repris tout seul (chemins `css/…` et `js/…`).
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 
