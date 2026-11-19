@@ -47,7 +47,8 @@ async function exportTo(page, file) {
 }
 
 async function paintAndExport(browser, format) {
-  const page = await browser.newPage({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true });
+  // locale en-GB : papier International (A3 / A4) par défaut, exports comparables d'une version à l'autre
+  const page = await browser.newPage({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true, locale: 'en-GB' });
   const errors = [], checks = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });

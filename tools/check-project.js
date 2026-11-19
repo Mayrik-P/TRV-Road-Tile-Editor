@@ -19,7 +19,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const img = path.join(tmp, 'title.png'); fs.writeFileSync(img, PNG_1PX);
   const b = await chromium.launch();
   const open = async () => {
-    const ctx = await b.newContext({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true });
+    const ctx = await b.newContext({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true, locale: 'en-GB' });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.goto(url); return { ctx, p, errs };
   };

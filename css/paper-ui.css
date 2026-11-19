@@ -154,6 +154,15 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #export-dialog h2 { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.05; color: var(--tan); text-transform: uppercase;
   -webkit-text-stroke: 1.2px var(--ink); text-shadow: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink), 3px 3px 0 var(--ink); transform: skew(-6deg); margin: 0; }
 #export-dialog p { margin: 0; }
+/* Choix du papier (tranche 5b) : boutons segmentés de TRV-Pocket, sélection orange */
+.paper-choice { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.paper-choice > span { font-family: var(--display); text-transform: uppercase; font-size: 16px; letter-spacing: .03em; }
+.paper-choice .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 2px solid var(--ink); flex: 1; min-width: 240px; }
+.paper-choice .seg button { font-family: var(--text); font-weight: 700; font-size: 16px; line-height: 1.05; padding: 6px 6px 5px; border: none;
+  border-left: 2px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; }
+.paper-choice .seg button:first-child { border-left: none; }
+.paper-choice .seg button small { display: block; font-size: 12px; opacity: .75; }
+.paper-choice .seg button[aria-pressed="true"] { background: var(--orange); color: var(--ink); }
 .print-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .print-rules li { padding-left: 30px; position: relative; }
 .print-rules li::before { position: absolute; left: 0; top: -1px; width: 22px; text-align: center; font-family: var(--display); font-size: 20px; }

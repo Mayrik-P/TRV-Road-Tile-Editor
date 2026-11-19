@@ -48,6 +48,59 @@ function withPngDpi(blob, dpi) {
   }).catch(() => blob); // en cas d'imprévu, on exporte le PNG tel quel plutôt que rien
 }
 
+// ---- Papier d'impression : International / US (tranche 5b, choix dans la fenêtre d'export) ----
+// Même rendu du plateau, posé au centre d'une page de la taille du papier, avec un décalage d'un
+// nombre ENTIER de pixels (aucun redimensionnement : taille réelle conservée). Zone imprimée :
+// 268,7 mm de haut — marges de 14 mm en A3 / A4, de 5,3 mm en Tabloid / Letter (calcul du plan,
+// docs/roadmap.md § Phase 5). En International, la page est le plateau lui-même (export inchangé).
+const PAPERS = {
+  vendetta: { intl: { name: 'A3', w: 4961, h: 3508, desc: 'A3, landscape' },
+              us:   { name: 'Tabloid', w: 5100, h: 3300, desc: 'Tabloid (11×17″), landscape' } },
+  ignition: { intl: { name: 'A4', w: 2481, h: 3508, desc: 'A4, portrait' },
+              us:   { name: 'Letter', w: 2550, h: 3300, desc: 'Letter (8.5×11″), portrait' } },
+};
+const PAPER_REGION_KEY = 'trv_road_tile_paper_region_v1';
+// Pays au papier Letter (et Tabloid) : choix par défaut US, d'après la région du navigateur.
+const LETTER_REGIONS = ['US', 'CA', 'MX', 'PH'];
+function defaultPaperRegion() {
+  try { const r = localStorage.getItem(PAPER_REGION_KEY); if (r === 'intl' || r === 'us') return r; } catch (e) {}
+  const langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+  const region = (langs[0] || '').split('-')[1];
+  return region && LETTER_REGIONS.includes(region.toUpperCase()) ? 'us' : 'intl';
+}
+let paperRegion = defaultPaperRegion();
+function currentPaper() { return PAPERS[BOARD_TYPE][paperRegion]; }
+function setPaperRegion(r) {
+  paperRegion = r;
+  try { localStorage.setItem(PAPER_REGION_KEY, r); } catch (e) {}
+  refreshExportDialog();
+}
+// Zone réellement occupée par le plateau (titre + 6 rangées), en pixels à 300 dpi.
+function boardContentBox() {
+  const lefts = BANDS.slice(1).map(b => b.left);
+  return { left: Math.min(...lefts), right: Math.max(...lefts) + COLS * CELL_SLOT + NOTCH,
+           top: BANDS[0].top, bottom: BANDS[ROWS].bot };
+}
+// Décalage entier qui centre le plateau sur la page du papier choisi (0, 0 en International).
+function pageOffset(paper) {
+  if (paper.w === VW && paper.h === VH) return { x: 0, y: 0 };
+  const c = boardContentBox();
+  return { x: Math.round((paper.w - (c.right - c.left)) / 2 - c.left),
+           y: Math.round((paper.h - (c.bottom - c.top)) / 2 - c.top) };
+}
+function refreshExportDialog() {
+  document.getElementById('export-paper').textContent = currentPaper().desc;
+  // Marges : 14 mm en A3 / A4, seulement 5,3 mm en haut et en bas en Tabloid / Letter (la plupart
+  // des imprimantes impriment à partir de 3 à 5 mm du bord ; certaines coupent davantage).
+  document.getElementById('export-note').textContent = paperRegion === 'us'
+    ? 'US paper leaves narrow margins (5 mm top and bottom): most printers print everything; a few may trim a thin edge.'
+    : 'The board keeps white margins, so nothing gets cut at 100%.';
+  document.querySelectorAll('#paper-region button').forEach(b => b.setAttribute('aria-pressed', b.dataset.region === paperRegion));
+  const names = PAPERS[BOARD_TYPE];
+  document.getElementById('paper-intl-name').textContent = names.intl.name;
+  document.getElementById('paper-us-name').textContent = names.us.name;
+}
+
 // ---- Fenêtre d'export (consigne d'impression, demande de Mayrik du 19/11) ----
 // Les logiciels d'impression ne proposent jamais 100 % d'eux-mêmes (Aperçu : « Imprimer
 // toute l'image » ≈ 97-98 % ; Acrobat Reader : « Ajuster ») ; la pratique du print & play est
@@ -55,7 +108,7 @@ function withPngDpi(blob, dpi) {
 // fenêtre occupe le temps du téléchargement des originaux : son bouton « Download PNG »
 // (#export-btn, logique d'export inchangée) se débloque quand tout est prêt.
 function openExportDialog() {
-  document.getElementById('export-paper').textContent = BOARD_TYPE === 'ignition' ? 'A4, portrait' : 'A3, landscape';
+  refreshExportDialog();
   document.getElementById('export-dialog').hidden = false;
   const dl = document.getElementById('export-btn');
   (dl.disabled ? document.getElementById('export-cancel-btn') : dl).focus();
@@ -114,21 +167,23 @@ function exportPNG() {
   const svgStr = new XMLSerializer().serializeToString(clone);
   const blob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
   const url = URL.createObjectURL(blob);
+  // Page du papier choisi (International : le plateau lui-même ; US : page Tabloid / Letter).
+  const paper = currentPaper(), off = pageOffset(paper);
   const canvas = document.createElement('canvas');
-  canvas.width = VW;
-  canvas.height = VH;
+  canvas.width = paper.w;
+  canvas.height = paper.h;
   const img = new Image();
 
   function paintAndDownload() {
     label.textContent = 'Exporting…';
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, VW, VH);
-    ctx.drawImage(img, 0, 0, VW, VH);
+    ctx.fillRect(0, 0, paper.w, paper.h);
+    ctx.drawImage(img, off.x, off.y, VW, VH); // décalage entier, même taille : aucun redimensionnement
     URL.revokeObjectURL(url);
     canvas.toBlob(raw => withPngDpi(raw, 300).then(b => {
       const a = document.createElement('a');
-      const paperSize = BOARD_TYPE === 'ignition' ? 'A4' : 'A3';
+      const paperSize = paper.name;
       const name = boardFileBaseName(); // règle commune avec le fichier de projet (js/project.js)
       a.href = URL.createObjectURL(b);
       a.download = name + '-' + paperSize + '.png';

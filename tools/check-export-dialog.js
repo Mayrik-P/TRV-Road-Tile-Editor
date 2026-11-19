@@ -12,7 +12,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
 
 (async () => {
   const b = await chromium.launch();
-  const ctx = await b.newContext({ viewport: { width: 1300, height: 1000 }, acceptDownloads: true });
+  const ctx = await b.newContext({ viewport: { width: 1300, height: 1000 }, acceptDownloads: true, locale: 'en-GB' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   const cdp = await ctx.newCDPSession(p); await cdp.send('Network.enable');
   await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 40, downloadThroughput: 5e6 / 8, uploadThroughput: 1e6 / 8 });
@@ -47,10 +47,22 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   check('chargement fini : « Download PNG » cliquable', (await p.textContent('#export-label')) === 'Download PNG');
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
   check(`téléchargement lancé (${dl.suggestedFilename()}), fenêtre fermée`, /\.png$/.test(dl.suggestedFilename()) && !(await isOpen()));
-  // Vendetta : papier A3
+  // Papier US (tranche 5b) : Letter pour Ignition, nom de fichier et taille de page
+  await p.click('#export-open-btn'); await p.click('#paper-region button[data-region="us"]');
+  check('US choisi : papier Letter (8.5×11″), portrait', (await p.textContent('#export-paper')) === 'Letter (8.5×11″), portrait');
+  const [dlUs] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
+  check(`export US : ${dlUs.suggestedFilename()}`, /-Letter\.png$/.test(dlUs.suggestedFilename()));
+  // Vendetta : le choix US est retenu -> Tabloid ; retour International -> A3
   await p.click('#home-btn'); await p.click('#board-type-vendetta');
   await p.click('#export-open-btn');
-  check('papier indiqué pour Vendetta : A3, landscape', (await p.textContent('#export-paper')) === 'A3, landscape');
+  check('Vendetta, choix US retenu : Tabloid (11×17″), landscape', (await p.textContent('#export-paper')) === 'Tabloid (11×17″), landscape');
+  await p.click('#paper-region button[data-region="intl"]');
+  check('Vendetta, International : A3, landscape', (await p.textContent('#export-paper')) === 'A3, landscape');
+  // Navigateur réglé en anglais des États-Unis, sans choix retenu : US proposé d'office
+  const ctxUs = await b.newContext({ viewport: { width: 1300, height: 1000 }, locale: 'en-US' });
+  const q = await ctxUs.newPage(); await q.goto(new URL('index.html', base).href); await q.click('#board-type-ignition');
+  await q.click('#export-open-btn');
+  check('navigateur en-US : papier US proposé par défaut', (await q.textContent('#export-paper')) === 'Letter (8.5×11″), portrait');
   check('aucune erreur JavaScript', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);

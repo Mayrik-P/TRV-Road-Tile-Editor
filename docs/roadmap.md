@@ -232,6 +232,16 @@ cette fenêtre** (choix International / US, idée de Mayrik).
 réglette dans la marge aurait été coupée en papier US, marges de 5,3 mm) ; échelle double comme sur les
 cartes : 3 cm (un trait par cm) à gauche, 1 in (un trait par demi-pouce) à droite. Mesuré dans le PNG :
 traits à 0 / 9,99 / 19,98 / 29,97 mm et 0 / 12,7 / 25,36 mm.
+**5b faite (19/11)** : choix « International | US » dans la fenêtre d'export (boutons segmentés) ; Tabloid
+5100 × 3300 / Letter 2550 × 3300 px ; même rendu du plateau posé au centre de la page avec un décalage
+entier (aucun redimensionnement) ; nom de fichier selon le papier ; US proposé d'office pour un
+navigateur des États-Unis, du Canada, du Mexique ou des Philippines, dernier choix retenu ; phrase sur
+les marges selon le papier. Vérifié : International identique octet par octet à avant ; pages US à
+431,8 × 279,4 et 215,9 × 279,4 mm, 300 dpi, marges 5,3 mm haut / bas, centrées ; plateau identique à
+l'International sauf ~200 pixels de lissage du texte du titre (écart max 24/255, invisible) — une copie
+strictement identique demanderait deux grandes images en mémoire (~136 Mo, risqué sur téléphone).
+Tests : `check-export-dialog.js` étendu (US, choix retenu, défaut en-US ; vérifié par sabotage) ; les
+tests d'export forcent la région International (locale en-GB).
 **Calcul fait sur l'export réel** (zone imprimée : 268,7 mm de haut pour les deux plateaux) :
 
 | Plateau | Papier US | Taille | Marges obtenues | Verdict |

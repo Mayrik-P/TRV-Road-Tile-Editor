@@ -111,6 +111,10 @@ Le lire avant tout travail.
   l'ouvre ; elle donne la consigne d'impression (100 % / Actual size) et contient le vrai bouton
   d'export `#export-btn` (« Download PNG », débloqué quand les originaux sont chargés). Le PNG porte
   300 dpi (bloc `pHYs`, `withPngDpi`). Clavier et Ctrl+Z inactifs tant qu'elle est ouverte.
+- **Papier (tranche 5b, `PAPERS` / `currentPaper()` / `pageOffset()`, `js/export.js`)** : International
+  (A3 / A4 = le plateau lui-même) ou US (Tabloid / Letter : plateau centré, décalage entier), choisi
+  dans la fenêtre d'export, retenu (`localStorage`), US par défaut selon la région du navigateur. Les
+  tests d'export forcent `locale: 'en-GB'` (International) pour rester comparables.
 - **Échelle de contrôle (`renderScaleBar`, calque `layer-scale`)** : 3 cm / 1 in à gauche de la 6e
   rangée, dans la zone imprimée ; visible à l'écran et dans l'export.
 - `tools/` : outils de développement (hors de la page).

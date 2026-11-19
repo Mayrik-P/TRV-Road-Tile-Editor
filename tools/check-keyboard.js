@@ -13,7 +13,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
 
 (async () => {
   const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true });
+  const p = await b.newPage({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true, locale: 'en-GB' });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(new URL('index.html', base).href);
   await p.keyboard.press('ArrowRight');
