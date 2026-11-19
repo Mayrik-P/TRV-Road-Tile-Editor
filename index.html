@@ -96,6 +96,7 @@
     <p class="modal-note" id="export-note">The board keeps white margins, so nothing gets cut at 100%.</p>
     <div class="modal-actions">
       <button class="btn" id="export-cancel-btn" onclick="closeExportDialog()">Cancel</button>
+      <button class="btn p" id="export-pdf-btn" onclick="exportPNG('pdf')" disabled title="A PDF at the exact paper size, handy for print shops">Download PDF</button>
       <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
         <span id="export-progress"></span>
         <span id="export-label">Preparing high-res… 0%</span>

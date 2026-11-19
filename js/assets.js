@@ -146,7 +146,9 @@ function updateExportButton() {
   const fontsReady = ALFASLABONE_READY && OSWALD_READY && COOPERHEWITT_READY;
   const allLoaded = LOAD.fullStarted && LOAD.done === LOAD.total && displayTexturesPending === 0
     && defaultTitleImageDecoded && fontsReady;
+  const pdfBtn = document.getElementById('export-pdf-btn');
   if (!allLoaded) {
+    if (pdfBtn) pdfBtn.disabled = true;
     btn.disabled = true;
     btn.style.opacity = '0.5';
     const pct = LOAD.total ? Math.round(LOAD.done / LOAD.total * 100) : 0;
@@ -157,6 +159,7 @@ function updateExportButton() {
   btn.disabled = false;
   btn.style.opacity = '1';
   progress.style.width = '0%';
+  if (pdfBtn) pdfBtn.disabled = !allImagesReady();
   if (allImagesReady()) {
     label.textContent = 'Download PNG';
   } else {

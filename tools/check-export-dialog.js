@@ -52,6 +52,16 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   check('US choisi : papier Letter (8.5×11″), portrait', (await p.textContent('#export-paper')) === 'Letter (8.5×11″), portrait');
   const [dlUs] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
   check(`export US : ${dlUs.suggestedFilename()}`, /-Letter\.png$/.test(dlUs.suggestedFilename()));
+  // PDF (tranche 5c) : même papier, page à la taille exacte (Letter = 612 x 792 points)
+  await p.click('#export-open-btn');
+  await p.waitForFunction(() => !document.getElementById('export-pdf-btn').disabled, null, { timeout: 60000 });
+  const [dlPdf] = await Promise.all([p.waitForEvent('download', { timeout: 120000 }), p.click('#export-pdf-btn')]);
+  const pdfPath = await dlPdf.path();
+  const pdfText = require('fs').readFileSync(pdfPath, 'latin1');
+  const box = (pdfText.match(/\/MediaBox \[([^\]]+)\]/) || [])[1] || '';
+  const [, , mw, mh] = box.trim().split(/\s+/).map(Number);
+  check(`export PDF : ${dlPdf.suggestedFilename()}, page ${mw} x ${mh} points`, /-Letter\.pdf$/.test(dlPdf.suggestedFilename()) && Math.abs(mw - 612) < 0.5 && Math.abs(mh - 792) < 0.5 && pdfText.startsWith('%PDF-'));
+  check('après le PDF : fenêtre fermée, boutons rendus', !(await isOpen()) && await p.evaluate(() => !document.getElementById('export-btn').disabled && document.getElementById('export-pdf-btn').textContent === 'Download PDF'));
   // Vendetta : le choix US est retenu -> Tabloid ; retour International -> A3
   await p.click('#home-btn'); await p.click('#board-type-vendetta');
   await p.click('#export-open-btn');

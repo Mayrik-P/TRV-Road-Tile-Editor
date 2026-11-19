@@ -242,6 +242,12 @@ l'International sauf ~200 pixels de lissage du texte du titre (écart max 24/255
 strictement identique demanderait deux grandes images en mémoire (~136 Mo, risqué sur téléphone).
 Tests : `check-export-dialog.js` étendu (US, choix retenu, défaut en-US ; vérifié par sabotage) ; les
 tests d'export forcent la région International (locale en-GB).
+**5c faite (19/11)** : bouton « Download PDF » dans la fenêtre d'export (utile pour les imprimeurs) ;
+jsPDF 4.2.1 (MIT, version corrigée des failles 2025-2026) copiée dans `js/vendor/`, chargée seulement
+au premier export PDF ; même image sans perte que le PNG (choix de Mayrik : qualité maximale ; mesuré
+3,7 s et 10 Mo pour un Tabloid, contre 0,2 s et 2 Mo en JPEG 95) sur une page à la taille exacte du
+papier. Vérifié : pages A3 / A4 / Tabloid (1224 × 792 pt) / Letter, image à 300 ppp, identique pixel
+pour pixel au PNG ; `check-export-dialog.js` étendu (19 contrôles, vérifié par sabotage).
 **Calcul fait sur l'export réel** (zone imprimée : 268,7 mm de haut pour les deux plateaux) :
 
 | Plateau | Papier US | Taille | Marges obtenues | Verdict |

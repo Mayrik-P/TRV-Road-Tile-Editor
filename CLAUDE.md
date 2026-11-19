@@ -115,6 +115,9 @@ Le lire avant tout travail.
   (A3 / A4 = le plateau lui-même) ou US (Tabloid / Letter : plateau centré, décalage entier), choisi
   dans la fenêtre d'export, retenu (`localStorage`), US par défaut selon la région du navigateur. Les
   tests d'export forcent `locale: 'en-GB'` (International) pour rester comparables.
+- **Export PDF (tranche 5c)** : `exportPNG('pdf')`, bouton `#export-pdf-btn` ; jsPDF 4.2.1
+  (`js/vendor/`, MIT) chargé à la demande (`loadJsPdf`) ; même image sans perte, page à la taille du
+  papier.
 - **Échelle de contrôle (`renderScaleBar`, calque `layer-scale`)** : 3 cm / 1 in à gauche de la 6e
   rangée, dans la zone imprimée ; visible à l'écran et dans l'export.
 - `tools/` : outils de développement (hors de la page).

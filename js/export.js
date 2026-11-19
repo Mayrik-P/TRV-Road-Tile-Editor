@@ -118,14 +118,30 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !document.getElementById('export-dialog').hidden) { e.preventDefault(); closeExportDialog(); }
 });
 
+// Chargement de jsPDF (js/vendor/jspdf-4.2.1.umd.min.js, licence MIT) à la première demande.
+let jsPdfLoading = null;
+function loadJsPdf() {
+  if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
+  if (!jsPdfLoading) jsPdfLoading = new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = 'js/vendor/jspdf-4.2.1.umd.min.js';
+    s.onload = ok; s.onerror = () => { jsPdfLoading = null; ko(); };
+    document.head.appendChild(s);
+  });
+  return jsPdfLoading;
+}
+
 // ---- Export PNG ----
 // À l'écran, le plateau affiche des aperçus (displayHref, tranche 1c) ; dans la copie
 // exportée, chaque image est remplacée par son original en pleine définition, déjà
 // converti en base64 (IMAGES_B64) : même position, même taille, export inchangé.
 // The export button is locked during export to prevent double-clicks.
-function exportPNG() {
+// format : 'png' (bouton « Download PNG ») ou 'pdf' (« Download PDF », tranche 5c). Même rendu ;
+// en PDF, la même image (sans perte) est posée sur une page de la taille exacte du papier.
+function exportPNG(format = 'png') {
   const btn = document.getElementById('export-btn');
   const label = document.getElementById('export-label');
+  const pdfBtn = document.getElementById('export-pdf-btn');
 
   // Check all images are truly ready before exporting
   if (!allImagesReady()) {
@@ -133,9 +149,10 @@ function exportPNG() {
     return;
   }
 
-  // Lock button during export
-  btn.disabled = true;
-  label.textContent = 'Preparing…';
+  // Lock buttons during export
+  btn.disabled = true; pdfBtn.disabled = true;
+  const unlock = () => { btn.disabled = false; pdfBtn.disabled = false; label.textContent = 'Download PNG'; pdfBtn.textContent = 'Download PDF'; };
+  if (format === 'pdf') pdfBtn.textContent = 'Preparing…'; else label.textContent = 'Preparing…';
 
   const svg = document.getElementById('bsvg');
   const clone = svg.cloneNode(true);
@@ -156,8 +173,7 @@ function exportPNG() {
   });
   if (missing.length) {
     console.warn('Export: originals missing', missing);
-    btn.disabled = false;
-    label.textContent = 'Download PNG';
+    unlock();
     alert('⚠ Some high-resolution images are missing.\nPlease reload the page and try again.');
     return;
   }
@@ -175,24 +191,35 @@ function exportPNG() {
   const img = new Image();
 
   function paintAndDownload() {
-    label.textContent = 'Exporting…';
+    if (format === 'pdf') pdfBtn.textContent = 'Exporting PDF…'; else label.textContent = 'Exporting…';
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, paper.w, paper.h);
     ctx.drawImage(img, off.x, off.y, VW, VH); // décalage entier, même taille : aucun redimensionnement
     URL.revokeObjectURL(url);
-    canvas.toBlob(raw => withPngDpi(raw, 300).then(b => {
+    const download = (b, ext) => {
       const a = document.createElement('a');
-      const paperSize = paper.name;
-      const name = boardFileBaseName(); // règle commune avec le fichier de projet (js/project.js)
       a.href = URL.createObjectURL(b);
-      a.download = name + '-' + paperSize + '.png';
+      a.download = boardFileBaseName() + '-' + paper.name + ext; // règle commune avec le projet (js/project.js)
       a.click();
       closeExportDialog(); // téléchargement lancé : la consigne a été lue
-      // Unlock button after download triggered
-      btn.disabled = false;
-      label.textContent = 'Download PNG';
-    }), 'image/png');
+      unlock();
+    };
+    if (format === 'pdf') {
+      // jsPDF chargé seulement maintenant (420 Ko, inutile à l'ouverture de la page). Image sans
+      // perte (PNG dans le PDF, mêmes pixels que l'export PNG), page à la taille exacte du papier.
+      loadJsPdf().then(() => setTimeout(() => {
+        try {
+          const wmm = paper.w / 300 * 25.4, hmm = paper.h / 300 * 25.4;
+          const doc = new window.jspdf.jsPDF({ unit: 'mm', format: [wmm, hmm], orientation: wmm > hmm ? 'landscape' : 'portrait' });
+          doc.setProperties({ title: boardFileBaseName(), creator: 'TRV Road Tile Editor' });
+          doc.addImage(canvas, 'PNG', 0, 0, wmm, hmm, undefined, 'FAST');
+          download(doc.output('blob'), '.pdf');
+        } catch (e) { console.warn('PDF export failed', e); unlock(); alert('⚠ The PDF export failed. Please try again.'); }
+      }, 30)).catch(() => { unlock(); alert('⚠ The PDF export could not start. Please reload the page and try again.'); });
+      return;
+    }
+    canvas.toBlob(raw => withPngDpi(raw, 300).then(b => download(b, '.png')), 'image/png');
   }
 
   img.onload = () => {
@@ -225,8 +252,7 @@ function exportPNG() {
       .then(() => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(paintAndDownload))));
   };
   img.onerror = () => {
-    btn.disabled = false;
-    label.textContent = 'Download PNG';
+    unlock();
     alert('Export failed — please try again.');
   };
   img.src = url;
