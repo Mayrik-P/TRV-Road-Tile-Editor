@@ -104,6 +104,13 @@ constaté dès la v1.00 : la mise à jour case par case et le redessin complet d
 | 0d | Un script de vérification dans Chromium (Playwright) : ouvre l'appli, pose des cases, exporte, compare | Vérifier chaque tranche dans un vrai navigateur, comme pour TRV-Pocket |
 
 ### Phase 1 — Performances (demande n°1 des petites connexions)
+**Avancement (19/11)** : 1a et 1b faites. Test à l'aveugle à l'écran, à taille d'impression réelle
+(calibrage par carte bancaire, page d'essai publiée comme artefact privé), PNG contre WebP 95 : **5/20
+en ×1, 13/20 en ×2** (18/40 au total, hasard) → **WebP 95 retenu** (choix de Mayrik : qualité maximale
+pour l'impression agrandie). Poids : 66,2 → 8,9 Mo (WebP sans perte mesuré : 40,7 Mo). Connexion
+simulée à 5 Mbit/s : plateau texturé visible 16,1 → 2,5 s, export prêt 108,8 → 15,6 s. Qualités 80 et
+88 écartées par Mayrik sans test (pas de compression plus forte).
+
 Méthode éprouvée des **logiciels de montage vidéo** (fichiers « proxy » de Premiere, DaVinci, Nuke) :
 on travaille sur des copies légères et on n'utilise les originaux qu'au moment de l'export. TRV-Pocket
 applique déjà la même idée avec ses dossiers `half/` et `quarter/` (méthode des dossiers par densité

@@ -62,8 +62,11 @@ Le lire avant tout travail.
   et restauration ; l'image de titre personnalisée n'en fait pas partie.
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt). Jamais de police chargée depuis Internet.
-- `textures/`, `sprites/`, `items/`, `edges/` : images à 300 dpi (PNG pour l'instant ; WebP prévu en
-  Phase 1).
+- `textures/`, `sprites/`, `items/`, `edges/` : images à 300 dpi chargées par la page, en **WebP qualité
+  95** (tranche 1a). Originaux sans perte (PNG) dans `<dossier>/source/`, jamais chargés par la page ;
+  **`python3 tools/make-webp.py [dossier]`** en tire les WebP (à relancer dès qu'un original change ou
+  s'ajoute). Réglages validés par le test à l'aveugle de Mayrik du 19/11 (5/20 à taille réelle, 13/20
+  en ×2 : aucune différence perçue).
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 

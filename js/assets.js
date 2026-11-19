@@ -15,19 +15,19 @@ let MINEFIELD;
 let FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6;
 let IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7, IMP_8;
 // Décorations de groupe (bidon, cactus, roue, pare-choc...) — 12 png dans le dossier Items/.
-const ITEM_PATHS = Array.from({length: 12}, (_, i) => `items/Item-${i + 1}.png`);
+const ITEM_PATHS = Array.from({length: 12}, (_, i) => `items/Item-${i + 1}.webp`);
 
 function initOverlaySources() {
-  HAZARD_1 = 'sprites/Hazard-1.png';  HAZARD_2 = 'sprites/Hazard-2.png';  HAZARD_3 = 'sprites/Hazard-3.png';
-  OIL_1    = 'sprites/Oil-1.png';     OIL_2    = 'sprites/Oil-2.png';
-  RAMP     = 'sprites/Ramp.png';      MULTI_RAMP = 'sprites/Multi-Ramp.png';
-  MINEFIELD = 'sprites/Minefield.png';
-  FIRE_1   = 'sprites/Fire!-1.png';   FIRE_2   = 'sprites/Fire!-2.png';   FIRE_3 = 'sprites/Fire!-3.png';
-  FIRE_4   = 'sprites/Fire!-4.png';   FIRE_5   = 'sprites/Fire!-5.png';   FIRE_6 = 'sprites/Fire!-6.png';
-  IMP_1    = 'sprites/Impassable-1.png'; IMP_2 = 'sprites/Impassable-2.png'; IMP_3 = 'sprites/Impassable-3.png';
-  IMP_4    = 'sprites/Impassable-4.png'; IMP_5 = 'sprites/Impassable-5.png'; IMP_6 = 'sprites/Impassable-6.png';
-  IMP_7    = 'sprites/Impassable-7.png';
-  IMP_8    = 'sprites/Impassable-8.png';
+  HAZARD_1 = 'sprites/Hazard-1.webp';  HAZARD_2 = 'sprites/Hazard-2.webp';  HAZARD_3 = 'sprites/Hazard-3.webp';
+  OIL_1    = 'sprites/Oil-1.webp';     OIL_2    = 'sprites/Oil-2.webp';
+  RAMP     = 'sprites/Ramp.webp';      MULTI_RAMP = 'sprites/Multi-Ramp.webp';
+  MINEFIELD = 'sprites/Minefield.webp';
+  FIRE_1   = 'sprites/Fire!-1.webp';   FIRE_2   = 'sprites/Fire!-2.webp';   FIRE_3 = 'sprites/Fire!-3.webp';
+  FIRE_4   = 'sprites/Fire!-4.webp';   FIRE_5   = 'sprites/Fire!-5.webp';   FIRE_6 = 'sprites/Fire!-6.webp';
+  IMP_1    = 'sprites/Impassable-1.webp'; IMP_2 = 'sprites/Impassable-2.webp'; IMP_3 = 'sprites/Impassable-3.webp';
+  IMP_4    = 'sprites/Impassable-4.webp'; IMP_5 = 'sprites/Impassable-5.webp'; IMP_6 = 'sprites/Impassable-6.webp';
+  IMP_7    = 'sprites/Impassable-7.webp';
+  IMP_8    = 'sprites/Impassable-8.webp';
 }
 initOverlaySources();
 
@@ -58,21 +58,21 @@ function allImagesReady() {
 
 // Texture paths — used as href in SVG and as keys in IMAGES_B64 (must match exactly)
 const TEXTURE_PATHS = {
-  road:  'textures/Texture-Road.png',
-  goo:   'textures/Texture-Toxic-Goo.png',
-  mud:   'textures/Texture-Muddy.png',
-  sand:  'textures/Texture-Off-Road.png',
-  salt:  'textures/Texture-Salt-Flats.png',
-  glass: 'textures/Texture-Desert-Glass.png',
+  road:  'textures/Texture-Road.webp',
+  goo:   'textures/Texture-Toxic-Goo.webp',
+  mud:   'textures/Texture-Muddy.webp',
+  sand:  'textures/Texture-Off-Road.webp',
+  salt:  'textures/Texture-Salt-Flats.webp',
+  glass: 'textures/Texture-Desert-Glass.webp',
 };
 
 // Image de titre par défaut, affichée tant que l'utilisateur n'en a pas chargé
 // une via "Load title image" — rend le plateau plus accueillant dès l'ouverture
 // qu'un simple fond marron uni. Chargée en tout dernier (moins prioritaire que
 // textures/sprites/décorations/police), voir allSources plus bas.
-const DEFAULT_TITLE_IMAGE_PATH = 'textures/TitleImage.png';
+const DEFAULT_TITLE_IMAGE_PATH = 'textures/TitleImage.webp';
 // Blason affiché dans la bande de titre des plateaux Ignition.
-const BLASON_PATH = 'sprites/BlasonIgnition.png';
+const BLASON_PATH = 'sprites/BlasonIgnition.webp';
 
 // ---- Load all images at startup ----
 // Strategy:

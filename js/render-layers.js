@@ -379,13 +379,13 @@ function pairDecorAnchor(colA, rowA, colB, rowB) {
 // — toujours le "Long". "Full" s'utilise uniquement quand les deux segments touchent
 // une texture Autre, pour éviter une couture visible entre deux png accolés.
 const EDGE_PATHS = {
-  LeftEdge: 'edges/LeftEdge.png',
-  RightEdge: 'edges/RightEdge.png',
-  TopEdgeFull: 'edges/TopEdgeFull.png',
-  TopEdgeLeftLong: 'edges/TopEdgeLeftLong.png',
-  TopEdgeLeftShort: 'edges/TopEdgeLeftShort.png',
-  TopEdgeRightLong: 'edges/TopEdgeRightLong.png',
-  TopEdgeRightShort: 'edges/TopEdgeRightShort.png',
+  LeftEdge: 'edges/LeftEdge.webp',
+  RightEdge: 'edges/RightEdge.webp',
+  TopEdgeFull: 'edges/TopEdgeFull.webp',
+  TopEdgeLeftLong: 'edges/TopEdgeLeftLong.webp',
+  TopEdgeLeftShort: 'edges/TopEdgeLeftShort.webp',
+  TopEdgeRightLong: 'edges/TopEdgeRightLong.webp',
+  TopEdgeRightShort: 'edges/TopEdgeRightShort.webp',
 };
 const EDGE_W = 657, EDGE_H = 622;
 // Au-delà de cette largeur de segment (px), on considère le côté "Long" plutôt que
