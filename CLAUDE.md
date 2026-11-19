@@ -119,8 +119,9 @@ Le lire avant tout travail.
   (`js/vendor/`, MIT) chargé à la demande (`loadJsPdf`) ; même image sans perte, page à la taille du
   papier.
 - **Affichage d'Ignition** : classe `board-ignition` sur `#bwrap` (posée par `applyBoardType`) : même
-  hauteur que Vendetta, centré, dès 700 px de large ; `boardDisplayFraction()` (`js/assets.js`) suit la
-  même règle pour choisir les aperçus.
+  hauteur que Vendetta, centré, dès 700 px de large ; le cadre blanc (la « feuille ») suit le plateau, à
+  ses vraies proportions (portrait), jamais la zone en paysage ; `boardDisplayFraction()` (`js/assets.js`)
+  suit la même règle pour choisir les aperçus.
 - **Échelle de contrôle (`renderScaleBar`, calque `layer-scale`)** : 3 cm / 1 in à gauche de la 6e
   rangée, dans la zone imprimée ; visible à l'écran et dans l'export.
 - `tools/` : outils de développement (hors de la page).

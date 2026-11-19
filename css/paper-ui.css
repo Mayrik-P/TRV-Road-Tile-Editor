@@ -104,9 +104,12 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 /* Plateau Ignition (portrait) : même hauteur d'affichage que Vendetta, centré (demande de Mayrik
    du 19/11 : moins de défilement vertical). Largeur = 2481 / 4961 de la zone. Sur téléphone (< 700 px),
    pleine largeur : à la hauteur de Vendetta, les cases seraient trop petites pour le doigt.
-   À garder en accord avec boardDisplayFraction() (js/assets.js). */
-#bwrap.board-ignition #bsvg { width: calc(100% * 2481 / 4961); margin: 0 auto; }
-@media (max-width: 699px) { #bwrap.board-ignition #bsvg { width: 100%; } }
+   À garder en accord avec boardDisplayFraction() (js/assets.js).
+   Le cadre blanc (la « feuille ») suit le plateau, pas la zone : une feuille en paysage autour d'un
+   plateau en portrait faisait croire à une impression en paysage (Mayrik, 19/11 ; convention des
+   logiciels de mise en page : la page à ses vraies proportions, posée sur un fond neutre). */
+#bwrap.board-ignition { width: calc(100% * 2481 / 4961); margin-left: auto; margin-right: auto; }
+@media (max-width: 699px) { #bwrap.board-ignition { width: auto; margin-left: 0; margin-right: 0; } }
 
 /* ---- Boutons de la barre d'outils : chevrons ---- */
 .btn { position: relative; isolation: isolate; font-family: var(--display); font-weight: 400; text-transform: uppercase;
