@@ -49,6 +49,7 @@
     <div id="tb-load">
       <button class="btn" id="title-img-btn" onclick="document.getElementById('title-img-input').click()" aria-label="Ideal size: 4243 × 456 px"><span id="title-img-label">Load title image</span><span class="tooltip" id="title-img-tooltip">Ideal size: 4243 × 456 px</span></button>
       <input id="title-img-input" type="file" accept="image/png,image/jpeg" style="display:none" onchange="loadTitleImage(this)"/>
+      <button class="btn" id="reset-title-btn" style="white-space:nowrap;" onclick="resetTitleImage()">Reset title image</button>
       <span id="title-img-warn" style="font-size:10px;color:#E8231A;display:none;">⚠ Image too small — may appear blurry when printed</span>
     </div>
     <div id="name-field-group">
@@ -69,7 +70,6 @@
         <span id="export-label">Loading… 0%</span>
       </button>
       <div id="reset-group">
-        <button class="btn" id="reset-title-btn" style="white-space:nowrap;" onclick="resetTitleImage()">Reset title image</button>
         <button class="btn" id="clear-btn" style="white-space:nowrap;" onclick="clearBoard()">Clear board</button>
       </div>
     </div>

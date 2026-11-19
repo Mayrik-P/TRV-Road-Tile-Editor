@@ -205,7 +205,8 @@ versionné (`formatVersion`), plateau complet et image de titre intégrée ; « 
 barre d'outils (même nom que le PNG), « Open project file » sur l'accueil ; ouvert par-dessus un
 plateau en cours, Ctrl+Z ramène l'ancien ; fichiers refusés avec un message clair (pas un projet,
 abîmé, version plus récente). Test `tools/check-project.js` (16 contrôles, vérifié par sabotage).
-**Phase 4 terminée.**
+**Phase 4 terminée.** Barre d'outils réorganisée par thème (variante C choisie par Mayrik sur aperçus,
+19/11) : une seule ligne sur ordinateur, Clear board isolé à droite.
 
 | Tranche | Contenu |
 |---|---|
