@@ -176,28 +176,27 @@ function selectTileType(id) {
   document.getElementById('tb-' + id)?.classList.add('sel');
 }
 
-function resetBoard() {
+// « Clear board » (tranche 4c, remplace « Reset road tile ») : toutes les cases remises en
+// DEFAULT_TILE sans quitter l'éditeur ; nom, numéro et image de titre gardés. Une seule
+// étape d'annulation (beginAction / endAction) : Ctrl+Z ramène tout le plateau.
+function clearBoard() {
+  const label = TILES.find(t => t.id === DEFAULT_TILE).label;
   const ok = confirm(
-    'This will reset all board spaces back to ' + TILES.find(t => t.id === DEFAULT_TILE).label + ', let you choose the board format again, ' +
-    'and reset the title image back to default.\n\n' +
-    'It will NOT change the road name/number.'
+    'Clear all board spaces back to ' + label + '?\n\n' +
+    'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).'
   );
   if (!ok) return;
-  // Réaffiche l'écran de choix Vendetta/Ignition — chooseBoardType() se charge
-  // ensuite de remettre le plateau à zéro (cases, variantes, cycles) pour le
-  // format choisi. Pas de bouton dédié pour changer de format : ce point d'accès
-  // (via Reset) suffit et évite d'ajouter un contrôle UI supplémentaire pour un
-  // geste qui restera rare.
-  // L'image de titre est aussi remise à la valeur par défaut : elle n'est pas
-  // forcément adaptée au nouveau format choisi (résolution différente), mieux
-  // vaut repartir d'un état propre plutôt que garder une image cadrée pour
-  // l'ancien format.
-  TITLE_IMAGE = DEFAULT_TITLE_IMAGE;
-  document.getElementById('title-img-warn').style.display = 'none';
-  document.getElementById('title-img-label').textContent = 'Load title image';
-  document.getElementById('title-img-btn').style.color = '';
+  beginAction();
+  try { for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE); }
+  finally { endAction(); }
+}
+
+// « Home » (tranche 4c) : retour à l'écran d'accueil sans rien perdre — le plateau reste en
+// mémoire et sauvegardé ; « Continue » y revient avec son historique, « Vendetta » /
+// « Ignition » démarrent un nouveau plateau (Ctrl+Z ramène l'ancien).
+function goHome() {
   document.getElementById('board-type-picker').style.display = 'flex';
-  notifyBoardChange('title-image');
   refreshContinueButton();
+  fitAllTitleStacks();
 }
 

@@ -37,14 +37,30 @@ const { chromium } = require('playwright');
   const sAfterName = await state();
   await p.keyboard.press('Control+z');
   check('saisie du nom annulée en une seule étape', await state() === sBeforeName && sAfterName !== sBeforeName);
-  // Reset du plateau + nouveau format, puis annulation
+  // Clear board : tout le plateau vidé en une étape, nom gardé, Ctrl+Z ramène tout
+  const sBeforeClear = await state();
+  await p.fill('#title-input', 'Mesa'); await p.dispatchEvent('#title-input', 'input'); await p.evaluate(() => document.activeElement.blur());
+  const sNamed = await state();
+  p.once('dialog', d => d.accept()); await p.click('#clear-btn');
+  check('Clear board : toutes les cases au type d\'un plateau neuf, nom gardé',
+        await p.evaluate(() => board.every(t => t === DEFAULT_TILE) && document.getElementById('title-input').value === 'Mesa'));
+  await p.keyboard.press('Control+z');
+  check('Clear board puis Ctrl+Z : plateau revenu en une étape', await state() === sNamed);
+  await p.keyboard.press('Control+z'); // annule aussi le nom, pour la suite du test
+  p.once('dialog', d => d.dismiss()); await p.click('#clear-btn');
+  check('Clear board refusé : rien ne change', await state() === sBeforeClear);
+  // Home puis Continue : éditeur rouvert, historique intact
+  await p.click('#home-btn'); await p.click('#board-type-continue');
+  await p.keyboard.press('Control+y'); await p.keyboard.press('Control+z');
+  check('Home puis Continue : historique intact (Ctrl+Y / Ctrl+Z fonctionnent)', await state() === sBeforeClear && !(await btn('undo-btn')));
+  // Home + nouveau format, puis annulation
   const sBeforeReset = await state();
-  p.once('dialog', d => d.accept()); await p.click('#reset-btn'); await p.click('#board-type-ignition');
+  await p.click('#home-btn'); await p.click('#board-type-ignition');
   await p.waitForFunction(() => BOARD_TYPE === 'ignition');
   await p.keyboard.press('Control+z');
-  check('Reset + Ignition annulé : retour au plateau Vendetta peint', await state() === sBeforeReset && await p.evaluate(() => BOARD_TYPE) === 'vendetta');
+  check('Home + Ignition annulé : retour au plateau Vendetta peint', await state() === sBeforeReset && await p.evaluate(() => BOARD_TYPE) === 'vendetta');
   // Raccourcis inactifs sur l'écran d'accueil
-  p.once('dialog', d => d.accept()); await p.click('#reset-btn');
+  await p.click('#home-btn');
   const sPicker = await state(); await p.keyboard.press('Control+z');
   check("raccourcis inactifs sur l'écran d'accueil", await state() === sPicker);
   console.log(results.join('\n')); console.log('erreurs :', errs.length ? errs : 'aucune');

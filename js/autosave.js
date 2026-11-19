@@ -56,6 +56,7 @@ function refreshContinueButton() {
   const btn = document.getElementById('board-type-continue');
   const saved = readSavedBoard();
   btn.hidden = !saved;
+  document.getElementById('picker-heading').textContent = saved ? 'Continue your road or start a new one' : 'Choose your board format';
   if (!saved) return;
   const type = BOARD_TYPES[saved.boardType].label;
   const name = saved.boardType === 'ignition'
@@ -67,6 +68,9 @@ function refreshContinueButton() {
 function continueSavedBoard() {
   const saved = readSavedBoard();
   if (!saved) { refreshContinueButton(); return; }
+  // Retour depuis « Home » : le plateau est déjà en mémoire (identique à la sauvegarde) —
+  // on rouvre simplement l'éditeur, son historique d'annulation reste intact.
+  if (undoHistory.current && JSON.stringify(getBoardState()) === JSON.stringify(saved)) { showEditor(); return; }
   setBoardState(saved); // affiche l'éditeur ; 'restore' devient le point de départ de l'historique
   titleStore(db => db.get(TITLE_IMAGE_KEY).then(dataUrl => {
     if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return;
@@ -85,6 +89,9 @@ function continueSavedBoard() {
 function startNewBoard(type) {
   const saved = readSavedBoard();
   if (saved && !undoHistory.current) setHistoryBaseline(saved);
+  // Nouveau plateau = image de titre par défaut (sa taille idéale dépend du format ; même
+  // règle que l'ancien « Reset road tile »). Non rétablie par Ctrl+Z (hors de la photo).
+  if (TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE) resetTitleImage();
   chooseBoardType(type);
 }
 

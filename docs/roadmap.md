@@ -193,8 +193,14 @@ redessiner ensuite.
 **4a + 4b faites ensemble (19/11)** : `js/autosave.js` (d'après la PR #1), image de titre dans IndexedDB
 (`idb-keyval` 6.2.1 copiée dans `js/vendor/`), bouton « Continue » sur l'accueil, nouveau plateau
 annulable par Ctrl+Z. Test `tools/check-autosave.js` (14 contrôles, dont une image de titre de 5,8 Mo
-et le stockage interdit ; vérifié par sabotage). Restent 4c (Clear board / Home) et 4d (fichier de
-projet).
+et le stockage interdit ; vérifié par sabotage).
+**4c faite (19/11)** : « Clear board » (rouge, remplace « Reset road tile ») vide le plateau sans
+quitter l'éditeur, nom / numéro / image gardés, confirmation qui rappelle Ctrl+Z, une seule étape
+d'annulation ; « Home » (chevron de retour) revient à l'accueil sans rien perdre — « Continue » rouvre
+l'éditeur avec son historique intact, un nouveau format reste annulable (et remet l'image de titre par
+défaut, comme l'ancien Reset) ; phrase de l'accueil « Continue your road or start a new one » quand
+« Continue » est proposé. Contrôles ajoutés à `tools/check-undo.js` (17, vérifiés par sabotage). Reste
+4d (fichier de projet).
 
 | Tranche | Contenu |
 |---|---|

@@ -110,8 +110,12 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .btn.p:disabled { background: var(--ink); color: var(--paper); opacity: .55; cursor: default; }
 #export-btn { width: 150px; }
 #export-progress { background: rgba(240,149,44,.55); }
-#reset-btn { background: var(--red); color: var(--paper); }
-#reset-btn:hover { background: #c92f22; color: var(--paper); }
+#clear-btn { background: var(--red); color: var(--paper); }
+#clear-btn:hover { background: #c92f22; color: var(--paper); }
+/* « Home » : bouton de retour (chevron vers la gauche, contour), comme dans TRV-Pocket */
+#home-btn { clip-path: var(--chev-back); color: var(--ink); background: var(--ink); }
+#home-btn::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
+#home-btn:hover::before { background: var(--paper-2); }
 #title-img-btn { width: auto; }
 #title-img-btn .tooltip { font-family: var(--text); font-size: 13px; background: var(--ink); color: var(--paper); border-radius: 0; clip-path: none; }
 #title-img-warn { font-family: var(--text); font-size: 13px !important; color: var(--red) !important; }
