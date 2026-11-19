@@ -21,13 +21,16 @@ const CREDITS = {
   sections: [
     { title: 'TRV Road Tile Editor', lines: [
       ['Created by', 'Mayrik PADEY'],
-      ['Programming', 'Written with Claude Code (Anthropic) under Mayrik’s direction, every step specified and validated by him'] ] },
+      ['Programming', 'Written with Claude Code (Anthropic) under Mayrik’s direction, every step specified and validated by him'],
+      // (Mayrik, 19/11 : les images non scannées du jeu sont ses créations)
+      ['Original artwork', 'Mayrik PADEY (all images that are not scans of the game)'] ] },
     { title: 'Contributors', lines: [
       ['Autosave and keyboard navigation ideas', 'ChessMess (GitHub pull requests #1 and #2)'],
       'Many thanks to everyone who suggests ideas or reports problems on GitHub.' ] },
-    // (crédits du livret de règles, repris de TRV-Pocket tels quels)
-    { title: 'Thunder Road: Vendetta', lines: [
-      'The board game by Restoration Games. Images from Thunder Road: Vendetta are © Restoration Games, LLC and are used with permission.',
+    // (crédits du livret de règles, repris de TRV-Pocket tels quels ; Ignition = version allégée du jeu,
+    // même éditeur et même équipe — Mayrik, 19/11)
+    { title: 'Thunder Road: Vendetta and Ignition', lines: [
+      'The board games by Restoration Games; Ignition is a lighter version of Thunder Road: Vendetta, made by the same team. Images from Thunder Road: Vendetta are © Restoration Games, LLC and are used with permission.',
       ['Game design', 'Brett Myers, Dave Chalker'],
       ['Additional design and development', 'Justin D. Jacobson, Rob Daviau, Brian Neff, Noah Cohen'],
       ['Original design', 'Jim Keifer'],
@@ -51,7 +54,7 @@ const CREDITS = {
       ['jsPDF', '© 2010-2025 James Hall, © 2015-2025 yWorks GmbH (MIT License, below)'],
       ['idb-keyval', '© 2016 Jake Archibald (Apache License 2.0, below)'] ] },
     { title: 'Legal', lines: [
-      'Thunder Road: Vendetta and all associated trade dress are trademarks of Restoration Games, LLC.',
+      'Thunder Road: Vendetta, Ignition and all associated trade dress are trademarks of Restoration Games, LLC.',
       'Program code and original artwork © 2026 Mayrik PADEY. All rights reserved.' ] }
   ],
   licenses: [
