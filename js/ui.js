@@ -82,6 +82,7 @@ function applyBoardType(type) {
   BANDS = computeBands();
   const rect = computeGameRect();
   GAME_X = rect.x; GAME_Y = rect.y; GAME_W = rect.w; GAME_H = rect.h;
+  setDisplayVariant(); // aperçus adaptés à la taille affichée de ce format (assets.js)
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
   // Résolution conseillée pour l'image de titre : dépend de la largeur réelle

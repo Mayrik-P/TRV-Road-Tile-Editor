@@ -20,11 +20,10 @@ function renderAllTextures(g, defs) {
         cp.appendChild(mkEl('polygon', {points: pts2s(cellPoly(col, row)), 'data-cell': row * COLS + col}));
       }
     defs.appendChild(cp);
-    // Use base64 directly in SVG — avoids any CORS issue during export
-    // Falls back to TEXTURE_PATHS if base64 not yet ready (first render)
+    // Aperçu à l'écran (displayHref) ; l'export le remplace par l'original.
     g.appendChild(mkEl('image', {
       id: 'tex-image-' + base,
-      href: IMAGES_B64[TEXTURE_PATHS[base]] || TEXTURE_PATHS[base],
+      href: displayHref(TEXTURE_PATHS[base]),
       x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H,
       'clip-path': `url(#${clipId})`,
       preserveAspectRatio: 'none'
@@ -88,9 +87,12 @@ function renderTitleBand(g) {
   // (Load title image), affichée dans les deux formats de plateau. Seule la
   // résolution conseillée (infobulle) diffère selon le format, voir
   // titleImageIdealSize().
-  if (TITLE_IMAGE) {
+  // Image par défaut (aucune image de l'utilisateur) : son aperçu, affiché dès qu'il
+  // est téléchargé ; une image de l'utilisateur est affichée telle quelle.
+  const userTitleImage = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
+  {
     g.appendChild(mkEl('image', {
-      href: TITLE_IMAGE.src,
+      href: userTitleImage ? TITLE_IMAGE.src : displayHref(DEFAULT_TITLE_IMAGE_PATH),
       x: tb.left - NOTCH, y: tb.top,
       width: tbR - tb.left + NOTCH * 2, height: tbH,
       preserveAspectRatio: 'xMidYMid slice'
@@ -100,9 +102,9 @@ function renderTitleBand(g) {
     // Blason Ignition : aligné à gauche à la même distance du bord que le texte
     // de titre Vendetta, centré verticalement dans la bande.
     const { blasonSize, blasonLeft, blasonCx } = ignitionBlasonGeometry(tb, tbH);
-    if (IMAGES_B64[BLASON_PATH]) {
+    {
       g.appendChild(mkEl('image', {
-        href: IMAGES_B64[BLASON_PATH] || BLASON_PATH,
+        href: displayHref(BLASON_PATH),
         x: blasonLeft, y: tbMid - blasonSize / 2,
         width: blasonSize, height: blasonSize,
         // Incliné 10° vers la gauche (sens anti-horaire), demandé par Mayrik —
@@ -409,7 +411,7 @@ function placeRoadEdge(g, edgeName, cx, cy, flipV = false) {
   const src = EDGE_PATHS[edgeName];
   const ew = EDGE_W * EDGE_SCALE, eh = EDGE_H * EDGE_SCALE;
   const attrs = {
-    href: IMAGES_B64[src] || src,
+    href: displayHref(src),
     x: cx - ew / 2 + EDGE_X_NUDGE, y: cy - eh / 2, width: ew, height: eh,
     'pointer-events': 'none'
   };
@@ -503,7 +505,7 @@ function renderAllDecorations(g) {
     const itemSeed = seededRandom(grp.cells[0] * 53 + grp.cells.length * 29 + 7);
     const itemSrc = ITEM_PATHS[Math.floor(itemSeed * ITEM_PATHS.length)];
     g.appendChild(mkEl('image', {
-      href: IMAGES_B64[itemSrc] || itemSrc,
+      href: displayHref(itemSrc),
       x: x - size / 2, y: y - size / 2, width: size, height: size,
       'pointer-events': 'none', 'data-decor-cell': rowA * COLS + colA
     }));

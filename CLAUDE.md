@@ -66,7 +66,15 @@ Le lire avant tout travail.
   95** (tranche 1a). Originaux sans perte (PNG) dans `<dossier>/source/`, jamais chargés par la page ;
   **`python3 tools/make-webp.py [dossier]`** en tire les WebP (à relancer dès qu'un original change ou
   s'ajoute). Réglages validés par le test à l'aveugle de Mayrik du 19/11 (5/20 à taille réelle, 13/20
-  en ×2 : aucune différence perçue).
+  en ×2 : aucune différence perçue). Le même script fait les **aperçus** `<dossier>/half/` (50 %) et
+  `<dossier>/quarter/` (25 %), toujours tirés des PNG.
+- **Aperçus à l'écran, originaux à l'export (tranche 1c)** : toute image affichée passe par
+  `displayHref(chemin de l'original)` (jamais de base64 dans la page). La copie est choisie par
+  `setDisplayVariant()` à chaque choix de format : la plus petite qui reste nette pour la taille
+  réellement affichée (largeur × densité de l'écran / largeur du plateau) ; forçable par
+  `?display=quarter|half|full`. Les originaux sont téléchargés en arrière-plan après les aperçus,
+  gardés en base64 (`IMAGES_B64`, jamais décodés), et `exportPNG` remplace chaque aperçu par son
+  original dans la copie exportée (un original manquant arrête l'export).
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 

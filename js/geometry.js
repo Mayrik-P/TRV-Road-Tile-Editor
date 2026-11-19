@@ -31,10 +31,10 @@ function mkEl(tag, attrs) {
 }
 
 // Generic overlay placer: positions an <image> centered on (cx,cy) with given size/offset
-// Uses base64 from IMAGES_B64 if available — ensures export works without CORS issues
+// Affiche l'aperçu (displayHref) ; l'export le remplace par l'original (exportPNG).
 function placeOverlay(svg, href, cx, cy, w, h, dx = 0, dy = 0) {
   const img = mkEl('image', {
-    href: IMAGES_B64[href] || href,
+    href: displayHref(href),
     x: Math.round(cx - w / 2 + dx),
     y: Math.round(cy - h / 2 + dy),
     width: w, height: h,
@@ -204,7 +204,7 @@ function getSharedTextureImage(defs, base) {
   if (transTexCache[base]) return transTexCache[base];
   const id = `trans-tex-${base}`;
   const img = mkEl('image', {
-    id, href: IMAGES_B64[TEXTURE_PATHS[base]] || TEXTURE_PATHS[base],
+    id, href: displayHref(TEXTURE_PATHS[base]),
     x: GAME_X, y: GAME_Y, width: GAME_W, height: GAME_H, preserveAspectRatio: 'none'
   });
   defs.appendChild(img);

@@ -110,6 +110,20 @@ en ×1, 13/20 en ×2** (18/40 au total, hasard) → **WebP 95 retenu** (choix de
 pour l'impression agrandie). Poids : 66,2 → 8,9 Mo (WebP sans perte mesuré : 40,7 Mo). Connexion
 simulée à 5 Mbit/s : plateau texturé visible 16,1 → 2,5 s, export prêt 108,8 → 15,6 s. Qualités 80 et
 88 écartées par Mayrik sans test (pas de compression plus forte).
+**1c faite (19/11)**, avec l'essentiel de 1d et 1e : aperçus quart / moitié (0,72 / 2,29 Mo pour toutes
+les images), copie choisie selon la taille affichée (Vendetta : quart sur écran standard et téléphone,
+moitié sur Retina ; Ignition : moitié sur écran standard et téléphone, original sur Retina) ; plus de
+base64 dans la page (9,1 millions de caractères -> 300) ; originaux en arrière-plan après les aperçus,
+jamais décodés ; export inchangé (identique octet par octet). À 5 Mbit/s, après le choix du format :
+toutes les textures affichées en 1,2 s au lieu de 15,3 s ; export prêt en 16 s (téléchargement des
+originaux pendant qu'on peint). Reste de 1e à juger à l'usage : libellé « Preparing high-res… » si l'on
+clique sur Export avant la fin (aujourd'hui : bouton grisé avec « Loading… % »).
+**Constaté en chemin (v1.00)** : chaque texture est ajustée à toute la zone des cases sans garder ses
+proportions (`preserveAspectRatio="none"`). Vendetta : agrandie ×1,41 dans les deux sens (environ
+212 dpi réels à l'impression). **Ignition : déformée**, ×0,76 en largeur et ×1,41 en hauteur (motifs
+étirés en hauteur d'un facteur 1,9). Correction possible plus tard, avec l'accord de Mayrik car elle
+change l'aspect des plateaux Ignition : recadrage en gardant les proportions (`xMidYMid slice`,
+l'équivalent SVG de `object-fit: cover`).
 
 Méthode éprouvée des **logiciels de montage vidéo** (fichiers « proxy » de Premiere, DaVinci, Nuke) :
 on travaille sur des copies légères et on n'utilise les originaux qu'au moment de l'export. TRV-Pocket

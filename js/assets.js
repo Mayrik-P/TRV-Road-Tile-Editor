@@ -1,5 +1,5 @@
-// ===== js/assets.js — Chemins des images et polices, chargement au démarrage (base64 pour l'export),
-// déblocage du bouton Export quand tout est prêt.
+// ===== js/assets.js — Chemins des images et polices ; aperçus à l'écran (copie adaptée à la
+// taille affichée) ; originaux en base64 pour l'export ; déblocage du bouton Export.
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
 // globale et sont chargés par index.html dans un ordre fixe — config, state, geometry,
@@ -48,10 +48,9 @@ function allImagesReady() {
     OSWALD_BOLD_FONT_URL,
   ];
   const fetchesOk = required.every(src => !!IMAGES_B64[src]);
-  // Le fetch/base64 ne suffit pas : il faut aussi que le décodage <Image> de
-  // chaque texture soit terminé, sinon le SVG peut encore référencer un chemin
-  // de fichier brut au moment de l'export (voir checkFullyReady). Alfa Slab One
-  // et Oswald bloquent l'export (utilisées dans le titre du plateau exporté).
+  // Les aperçus des textures doivent aussi être affichés : sans eux, le plateau ne
+  // contient pas encore ses calques de texture et l'export en serait privé. Alfa Slab
+  // One et Oswald bloquent l'export (utilisées dans le titre du plateau exporté).
   const texturesOk = Object.keys(TEXTURE_PATHS).every(key => !!TEXTURES[key]);
   return fetchesOk && texturesOk && defaultTitleImageDecoded && ALFASLABONE_READY && OSWALD_READY;
 }
@@ -74,223 +73,190 @@ const DEFAULT_TITLE_IMAGE_PATH = 'textures/TitleImage.webp';
 // Blason affiché dans la bande de titre des plateaux Ignition.
 const BLASON_PATH = 'sprites/BlasonIgnition.webp';
 
-// ---- Load all images at startup ----
-// Strategy:
-// 1. Road texture is loaded first so the board appears immediately on launch.
-// 2. All other images load in parallel afterward.
-// 3. Each image is converted to base64 (for CORS-safe export) immediately after loading.
-// 4. The Export button unlocks only when every base64 conversion is confirmed complete.
-window.addEventListener('load', function () {
+// ---- Aperçus à l'écran (tranche 1c) ----
+// Méthode des fichiers « proxy » des logiciels de montage (et des dossiers par densité
+// d'Android, déjà utilisée par TRV-Pocket) : l'écran affiche une copie réduite de
+// chaque image, l'export utilise toujours l'original. Trois copies, mêmes noms :
+// <dossier>/quarter/ (25 %), <dossier>/half/ (50 %), <dossier>/ (original), faites
+// par tools/make-webp.py. On prend la plus petite qui reste nette pour la taille
+// réellement affichée du format choisi (jamais une valeur fixe pensée pour le
+// téléphone : un écran Retina reçoit une copie plus fine).
+let DISPLAY_DIR = null;            // 'quarter/', 'half/' ou '' (original) ; null avant le choix du format
+const FULL_OF_DISPLAY = {};        // adresse d'aperçu -> chemin de l'original (pour l'export)
+let displayTexturesPending = 0;    // textures d'aperçu du format en cours encore en chargement
+
+// Adresse à afficher pour une image (chemin de l'original en entrée).
+function displayHref(path) {
+  if (!DISPLAY_DIR) return path;
+  const href = path.replace(/^([^/]+)\//, `$1/${DISPLAY_DIR}`);
+  FULL_OF_DISPLAY[href] = path;
+  return href;
+}
+
+// Copie d'aperçu adaptée : pixels d'écran réels du plateau / pixels de l'original.
+// Forçable pour les vérifications : ?display=quarter|half|full dans l'adresse.
+function pickDisplayDir() {
+  const forced = new URLSearchParams(location.search).get('display');
+  if (forced === 'quarter' || forced === 'half') return forced + '/';
+  if (forced === 'full') return '';
+  const cssWidth = Math.min(document.documentElement.clientWidth || window.innerWidth, 1200);
+  const need = cssWidth * (window.devicePixelRatio || 1) / VW;
+  return need <= 0.25 ? 'quarter/' : need <= 0.5 ? 'half/' : '';
+}
+
+// Appelé par applyBoardType (ui.js) à chaque choix de format : (re)charge les
+// textures d'aperçu si la copie adaptée change, dans l'ordre voulu par Mayrik
+// (Road, Off-Road, Muddy, puis le reste), puis lance les originaux en arrière-plan.
+function setDisplayVariant() {
+  const dir = pickDisplayDir();
+  if (dir === DISPLAY_DIR) return;
+  DISPLAY_DIR = dir;
+  Object.keys(TEXTURES).forEach(k => delete TEXTURES[k]);
+  const order = ['road', 'sand', 'mud', ...Object.keys(TEXTURE_PATHS).filter(k => !['road', 'sand', 'mud'].includes(k))];
+  displayTexturesPending = order.length;
+  updateExportButton();
+  (async () => {
+    for (const key of order) {
+      await new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => { if (DISPLAY_DIR === dir) { TEXTURES[key] = img; buildBoard(); } resolve(); };
+        img.onerror = () => { console.warn('Preview failed:', displayHref(TEXTURE_PATHS[key])); resolve(); };
+        img.src = displayHref(TEXTURE_PATHS[key]);
+      });
+      if (DISPLAY_DIR !== dir) return; // format changé entre-temps : un autre chargement a pris le relais
+      displayTexturesPending--;
+    }
+    updateExportButton();
+    startFullResLoading();
+  })();
+}
+
+// ---- Originaux (export) et polices ----
+// Polices dès l'ouverture de la page (titre de l'appli, puis du plateau). Originaux
+// des images en arrière-plan, une fois les aperçus du premier plateau affichés, pour
+// ne pas leur disputer la connexion. Chacun est converti en base64 (fetch puis
+// FileReader : pas de canevas, aucun risque CORS) pour être intégré au SVG exporté ;
+// les originaux ne sont jamais décodés en image (mémoire), seul l'export les utilise.
+// Le bouton Export se débloque quand tout est prêt (updateExportButton).
+const LOAD = { done: 0, failed: 0, total: 0, fullStarted: false };
+
+function updateExportButton() {
   const btn = document.getElementById('export-btn');
   const label = document.getElementById('export-label');
   const progress = document.getElementById('export-progress');
-
-  const overlaySources = [
-    HAZARD_1, HAZARD_2, HAZARD_3,
-    OIL_1, OIL_2,
-    RAMP, MULTI_RAMP, MINEFIELD,
-    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
-    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7, IMP_8,
-    ...ITEM_PATHS,
-    ...Object.values(EDGE_PATHS),
-    BLASON_PATH,
-  ];
-
-  // Road loads first, then all others in parallel
-  const otherTextures = Object.entries(TEXTURE_PATHS).filter(([k]) => k !== 'road');
-  const allSources = [
-    {key:'road', src: TEXTURE_PATHS.road, type:'texture'},       // ← Road first
-    ...otherTextures.map(([key, src]) => ({key, src, type:'texture'})),
-    ...overlaySources.map(src => ({key: null, src, type:'overlay'})),
-    {key: 'cooperhewitt', src: COOPER_HEWITT_BOLD_URL, type:'font'},
-    {key: 'alfaslabone', src: ALFA_SLAB_ONE_FONT_URL, type:'font'},
-    {key: 'oswald', src: OSWALD_BOLD_FONT_URL, type:'font'},
-    {key: null, src: DEFAULT_TITLE_IMAGE_PATH, type:'defaultTitle'}, // ← chargée en dernier, moins prioritaire
-  ];
-
-  let converted = 0;
-  let failed = 0;
-  const total = allSources.length;
-
-  // Le décodage des images <Image> (utilisées pour l'affichage ET l'export) est
-  // asynchrone et séparé du téléchargement/conversion base64 — il faut attendre
-  // les deux avant de débloquer l'export, sinon l'export peut partir avec une
-  // texture encore non rafraîchie dans le SVG (bug observé sur Safari, plus lent
-  // à décoder, où la fenêtre de course entre les deux devient visible).
-  const textureKeys = Object.keys(TEXTURE_PATHS);
-  let texturesDecoded = 0;
-
-  function checkFullyReady() {
-    if (converted !== total || texturesDecoded !== textureKeys.length || !defaultTitleImageDecoded || !ALFASLABONE_READY || !OSWALD_READY || !COOPERHEWITT_READY) return;
-    if (allImagesReady()) {
-      // Reconstruction finale pour garantir que le SVG (et donc l'export) ne
-      // référence plus aucun chemin de fichier brut, seulement du base64.
-      buildBoard();
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      label.textContent = 'Export the .png';
-      progress.style.width = '0%';
-    } else {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      label.textContent = '⚠ Reload page';
-      progress.style.background = 'rgba(200,0,0,0.25)';
-    }
-  }
-
-  function onOneDone(success) {
-    converted++;
-    if (!success) failed++;
-    const pct = Math.round(converted / total * 100);
+  const fontsReady = ALFASLABONE_READY && OSWALD_READY && COOPERHEWITT_READY;
+  const allLoaded = LOAD.fullStarted && LOAD.done === LOAD.total && displayTexturesPending === 0
+    && defaultTitleImageDecoded && fontsReady;
+  if (!allLoaded) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    const pct = LOAD.total ? Math.round(LOAD.done / LOAD.total * 100) : 0;
     progress.style.width = pct + '%';
     label.textContent = `Loading… ${pct}%`;
-    checkFullyReady();
+    return;
   }
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  progress.style.width = '0%';
+  if (allImagesReady()) {
+    label.textContent = 'Export the .png';
+  } else {
+    label.textContent = '⚠ Reload page';
+    progress.style.background = 'rgba(200,0,0,0.25)';
+  }
+}
 
-  // Load via fetch() → FileReader.readAsDataURL()
-  // Most reliable method : bypasses canvas entirely, no CORS "tainted" risk.
-  // For textures, an Image object is also created for SVG display.
-  function loadOne({key, src, type}) {
-    return new Promise(resolve => {
-      fetch(src)
-        .then(r => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.blob();
-        })
-        .then(blob => {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            // Store base64 directly from FileReader — no canvas involved
-            IMAGES_B64[src] = e.target.result;
-
-            // For textures, also create an Image for SVG display
-            if (type === 'texture') {
-              const img = new Image();
-              img.onload = function () {
-                TEXTURES[key] = img;
-                texturesDecoded++;
-                buildBoard();
-                checkFullyReady();
-              };
-              img.onerror = function () {
-                // Le décodage a échoué : on compte quand même l'étape comme "traitée"
-                // pour ne pas bloquer indéfiniment, allImagesReady() détectera le manque.
-                texturesDecoded++;
-                checkFullyReady();
-              };
-              img.src = e.target.result;
-            }
-
-            // For the title font(s): embed in the SVG right away (for display/export),
-            // AND register via the FontFace API so document.fonts truly has it loaded —
-            // required both for canvas measureText() (pixel-precise title alignment)
-            // and to guarantee export never fires before it's really ready.
-            if (type === 'font' && key === 'cooperhewitt') {
-              FONT_B64_COOPERHEWITT = e.target.result;
-              buildBoard();
-              try {
-                const face = new FontFace('CooperHewittBold', `url(${e.target.result})`, {style: 'normal', weight: '700'});
-                face.load().then(loaded => {
-                  document.fonts.add(loaded);
-                  COOPERHEWITT_READY = true;
-                  buildBoard();
-                  checkFullyReady();
-                }).catch(() => { checkFullyReady(); });
-              } catch (e) {
-                checkFullyReady();
-              }
-            }
-            if (type === 'font' && key === 'alfaslabone') {
-              FONT_B64_ALFASLABONE = e.target.result;
-              buildBoard();
-              try {
-                const face = new FontFace('AlfaSlabOne', `url(${e.target.result})`, {style: 'normal', weight: '400'});
-                face.load().then(loaded => {
-                  document.fonts.add(loaded);
-                  ALFASLABONE_READY = true;
-                  buildBoard();
-                  checkFullyReady();
-                  fitAllTitleStacks();
-                }).catch(() => { checkFullyReady(); });
-              } catch (e) {
-                checkFullyReady();
-              }
-            }
-            if (type === 'font' && key === 'oswald') {
-              FONT_B64_OSWALD = e.target.result;
-              buildBoard();
-              try {
-                // Police variable : plage de graisse déclarée (200-700), on charge
-                // à 700 (gras) — c'est le seul poids utilisé pour ce titre.
-                const face = new FontFace('OswaldBold', `url(${e.target.result})`, {style: 'normal', weight: '200 700'});
-                face.load().then(loaded => {
-                  document.fonts.add(loaded);
-                  OSWALD_READY = true;
-                  buildBoard();
-                  checkFullyReady();
-                  fitAllTitleStacks();
-                }).catch(() => { checkFullyReady(); });
-              } catch (e) {
-                checkFullyReady();
-              }
-            }
-
-            // Image de titre par défaut : ne remplace jamais une image déjà chargée
-            // par l'utilisateur (loadTitleImage a pu s'exécuter entre-temps, même si
-            // cette source est la dernière de la file) — on décode quand même dans
-            // tous les cas, l'export en a besoin (voir allImagesReady).
-            if (type === 'defaultTitle') {
-              const img = new Image();
-              img.onload = function () {
-                DEFAULT_TITLE_IMAGE = img;
-                if (!TITLE_IMAGE) { TITLE_IMAGE = img; buildBoard(); }
-                defaultTitleImageDecoded = true;
-                checkFullyReady();
-              };
-              img.onerror = function () {
-                defaultTitleImageDecoded = true;
-                checkFullyReady();
-              };
-              img.src = e.target.result;
-            }
-
-            onOneDone(true);
-            resolve();
-          };
-          reader.onerror = function () {
-            console.warn('FileReader failed:', src);
-            if (type === 'defaultTitle') defaultTitleImageDecoded = true;
-            onOneDone(false);
-            resolve();
-          };
-          reader.readAsDataURL(blob);
-        })
-        .catch(e => {
-          console.warn('Fetch failed:', src, e);
-          if (type === 'defaultTitle') defaultTitleImageDecoded = true;
-          onOneDone(false);
-          resolve();
-        });
+// Télécharge un fichier et le garde en base64 ; pour les polices, l'enregistre aussi
+// auprès du navigateur (FontFace) — nécessaire pour l'interface, pour canvas
+// measureText() (calage du titre) et pour ne jamais exporter avant qu'elles soient prêtes.
+function loadOne({key, src, type}) {
+  return fetch(src)
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); })
+    .then(blob => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    }))
+    .then(dataUrl => {
+      IMAGES_B64[src] = dataUrl;
+      if (type === 'font') return registerFont(key, dataUrl);
+      // Image de titre par défaut : ne remplace jamais une image déjà chargée par
+      // l'utilisateur ; décodée dans tous les cas (voir allImagesReady).
+      if (type === 'defaultTitle') return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => { DEFAULT_TITLE_IMAGE = img; if (!TITLE_IMAGE) TITLE_IMAGE = img; defaultTitleImageDecoded = true; resolve(); };
+        img.onerror = () => { defaultTitleImageDecoded = true; resolve(); };
+        img.src = dataUrl;
+      });
+    })
+    .then(() => { LOAD.done++; updateExportButton(); })
+    .catch(e => {
+      console.warn('Load failed:', src, e);
+      if (type === 'defaultTitle') defaultTitleImageDecoded = true;
+      LOAD.done++; LOAD.failed++; updateExportButton();
     });
-  }
+}
 
-  // Ordre de chargement strictement séquentiel demandé par Mayrik : polices du
-  // titre/chrome (Alfa Slab One + Oswald) → Road → Off-Road → Muddy → tous les
-  // PNG Impassable → le reste en parallèle. Chaque étape attend la précédente
-  // (via await), donc c'est du temps total un peu plus long que du tout-parallèle,
-  // mais ça garantit cet ordre exact plutôt qu'une simple priorité "en tête de peloton".
-  const alfaItem  = allSources.find(s => s.key === 'alfaslabone');
-  const oswaldItem = allSources.find(s => s.key === 'oswald');
-  const roadItem  = allSources.find(s => s.key === 'road');
-  const sandItem  = allSources.find(s => s.key === 'sand');
-  const mudItem   = allSources.find(s => s.key === 'mud');
-  const impItems  = allSources.filter(s => s.src.includes('Impassable'));
-  const priorityItems = [alfaItem, oswaldItem, roadItem, sandItem, mudItem, ...impItems];
-  const restItems = allSources.filter(s => !priorityItems.includes(s));
+const FONT_FACES = {
+  alfaslabone:  { family: 'AlfaSlabOne',      weight: '400',     set: d => { FONT_B64_ALFASLABONE = d; },  ready: () => { ALFASLABONE_READY = true; } },
+  // Police variable : plage de graisse déclarée (200-700), utilisée à 700.
+  oswald:       { family: 'OswaldBold',       weight: '200 700', set: d => { FONT_B64_OSWALD = d; },       ready: () => { OSWALD_READY = true; } },
+  cooperhewitt: { family: 'CooperHewittBold', weight: '700',     set: d => { FONT_B64_COOPERHEWITT = d; }, ready: () => { COOPERHEWITT_READY = true; } },
+};
+function registerFont(key, dataUrl) {
+  const f = FONT_FACES[key];
+  f.set(dataUrl); // intégrée au SVG (affichage et export), voir buildBoard
+  if (document.getElementById('bsvg').firstChild) buildBoard();
+  let face;
+  try { face = new FontFace(f.family, `url(${dataUrl})`, { style: 'normal', weight: f.weight }); }
+  catch (e) { return; }
+  return face.load().then(loaded => {
+    document.fonts.add(loaded);
+    f.ready();
+    if (document.getElementById('bsvg').firstChild) buildBoard();
+    fitAllTitleStacks();
+  }).catch(() => {});
+}
 
+// Originaux des images, dans l'ordre voulu par Mayrik : Road, Off-Road, Muddy, les
+// Impassable un par un, puis tout le reste en parallèle (image de titre par défaut
+// en dernier, la moins prioritaire).
+function fullResItems() {
+  const overlaySources = [
+    HAZARD_1, HAZARD_2, HAZARD_3, OIL_1, OIL_2, RAMP, MULTI_RAMP, MINEFIELD,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
+    IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7, IMP_8,
+    ...ITEM_PATHS, ...Object.values(EDGE_PATHS), BLASON_PATH,
+  ];
+  const textures = ['road', 'sand', 'mud', ...Object.keys(TEXTURE_PATHS).filter(k => !['road', 'sand', 'mud'].includes(k))]
+    .map(k => ({ src: TEXTURE_PATHS[k], type: 'image' }));
+  const imps = overlaySources.filter(s => s.includes('Impassable')).map(src => ({ src, type: 'image' }));
+  const others = overlaySources.filter(s => !s.includes('Impassable')).map(src => ({ src, type: 'image' }));
+  const sequential = [...textures.slice(0, 3), ...imps];
+  const parallel = [...textures.slice(3), ...others, { src: DEFAULT_TITLE_IMAGE_PATH, type: 'defaultTitle' }];
+  return { sequential, parallel };
+}
+function startFullResLoading() {
+  if (LOAD.fullStarted) return;
+  LOAD.fullStarted = true;
+  const { sequential, parallel } = fullResItems();
+  updateExportButton();
   (async () => {
-    for (const item of priorityItems) await loadOne(item);
-    restItems.forEach(item => loadOne(item));
+    for (const item of sequential) await loadOne(item);
+    parallel.forEach(item => loadOne(item));
   })();
-});
+}
 
+window.addEventListener('load', function () {
+  // Polices d'abord : Alfa Slab One et Oswald (titre de l'appli et du plateau), puis
+  // Cooper Hewitt (numéro Ignition).
+  const fonts = [
+    { key: 'alfaslabone', src: ALFA_SLAB_ONE_FONT_URL, type: 'font' },
+    { key: 'oswald', src: OSWALD_BOLD_FONT_URL, type: 'font' },
+    { key: 'cooperhewitt', src: COOPER_HEWITT_BOLD_URL, type: 'font' },
+  ];
+  const items = fullResItems();
+  LOAD.total = fonts.length + items.sequential.length + items.parallel.length;
+  (async () => { for (const f of fonts) await loadOne(f); })();
+});

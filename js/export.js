@@ -7,7 +7,9 @@
 // dans ce fichier ou dans les précédents.
 
 // ---- Export PNG ----
-// All images are pre-converted to base64 at load time (IMAGES_B64).
+// À l'écran, le plateau affiche des aperçus (displayHref, tranche 1c) ; dans la copie
+// exportée, chaque image est remplacée par son original en pleine définition, déjà
+// converti en base64 (IMAGES_B64) : même position, même taille, export inchangé.
 // The export button is locked during export to prevent double-clicks.
 function exportPNG() {
   const btn = document.getElementById('export-btn');
@@ -28,6 +30,24 @@ function exportPNG() {
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
   clone.setAttribute('width', String(VW));
   clone.setAttribute('height', String(VH));
+
+  // Aperçus -> originaux (base64). Un original manquant arrête l'export plutôt que de
+  // produire un plateau incomplet ou en basse définition.
+  const missing = [];
+  clone.querySelectorAll('image').forEach(im => {
+    const href = im.getAttribute('href');
+    if (!href || href.startsWith('data:')) return;
+    const full = FULL_OF_DISPLAY[href] || href;
+    if (IMAGES_B64[full]) im.setAttribute('href', IMAGES_B64[full]);
+    else missing.push(full);
+  });
+  if (missing.length) {
+    console.warn('Export: originals missing', missing);
+    btn.disabled = false;
+    label.textContent = 'Export the .png';
+    alert('⚠ Some high-resolution images are missing.\nPlease reload the page and try again.');
+    return;
+  }
 
   // SVG already contains base64 hrefs (set during buildBoard) — no replacement needed.
   // Render SVG to canvas and download as PNG
