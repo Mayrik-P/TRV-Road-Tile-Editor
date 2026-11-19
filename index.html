@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TRV Road Tile Editor</title>
 <link rel="stylesheet" href="css/app.css"/>
+<script>
+  // Phase 3, essai du nouveau style (css/paper-ui.css) : appliqué seulement avec ?style=paper
+  // dans l'adresse, le temps que Mayrik compare. Une fois validé, il deviendra le style par défaut.
+  if (new URLSearchParams(location.search).get('style') === 'paper')
+    document.write('<link rel="stylesheet" href="css/paper-ui.css"/>');
+</script>
 </head>
 <body>
 <div id="board-type-picker">

@@ -173,6 +173,11 @@ peindre plusieurs cases en glissant, est couverte par le pinceau). **Phase 2 ter
 (`DEFAULT_TILE`, `js/config.js`) ; Road sélectionné au départ dans la palette ; texte du Reset à jour.
 
 ### Phase 3 — Style inspiré de TRV-Pocket et netteté des textes
+**Essai en cours (19/11)** : `css/paper-ui.css`, chargée après `css/app.css` (surcharge), active
+seulement avec `?style=paper` dans l'adresse le temps de la comparaison. Polices Anton et D-DIN
+Condensed copiées de TRV-Pocket (`fonts/anton/`, `fonts/d-din/`, licences OFL). Charte `.paper-ui` :
+papier grainé, titres « livret » (relief en pixels entiers : nets), boutons en chevron (encre, contour,
+rouge pour Reset road tile), palette en boutons de choix (sélection orange). Export inchangé (vérifié).
 À faire **avant** les phases qui ajoutent des boutons (accueil, son, décorations), pour ne pas devoir les
 redessiner ensuite.
 

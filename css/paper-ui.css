@@ -1,0 +1,140 @@
+/* ===== css/paper-ui.css — Phase 3 (docs/roadmap.md) : interface au style de TRV-Pocket.
+   Chargée APRÈS css/app.css, qu'elle surcharge (même sélecteurs, ordre de la cascade) :
+   l'ancienne feuille reste intacte, retirer ce fichier ramène l'ancien style.
+   Reprise de la charte des écrans hors plateau de TRV-Pocket (`.paper-ui`, tools/v2/index.html,
+   docs/v2-home-menu-redesign.md § 5, choix de Mayrik du 25-26/10) :
+   - papier crème grainé (bruit fractal SVG, sans fichier), encre violet-noir ;
+   - titres « livret » : Anton, remplissage sable, contour encre, relief en PIXELS ENTIERS
+     (1px 1px … 5px 5px : net, au lieu des 20 copies décalées de 0,16 px de la v1.00, floues),
+     inclinaison de 6° ;
+   - textes : D-DIN Condensed ;
+   - boutons en CHEVRON, la forme des cases des tuiles de route (« version B ») : encre pleine,
+     ou contour (.ghost), rouge pour une action destructrice ;
+   - choix exclusifs en boutons « segmentés », sélection en orange avec texte à l'encre.
+   Le plateau lui-même (SVG, titre imprimé compris) n'est pas concerné (décision de Mayrik). */
+
+@font-face { font-family: "Anton"; src: url(../fonts/anton/Anton-Regular-latin.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "D-DIN Condensed"; src: url(../fonts/d-din/D-DINCondensed.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "D-DIN Condensed"; src: url(../fonts/d-din/D-DINCondensed-Bold.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  /* couleurs de TRV-Pocket (.paper-ui) */
+  --paper: #f3e6c8; --paper-2: #e9d8b4; --ink: #1d1426; --red: #e0392b; --orange: #f0952c; --tan: #eaa552;
+  --terracotta: #bf5d3e; --rust: #6b3324; --muted: #7a6a5c;
+  --extrude-text: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink), 3px 3px 0 var(--ink), 4px 4px 0 var(--ink), 5px 5px 0 var(--ink);
+  --extrude-small: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink);
+  /* chevron des boutons : côté gauche rentrant, côté droit en pointe ; --k = profondeur */
+  --k: 7px;
+  --chev: polygon(0 0, calc(100% - var(--k)) 0, 100% 50%, calc(100% - var(--k)) 100%, 0 100%, var(--k) 50%);
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .15  0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --text: "D-DIN Condensed", "Arial Narrow", Arial, sans-serif;
+  color-scheme: light;
+}
+
+body { font-family: var(--text); color: var(--ink); background: var(--paper);
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain); }
+
+/* ---- Titre de l'appli (accueil et éditeur) : titre « livret » ---- */
+h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-spacing: .02em;
+  -webkit-text-stroke: 1.6px var(--ink); text-shadow: var(--extrude-text);
+  transform: skew(-6deg); transform-origin: center; }
+#title-band h1, #picker-title-band h1 { font-size: 40px; line-height: 1.05;
+  -webkit-text-stroke-width: 1.6px; text-shadow: var(--extrude-text); }
+.app-subtitle { font-family: var(--text); font-weight: 700; font-style: italic; color: var(--rust);
+  -webkit-text-stroke: 0; text-shadow: none; letter-spacing: 0; transform: skew(-6deg); margin-top: 6px; }
+#title-band .app-subtitle, #picker-title-band .app-subtitle { font-size: 19px; -webkit-text-stroke-width: 0; text-shadow: none; }
+/* plus de corrections de centrage calibrées pour l'ancienne police (translateX) */
+#picker-title-band .app-title-stack { align-items: center; transform: scale(var(--fit-scale, 1)); }
+#title-band .app-title-stack { align-items: baseline; gap: 14px; transform: scale(var(--fit-scale, 1)); }
+#title-band .app-subtitle { margin-top: 0; transform-origin: center; }
+
+/* ---- Écran d'accueil (choix du format) ---- */
+#board-type-picker { background: var(--paper);
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain); }
+#board-type-picker-inner h2 { font-family: var(--text); font-weight: 700; font-style: italic; font-size: 20px;
+  color: var(--rust); text-shadow: none; transform: skew(-6deg); margin: 0 0 18px; }
+#board-type-options { gap: 14px; }
+.board-type-btn { position: relative; isolation: isolate; width: 300px; border: none; border-radius: 0; box-shadow: none;
+  clip-path: var(--chev); --k: 12px; padding: 14px calc(18px + var(--k)) 13px; background: var(--ink); color: var(--paper);
+  font-family: var(--display); gap: 6px; }
+.board-type-btn:hover { background: #33263f; }
+.board-type-btn:active { box-shadow: none; transform: translateY(1px); }
+#board-type-vendetta { background: var(--red); color: var(--paper); }
+#board-type-vendetta:hover { background: #c92f22; }
+#board-type-ignition { background: var(--ink); color: var(--paper); }
+#board-type-ignition:hover { background: #33263f; }
+.board-type-name, #board-type-vendetta .board-type-name { font-family: var(--display); font-size: 30px; line-height: 1;
+  text-transform: uppercase; letter-spacing: .03em; color: var(--paper); transform: none; text-shadow: none; }
+.board-type-desc { font-family: var(--text); font-weight: 700; font-size: 15px; opacity: .9; }
+#version-tag { font-family: var(--text); font-size: 13px; color: var(--muted); opacity: 1; }
+
+/* ---- Éditeur : bandes ---- */
+#app { padding: 10px; gap: 0; }
+#title-band { background: transparent; border-radius: 0; padding: 10px 14px 14px; border-bottom: 2.5px solid var(--ink); }
+#toolbar, #hint, #palette { background: transparent; border-bottom: 1.5px solid rgba(29,20,38,.25); }
+#toolbar { padding: 12px 4px; gap: 10px; }
+#hint { font-family: var(--text); font-size: 14px; color: var(--muted); padding: 8px 4px; }
+#palette { padding: 10px 4px; gap: 6px; }
+#bwrap { border-radius: 0; border: 2.5px solid var(--ink); border-top-width: 2.5px; margin-top: 10px; }
+#app > div[style*="background:#e8b459"] { background: var(--paper-2) !important; color: var(--ink) !important;
+  font-family: var(--text); font-size: 13px !important; border: 1.5px solid var(--ink); border-radius: 0 !important; margin-top: 10px !important; }
+
+/* ---- Boutons de la barre d'outils : chevrons ---- */
+.btn { position: relative; isolation: isolate; font-family: var(--display); font-weight: 400; text-transform: uppercase;
+  letter-spacing: .03em; font-size: 15px; line-height: 1; padding: 9px calc(12px + var(--k)) 8px; border: none; border-radius: 0;
+  color: var(--paper); background: var(--ink); box-shadow: none; clip-path: var(--chev); cursor: pointer; }
+.btn:hover { background: #33263f; }
+.btn:active { box-shadow: none; transform: translateY(1px); }
+/* bouton en contour : chevron plein à l'encre + 2e couche crème plus petite (épaisseur du trait) */
+.btn.ghost, #title-img-btn, #undo-btn, #redo-btn, #reset-title-btn, #shortcut-help-close { color: var(--ink); background: var(--ink); }
+.btn.ghost::before, #title-img-btn::before, #undo-btn::before, #redo-btn::before, #reset-title-btn::before, #shortcut-help-close::before {
+  content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
+#title-img-btn:hover::before, #undo-btn:hover::before, #redo-btn:hover::before, #reset-title-btn:hover::before, #shortcut-help-close:hover::before { background: var(--paper-2); }
+#title-img-btn:hover, #undo-btn:hover, #redo-btn:hover, #reset-title-btn:hover, #shortcut-help-close:hover { background: var(--ink); }
+#undo-group .btn:disabled { opacity: .35; cursor: default; transform: none; }
+#undo-group .btn:disabled:hover { background: var(--ink); }
+#undo-group .btn:disabled:hover::before { background: var(--paper); }
+/* action principale : Export (encre) ; action destructrice : Reset road tile (rouge) */
+.btn.p { background: var(--ink); color: var(--paper); font-weight: 400; }
+.btn.p:hover { background: #33263f; }
+.btn.p:disabled { background: var(--ink); color: var(--paper); opacity: .55; cursor: default; }
+#export-btn { width: 150px; }
+#export-progress { background: rgba(240,149,44,.55); }
+#reset-btn { background: var(--red); color: var(--paper); }
+#reset-btn:hover { background: #c92f22; color: var(--paper); }
+#title-img-btn { width: auto; }
+#title-img-btn .tooltip { font-family: var(--text); font-size: 13px; background: var(--ink); color: var(--paper); border-radius: 0; clip-path: none; }
+#title-img-warn { font-family: var(--text); font-size: 13px !important; color: var(--red) !important; }
+
+/* ---- Champs de texte ---- */
+#title-input, #board-number-input { background: var(--paper-2); border: 2px solid var(--ink); border-radius: 0;
+  color: var(--ink); font-family: var(--text); font-weight: 700; font-size: 16px; padding: 6px 9px; }
+#title-input::placeholder { color: var(--muted); font-weight: 400; }
+#cc { font-family: var(--text); font-size: 14px; color: var(--muted); }
+
+/* ---- Palette : boutons de choix (sélection en orange, texte à l'encre, comme les
+   boutons segmentés de TRV-Pocket) ---- */
+.tb { font-family: var(--text); font-weight: 700; font-size: 15px; line-height: 1.05; color: var(--ink);
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 0; box-shadow: none; padding: 5px 9px 4px; gap: 6px; }
+.tb:hover { background: var(--paper-2); }
+.tb:active { box-shadow: none; transform: translateY(1px); }
+.tb.sel { background: var(--orange); color: var(--ink); border-color: var(--ink); box-shadow: none; }
+.sw { width: 13px; height: 13px; border-radius: 0; border: 1.5px solid var(--ink); }
+
+/* ---- Panneau des raccourcis ---- */
+#shortcut-help { background: rgba(29,20,38,.72); }
+#shortcut-help-box { background: var(--paper); background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain);
+  color: var(--ink); border: 2.5px solid var(--ink); border-radius: 0; font-family: var(--text); }
+#shortcut-help-box h2 { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.05; color: var(--tan); text-transform: uppercase;
+  -webkit-text-stroke: 1.2px var(--ink); text-shadow: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink), 3px 3px 0 var(--ink); transform: skew(-6deg); justify-self: start; }
+#shortcut-help-box table { font-size: 16px; }
+#shortcut-help-box td { border-bottom: 1.5px solid rgba(29,20,38,.25); }
+kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: var(--paper-2); border: 1.5px solid var(--ink); border-bottom-width: 3px; border-radius: 0; color: var(--ink); }
+
+/* ---- Téléphone ---- */
+@media (max-width: 600px) {
+  #title-band h1, #picker-title-band h1 { font-size: 34px; }
+  .btn { font-size: 14px; }
+  .tb { font-size: 14px; }
+}
