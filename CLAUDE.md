@@ -51,9 +51,10 @@ Le lire avant tout travail.
 - `index.html` : structure de la page seulement.
 - `css/app.css` : styles.
 - `js/*.js` : **scripts classiques** (pas de modules) qui partagent la même portée globale, chargés
-  dans un **ordre fixe** : `config`, `state`, `history`, `geometry`, `build-board`, `render-layers`, `editing`,
-  `export`, `assets`, `ui`. Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est
-  déclaré dans ce fichier ou les précédents.
+  dans l'**ordre fixe des `<script>` de `index.html`** (seule référence). Le code exécuté au chargement
+  d'un fichier ne peut utiliser que ce qui est déclaré dans ce fichier ou les précédents.
+- Plateau neuf : toutes les cases en `DEFAULT_TILE` (Off-Road, `js/config.js`) ; Road sélectionné au
+  départ dans la palette.
 - **État et signal (tranche 0c, `js/state.js`)** : toute modification passe par un point d'entrée
   unique (`updateCell`, `selectTileType`, `chooseBoardType`, `setBoardState`, champs et image de titre)
   qui émet UN signal `change` sur `boardEvents` (raisons : `cell`, `new-board`, `restore`, `title`,

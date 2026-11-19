@@ -62,10 +62,10 @@ window.addEventListener('resize', fitAllTitleStacks);
 
 // Le plateau/la palette ne se construisent qu'une fois le format choisi (voir
 // l'écran de sélection Vendetta/Ignition) — pas d'appel direct ici.
-// Nouveau plateau vierge (tout en Road) du format choisi.
+// Nouveau plateau vierge (tout en DEFAULT_TILE, Off-Road) du format choisi.
 function chooseBoardType(type) {
   applyBoardType(type);
-  board = Array(COLS * ROWS).fill('road');
+  board = Array(COLS * ROWS).fill(DEFAULT_TILE);
   cellVariant = Array(COLS * ROWS).fill(null);
   overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
   showEditor();

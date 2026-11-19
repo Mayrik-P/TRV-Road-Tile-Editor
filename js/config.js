@@ -126,8 +126,12 @@ function textureRect() {
   return { x: GAME_X + (GAME_W - TEXTURE_W) / 2, y: GAME_Y + (GAME_H - TEXTURE_H) / 2, w: TEXTURE_W, h: TEXTURE_H };
 }
 
-let sel = 'sand';
-let board = Array(COLS * ROWS).fill('road');
+// Type des cases d'un plateau neuf (demande des utilisateurs, Mayrik 19/11 : Off-Road,
+// au lieu de Road en v1.00) et type sélectionné au départ dans la palette (Road : ce
+// qu'on peint en premier sur un fond Off-Road).
+const DEFAULT_TILE = 'sand';
+let sel = 'road';
+let board = Array(COLS * ROWS).fill(DEFAULT_TILE);
 
 // ---- Variantes d'overlay (Impassable/Oil/Fire) : cycle + mémoire par case ----
 // Avant : la variante était une pure fonction de la position (col + row*2) % N,

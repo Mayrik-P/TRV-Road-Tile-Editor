@@ -34,7 +34,8 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     check('glissé lent : les 8 cases de la rangée peintes', row.every(i => t[i] === 'mud'));
     check('glissé lent : une seule étape d\'annulation', await undoCount(p) === n0 + 1);
     await p.keyboard.press('Control+z'); t = await types(p);
-    check('Ctrl+Z annule tout le coup de pinceau', row.every(i => t[i] === 'road'));
+    const initial = await p.evaluate(() => DEFAULT_TILE);
+    check('Ctrl+Z annule tout le coup de pinceau', row.every(i => t[i] === initial));
     // glissé très rapide : un seul mouvement de bout en bout
     const r3 = [16, 17, 18, 19, 20, 21, 22, 23];
     await p.click('#tb-goo');

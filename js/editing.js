@@ -173,7 +173,7 @@ function selectTileType(id) {
 
 function resetBoard() {
   const ok = confirm(
-    'This will reset all board spaces back to Road, let you choose the board format again, ' +
+    'This will reset all board spaces back to ' + TILES.find(t => t.id === DEFAULT_TILE).label + ', let you choose the board format again, ' +
     'and reset the title image back to default.\n\n' +
     'It will NOT change the road name/number.'
   );

@@ -60,7 +60,8 @@ async function paintAndExport(browser, format) {
   await page.click('#board-type-' + format);
   await page.waitForFunction(() => /Export/.test(document.getElementById('export-label').textContent), null, { timeout: 180000 });
 
-  const { cols, tileIds } = await page.evaluate(() => ({ cols: COLS, tileIds: TILES.map(t => t.id) }));
+  const { cols, tileIds, initial } = await page.evaluate(() => ({ cols: COLS, tileIds: TILES.map(t => t.id),
+    initial: typeof DEFAULT_TILE !== 'undefined' ? DEFAULT_TILE : 'road' }));
   const cells = scenario(cols, tileIds);
   const clickCell = async idx => {
     const cell = page.locator(`#bsvg [data-idx="${idx}"]`).first();
@@ -77,9 +78,10 @@ async function paintAndExport(browser, format) {
   const fireIdx = cells.find(c => c.type === 'fire').idx;
   await page.click('#tb-fire');
   await clickCell(fireIdx);
-  // Reclic sur une case Road déjà Road : ne change rien, ne doit rien émettre.
-  const roadIdx = cells.find(c => c.type === 'road').idx;
-  await page.click('#tb-road');
+  // Reclic sur une case déjà de son type (type d'un plateau neuf, jamais repeinte) : ne
+  // change rien, ne doit rien émettre.
+  const roadIdx = cells.find(c => c.type === initial).idx;
+  await page.click('#tb-' + initial);
   await clickCell(roadIdx);
 
   const file = path.join(outDir, format + '.png');
@@ -97,9 +99,10 @@ async function paintAndExport(browser, format) {
                 ok: inc.identical || (inc.maxDelta || 0) <= 1 });
 
   if (hasState) {
-    // 1. Une émission 'cell' par vraie modification (cases qui ne sont plus Road + le
-    //    reclic Fire!), aucune pour le reclic Road ; un seul 'new-board'.
-    const expected = cells.filter(c => c.type !== 'road').length + 1;
+    // 1. Une émission 'cell' par vraie modification (cases repeintes d'un autre type que
+    //    celui d'un plateau neuf + le reclic Fire!), aucune pour le reclic sans effet ;
+    //    un seul 'new-board'.
+    const expected = cells.filter(c => c.type !== initial).length + 1;
     const got = await page.evaluate(() => window.__changes);
     checks.push({ name: `signal 'cell' émis ${got.cell} fois (attendu ${expected}), 'new-board' ${got['new-board']} (attendu 1)`,
                   ok: got.cell === expected && got['new-board'] === 1 });
@@ -107,7 +110,7 @@ async function paintAndExport(browser, format) {
     const rt = await page.evaluate(f => {
       const snap = JSON.parse(JSON.stringify(getBoardState()));
       chooseBoardType(f);
-      const emptied = board.every(t => t === 'road');
+      const emptied = board.every(t => t === DEFAULT_TILE);
       setBoardState(snap);
       return { emptied, same: JSON.stringify(getBoardState()) === JSON.stringify(snap) };
     }, format);

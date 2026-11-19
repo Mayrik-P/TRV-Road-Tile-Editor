@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
   const paint = async (type, idx) => { await p.click('#tb-' + type); const c = p.locator(`#bsvg [data-idx="${idx}"]`).first(); await c.scrollIntoViewIfNeeded(); const bb = await c.boundingBox(); await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2); };
   const s0 = await state();
   check('boutons grisés au départ', await btn('undo-btn') && await btn('redo-btn'));
-  await paint('sand', 3); const s1 = await state();
+  await paint('mud', 3); const s1 = await state();
   await paint('rock', 4); const s2 = await state();
   await paint('rock', 4); const s3 = await state(); // reclic : visuel suivant
   check('reclic Impassable = nouvelle étape (visuel différent)', s3 !== s2);

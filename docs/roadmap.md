@@ -164,6 +164,9 @@ sabotage). 2c (tactile) incluse : un doigt peint, pincement à deux doigts conse
 | 2d | **Clavier**, d'après la PR #2 : flèches = curseur ; Entrée ou Espace = poser ; lettres = types de case ; Ctrl+Z / Ctrl+Y ; `?` = panneau des raccourcis. Lettres d'outils sur le modèle de **Tiled** (B = pinceau, E = gomme vers Road, plus tard D = décoration, K = barricade) seulement si elles n'entrent pas en conflit avec les lettres des cases | Tiled (éditeur de cartes de référence), PR #2 |
 | 2e | *(facultatif)* **Remplissage** d'une zone de même type (F dans Tiled). Peu de code une fois l'état unique en place | Tiled |
 
+**Demande des utilisateurs ajoutée le 19/11 (faite)** : plateau neuf en **Off-Road** au lieu de Road
+(`DEFAULT_TILE`, `js/config.js`) ; Road sélectionné au départ dans la palette ; texte du Reset à jour.
+
 ### Phase 3 — Style inspiré de TRV-Pocket et netteté des textes
 À faire **avant** les phases qui ajoutent des boutons (accueil, son, décorations), pour ne pas devoir les
 redessiner ensuite.
