@@ -90,12 +90,27 @@ function renderTitleBand(g) {
   // est téléchargé ; une image de l'utilisateur est affichée telle quelle.
   const userTitleImage = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
   {
-    g.appendChild(mkEl('image', {
-      href: userTitleImage ? TITLE_IMAGE.src : displayHref(DEFAULT_TITLE_IMAGE_PATH),
+    const titleHref = userTitleImage ? TITLE_IMAGE.src : displayHref(DEFAULT_TITLE_IMAGE_PATH);
+    const titleImg = mkEl('image', {
+      href: titleHref,
       x: tb.left - NOTCH, y: tb.top,
       width: tbR - tb.left + NOTCH * 2, height: tbH,
       preserveAspectRatio: 'xMidYMid slice'
-    }));
+    });
+    g.appendChild(titleImg);
+    // DIAGNOSTIC TEMPORAIRE (19/11) : dans Safari, la bande de titre affiche la texture
+    // Desert Glass au lieu de l'image de titre. Deux remèdes possibles à essayer, par
+    // ?titletest=xlink (attribut xlink:href en plus) ou ?titletest=data (image intégrée en
+    // base64, comme en v1.00). À retirer dès que la cause est trouvée.
+    const titleTest = new URLSearchParams(location.search).get('titletest');
+    if (titleTest === 'xlink') titleImg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', titleHref);
+    if (titleTest === 'data' && !titleHref.startsWith('data:')) {
+      window.__titleData = window.__titleData || {};
+      const cached = window.__titleData[titleHref];
+      if (cached) titleImg.setAttribute('href', cached);
+      else fetch(titleHref).then(r => r.blob()).then(bl => new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(bl); }))
+        .then(d => { window.__titleData[titleHref] = d; titleImg.setAttribute('href', d); });
+    }
   }
   if (BOARD_TYPE === 'ignition') {
     // Blason Ignition : aligné à gauche à la même distance du bord que le texte
