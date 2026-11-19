@@ -184,6 +184,7 @@ redessiner ensuite.
 | 4a | Sauvegarde automatique, d'après la PR #1 : état du plateau dans `localStorage` (petit, lecture immédiate), **image de titre dans IndexedDB** (`idb-keyval`), sauvegarde avec `version: 1` |
 | 4b | **Écran d'accueil revu**, sur le modèle des jeux (et de l'accueil de TRV-Pocket) : « **Continue** » (aperçu du dernier plateau), « New Vendetta board », « New Ignition board ». Le choix de format n'efface plus rien sans demander |
 | 4c | **Reset** → « Clear board » (remet tout en Road, avec confirmation **et** possibilité d'annuler par Ctrl+Z). Un bouton « Home » qui ne perd rien (le plateau reste sauvegardé) |
+|  | *Remarque de Mayrik (19/11)* : aujourd'hui, Reset renvoie à l'écran d'accueil, où Annuler ne marche pas (il faut choisir un format puis Ctrl+Z) — fonctionne, mais peu naturel. Clear board doit rester dans l'éditeur ; le texte d'avertissement sera réécrit avec ce nouveau fonctionnement |
 | 4d | **Fichier de projet** : « Save project » / « Open project » (`.trvtile`, du JSON). Permet de garder une sauvegarde, de changer d'appareil, de partager un plateau. Prépare aussi l'export vers TRV-Pocket (Phase 9). Usage standard de tous les éditeurs (Tiled : `.tmx` / `.tmj`) |
 
 ### Phase 5 — Formats de papier américains
