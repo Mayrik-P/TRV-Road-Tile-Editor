@@ -98,6 +98,13 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #app > div[style*="background:#e8b459"] { background: var(--paper-2) !important; color: var(--ink) !important;
   font-family: var(--text); font-size: 13px !important; border: 1.5px solid var(--ink); border-radius: 0 !important; margin-top: 10px !important; }
 
+/* Plateau Ignition (portrait) : même hauteur d'affichage que Vendetta, centré (demande de Mayrik
+   du 19/11 : moins de défilement vertical). Largeur = 2481 / 4961 de la zone. Sur téléphone (< 700 px),
+   pleine largeur : à la hauteur de Vendetta, les cases seraient trop petites pour le doigt.
+   À garder en accord avec boardDisplayFraction() (js/assets.js). */
+#bwrap.board-ignition #bsvg { width: calc(100% * 2481 / 4961); margin: 0 auto; }
+@media (max-width: 699px) { #bwrap.board-ignition #bsvg { width: 100%; } }
+
 /* ---- Boutons de la barre d'outils : chevrons ---- */
 .btn { position: relative; isolation: isolate; font-family: var(--display); font-weight: 400; text-transform: uppercase;
   letter-spacing: .03em; font-size: 15px; line-height: 1; padding: 9px calc(12px + var(--k)) 8px; border: none; border-radius: 0;

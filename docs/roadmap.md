@@ -248,6 +248,11 @@ au premier export PDF ; même image sans perte que le PNG (choix de Mayrik : qua
 3,7 s et 10 Mo pour un Tabloid, contre 0,2 s et 2 Mo en JPEG 95) sur une page à la taille exacte du
 papier. Vérifié : pages A3 / A4 / Tabloid (1224 × 792 pt) / Letter, image à 300 ppp, identique pixel
 pour pixel au PNG ; `check-export-dialog.js` étendu (19 contrôles, vérifié par sabotage).
+
+**Demande de Mayrik ajoutée le 19/11 (faite)** : en Ignition, le plateau s'affiche à la même hauteur que
+Vendetta (largeur 2481 / 4961 de la zone), centré — moins de défilement vertical ; pleine largeur sur
+téléphone (< 700 px, cases sinon trop petites). Aperçus Ignition plus légers en conséquence (quart sur
+écran standard, moitié sur Retina). Mesuré : 1176 × 832 (Vendetta) et 588 × 832 px (Ignition).
 **Calcul fait sur l'export réel** (zone imprimée : 268,7 mm de haut pour les deux plateaux) :
 
 | Plateau | Papier US | Taille | Marges obtenues | Verdict |

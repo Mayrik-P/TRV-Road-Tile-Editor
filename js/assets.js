@@ -94,11 +94,17 @@ function displayHref(path) {
 
 // Copie d'aperçu adaptée : pixels d'écran réels du plateau / pixels de l'original.
 // Forçable pour les vérifications : ?display=quarter|half|full dans l'adresse.
+// Part de la largeur de la zone occupée par le plateau à l'écran : Ignition s'affiche à la hauteur
+// de Vendetta sur les écrans d'au moins 700 px (même règle que css/paper-ui.css, #bwrap.board-ignition).
+function boardDisplayFraction() {
+  return BOARD_TYPE === 'ignition' && window.matchMedia('(min-width: 700px)').matches ? 2481 / 4961 : 1;
+}
+
 function pickDisplayDir() {
   const forced = new URLSearchParams(location.search).get('display');
   if (forced === 'quarter' || forced === 'half') return forced + '/';
   if (forced === 'full') return '';
-  const cssWidth = Math.min(document.documentElement.clientWidth || window.innerWidth, 1200);
+  const cssWidth = Math.min(document.documentElement.clientWidth || window.innerWidth, 1200) * boardDisplayFraction();
   const need = cssWidth * (window.devicePixelRatio || 1) / VW;
   return need <= 0.25 ? 'quarter/' : need <= 0.5 ? 'half/' : '';
 }
