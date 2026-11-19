@@ -114,17 +114,17 @@ function computeGameRect() {
 let { x: GAME_X, y: GAME_Y, w: GAME_W, h: GAME_H } = computeGameRect();
 
 // Rectangle sur lequel chaque texture de terrain est posée, puis découpée case par
-// case. Les cases ont la même taille physique dans tous les formats : la texture
-// garde donc TOUJOURS la taille de la zone des cases Vendetta (8 colonnes, 4239 ×
-// 2718 px à 300 dpi), centrée sur la zone des cases du format en cours (Ignition
-// n'en montre que la partie centrale). Avant (v1.00), la texture était ajustée à la
-// zone du format : en Ignition elle était écrasée à 0,76 en largeur pour 1,41 en
-// hauteur (motifs étirés en hauteur d'un facteur 1,9) — effet de bord de la
-// généralisation de ce rectangle à COLS, constaté le 19/11.
-const TEXTURE_RECT_COLS = 8;
+// case. Les textures sources de Mayrik font 4243 × 2718 px : la zone des cases
+// Vendetta à 300 dpi (4239 × 2718, plus 2 px de marge de chaque côté). Elles sont
+// posées à cette taille exacte, sans redimensionnement (1 pixel de texture = 1 pixel
+// imprimé), centrées sur la zone des cases du format en cours ; les cases ayant la
+// même taille physique dans tous les formats, Ignition en montre la partie centrale,
+// à la même échelle. Historique (19/11) : la v1.00 utilisait des copies réduites à
+// 3000 × 1922, agrandies ×1,41 (environ 212 dpi réels), et ajustées à la zone de
+// chaque format — en Ignition, écrasées à 0,76 en largeur pour 1,41 en hauteur.
+const TEXTURE_W = 4243, TEXTURE_H = 2718;
 function textureRect() {
-  const w = TEXTURE_RECT_COLS * CELL_SLOT + 2 * QUINCONCE_HALF_SHIFT + 2 * NOTCH;
-  return { x: GAME_X + (GAME_W - w) / 2, y: GAME_Y, w, h: GAME_H };
+  return { x: GAME_X + (GAME_W - TEXTURE_W) / 2, y: GAME_Y + (GAME_H - TEXTURE_H) / 2, w: TEXTURE_W, h: TEXTURE_H };
 }
 
 let sel = 'sand';

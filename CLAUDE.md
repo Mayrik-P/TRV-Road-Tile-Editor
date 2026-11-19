@@ -67,7 +67,11 @@ Le lire avant tout travail.
   **`python3 tools/make-webp.py [dossier]`** en tire les WebP (à relancer dès qu'un original change ou
   s'ajoute). Réglages validés par le test à l'aveugle de Mayrik du 19/11 (5/20 à taille réelle, 13/20
   en ×2 : aucune différence perçue). Le même script fait les **aperçus** `<dossier>/half/` (50 %) et
-  `<dossier>/quarter/` (25 %), toujours tirés des PNG.
+  `<dossier>/quarter/` (25 %), toujours tirés des PNG. **Exception** : les 6 textures de terrain
+  sources (4243 × 2718 px = zone des cases Vendetta à 300 dpi) ne sont pas dans le dépôt (Mayrik les
+  garde en local) ; les redéposer dans `textures/source/` pour régénérer leurs WebP. Elles sont posées
+  à leur taille exacte, centrées sur la zone des cases, même échelle dans tous les formats
+  (`textureRect()`, `js/config.js`).
 - **Aperçus à l'écran, originaux à l'export (tranche 1c)** : toute image affichée passe par
   `displayHref(chemin de l'original)` (jamais de base64 dans la page). La copie est choisie par
   `setDisplayVariant()` à chaque choix de format : la plus petite qui reste nette pour la taille

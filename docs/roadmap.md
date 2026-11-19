@@ -125,7 +125,10 @@ proportions (`preserveAspectRatio="none"`). Vendetta : agrandie ×1,41 dans les 
 texture garde partout la taille de la zone Vendetta, centrée ; Vendetta inchangé (exports identiques
 octet par octet), Ignition à la même échelle que Vendetta. **Suite** : Mayrik a ses textures sources en
 4243 × 2718 px (= zone Vendetta à 300 dpi) ; les mettre dans `textures/source/` et les poser à leur
-taille exacte (1 pixel de texture = 1 pixel imprimé) pour de vraies textures à 300 dpi.
+taille exacte (1 pixel de texture = 1 pixel imprimé) pour de vraies textures à 300 dpi. **Fait le
+19/11** : textures 4243 × 2718 posées sans redimensionnement (alignement identique à avant, grain plus
+fin) ; sources retirées du dépôt à la demande de Mayrik (gardées sur son ordinateur). Originaux de
+toutes les images : 13,4 Mo ; à 5 Mbit/s, textures affichées en 1,9 s, export prêt en 24 s.
 
 Méthode éprouvée des **logiciels de montage vidéo** (fichiers « proxy » de Premiere, DaVinci, Nuke) :
 on travaille sur des copies légères et on n'utilise les originaux qu'au moment de l'export. TRV-Pocket

@@ -8,6 +8,10 @@
 # Encodeur : libwebp (la bibliothèque officielle de Google), via Pillow.
 #
 # À relancer dès qu'une image de source/ change ou s'ajoute.
+# Exception (Mayrik, 19/11) : les 6 textures de terrain sources (4243 × 2718 px, ~80 Mo
+# en PNG) ne sont PAS gardées dans le dépôt ; Mayrik les a dans ses dossiers de travail.
+# Pour en refaire les WebP : les redéposer dans textures/source/ (mêmes noms), lancer
+# ce script, puis les retirer à nouveau.
 #   python3 tools/make-webp.py              -> textures, sprites, items, edges
 #   python3 tools/make-webp.py sprites      -> un seul dossier
 # Pré-requis (une fois) : python3 -m pip install Pillow
