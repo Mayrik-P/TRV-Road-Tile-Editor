@@ -160,6 +160,9 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
    côté de l'autre, tout en étant poussés ensemble au bord droit (comme Reset
    l'était seul auparavant) — margin-left:auto est donc sur le groupe, pas sur
    un bouton individuel. */
+#undo-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;}
+#undo-group .btn:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none;transform:none;}
+#undo-group .btn:disabled:hover{background:#e8b459;}
 #reset-group{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;}
 #reset-title-btn,#reset-btn{background:#000;color:#fff;border-color:#b0956e;}
 #reset-title-btn:hover,#reset-btn:hover{background:#da613d;color:#fff;border-color:#a8492b;}

@@ -148,6 +148,10 @@ retélécharger aux visites suivantes. Méthode éprouvée (PWA), mais à garder
 la mise à jour des fichiers.
 
 ### Phase 2 — Édition : Annuler/Rétablir, pinceau, clavier
+**2a faite (19/11)** : `js/history.js`, boutons Undo / Redo, raccourcis standard ; Reset + changement de
+format annulables ; image de titre personnalisée non annulable (hors de la photo). Test
+`tools/check-undo.js` (13 contrôles, vérifié par sabotage).
+
 | Tranche | Contenu | Référence |
 |---|---|---|
 | 2a | **Annuler / Rétablir** (Ctrl+Z, Ctrl+Y ou Ctrl+Maj+Z, plus 2 boutons). Historique par **instantanés** de l'état : le plateau ne fait que 24 à 48 cases, donc copier tout l'état à chaque action est la solution la plus simple et la plus sûre. Un coup de pinceau = 1 seule étape d'annulation | Méthode courante quand l'état est petit |

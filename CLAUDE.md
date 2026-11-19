@@ -51,7 +51,7 @@ Le lire avant tout travail.
 - `index.html` : structure de la page seulement.
 - `css/app.css` : styles.
 - `js/*.js` : **scripts classiques** (pas de modules) qui partagent la même portée globale, chargés
-  dans un **ordre fixe** : `config`, `state`, `geometry`, `build-board`, `render-layers`, `editing`,
+  dans un **ordre fixe** : `config`, `state`, `history`, `geometry`, `build-board`, `render-layers`, `editing`,
   `export`, `assets`, `ui`. Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est
   déclaré dans ce fichier ou les précédents.
 - **État et signal (tranche 0c, `js/state.js`)** : toute modification passe par un point d'entrée
@@ -60,6 +60,10 @@ Le lire avant tout travail.
   `number`, `title-image`). Annuler/Rétablir, sauvegarde et sons s'y **abonnent** ; ne jamais ajouter
   de crochet ailleurs. `getBoardState()` / `setBoardState()` : photo complète (JSON, champ `version`)
   et restauration ; l'image de titre personnalisée n'en fait pas partie.
+- **Annuler / Rétablir (tranche 2a, `js/history.js`)** : historique par photos (`getBoardState`),
+  abonné au signal ; frappe du nom / numéro fusionnée en une étape ; un geste en plusieurs
+  modifications (pinceau) s'entoure de `beginAction()` / `endAction()` pour ne faire qu'une étape.
+  Ctrl+Z / Ctrl+Y / Ctrl+Maj+Z (Cmd sur Mac), inactifs dans les champs de texte et sur l'accueil.
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt). Jamais de police chargée depuis Internet.
 - `textures/`, `sprites/`, `items/`, `edges/` : images à 300 dpi chargées par la page, en **WebP qualité
@@ -96,6 +100,7 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   pixel à une référence ; code de sortie 1 au moindre écart. Méthode : générer la référence sur
   l'ancienne version (par exemple un `git worktree` du commit précédent servi sur un autre port), puis
   comparer la nouvelle. Pour une tranche « sans changement visible », exiger des exports identiques.
+- **`node tools/check-undo.js [url]`** : Annuler / Rétablir avec de vrais clics et de vraies touches.
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.
