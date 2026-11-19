@@ -157,8 +157,9 @@ toucher non voulu documentée par Android). Test `tools/check-brush.js` (17 cont
 sabotage). 2c (tactile) incluse : un doigt peint, pincement à deux doigts conservé.
 **2d faite (19/11)** : clavier (`js/keyboard.js`), réécriture de la PR #2 (flèches, lettres, Entrée),
 plus Espace, Suppr, panneau `?` et lettres soulignées dans la palette ; Échap ne remplace plus
-Ctrl+Z. Test `tools/check-keyboard.js` (22 contrôles, vérifié par sabotage). Reste 2e (remplissage),
-facultative.
+Ctrl+Z. Test `tools/check-keyboard.js` (22 contrôles, vérifié par sabotage).
+**2e abandonnée (Mayrik, 19/11)** : pas d'outil pot de peinture, jugé peu utile (sa demande de départ,
+peindre plusieurs cases en glissant, est couverte par le pinceau). **Phase 2 terminée.**
 
 | Tranche | Contenu | Référence |
 |---|---|---|
@@ -228,7 +229,7 @@ plateau. La taille réelle, elle, est toujours conservée.
 | 7b | **Interface** : un onglet « Decorations » dans la palette avec les 12 images ; clic sur le plateau = poser ; glisser une décoration = la déplacer (Pointer Events) ; touche Suppr ou glisser hors du plateau = la retirer. Méthode standard des outils à « autocollants » |
 | 7c | **Calque** : on garde l'emplacement actuel (au-dessus du quadrillage, sous les zones de clic). L'ordre entre décorations suit la vue isométrique (plus bas = devant), comme `insertInIsometricOrder` pour les overlays |
 | 7d | *(option)* Aimantation sur les frontières entre cases : la fonction actuelle `pairDecorAnchor` peut servir de point d'accroche |
-| 7e | **Retrait propre de l'ancien système**, *après accord de Mayrik* : `renderAllDecorations`, `findEligiblePairsInGroup`, `pairDecorAnchor` (sauf si gardée pour 7d), l'attribut `data-decor-cell` et la reconstruction de `layer-decor` dans `updateCell`. **À garder** : `findSameTypeGroups()`, qui n'est utilisée que par les décorations aujourd'hui mais servira au remplissage (2e). On vérifie avant de supprimer quoi que ce soit |
+| 7e | **Retrait propre de l'ancien système**, *après accord de Mayrik* : `renderAllDecorations`, `findEligiblePairsInGroup`, `pairDecorAnchor` (sauf si gardée pour 7d), l'attribut `data-decor-cell` et la reconstruction de `layer-decor` dans `updateCell`. `findSameTypeGroups()` aussi (prévue pour le remplissage 2e, abandonnée le 19/11 : elle ne sert plus qu'aux décorations automatiques). On vérifie avant de supprimer quoi que ce soit |
 
 ### Phase 8 — Barricades (Ignition, pour les deux formats)
 Modèle de données éprouvé : **des « murs fins » posés sur les arêtes** entre deux cases, et non sur les
