@@ -161,11 +161,15 @@ let transTexCache = {};
 // Cooper Hewitt Bold (licence libre SIL OFL) — utilisée uniquement pour le numéro
 // à 3 chiffres sur le blason Ignition, volontairement différente d'Alfa Slab One
 // pour ne pas reprendre le même style que le titre Vendetta.
-const COOPER_HEWITT_BOLD_URL = 'https://raw.githubusercontent.com/rse/typopro-dtp/master/dtp/TypoPRO-CooperHewitt/TypoPRO-CooperHewitt-Bold.ttf';
+// Auto-hébergée depuis la tranche 0b (avant : chargée depuis le dépôt GitHub tiers
+// rse/typopro-dtp — si ce dépôt bougeait, le numéro Ignition disparaissait).
+const COOPER_HEWITT_BOLD_URL = 'fonts/cooper-hewitt/CooperHewitt-Bold.woff2';
 let FONT_B64_COOPERHEWITT = null;
 let COOPERHEWITT_READY = false;
 
 // Polices de toute l'appli (chrome UI + titre de plateau), toutes deux libres OFL.
+// Format woff2 (compression sans perte du même fichier de police, environ 3 fois plus
+// léger que le .ttf), un sous-dossier par police avec sa licence OFL.txt à côté.
 // Auto-hébergées dans le dépôt (dossier fonts/) plutôt que chargées depuis le
 // dépôt GitHub tiers de Google Fonts : évite toute dépendance à un repo hors de
 // contrôle qui pourrait un jour renommer/déplacer ces fichiers et casser le
@@ -174,14 +178,14 @@ let COOPERHEWITT_READY = false;
 // Alfa Slab One : nom de la route + titre de l'appli + noms Vendetta/Ignition —
 // formes de lettres proches de la police d'origine des vrais plateaux (Square
 // Slabserif 711 Bold, commerciale, non intégrable) — voir notamment C et R majuscules.
-const ALFA_SLAB_ONE_FONT_URL = 'fonts/AlfaSlabOne-Regular.ttf';
+const ALFA_SLAB_ONE_FONT_URL = 'fonts/alfa-slab-one/AlfaSlabOne-Regular.woff2';
 let FONT_B64_ALFASLABONE = null;
 let ALFASLABONE_READY = false;
 // Oswald (police variable) : "FAN-MADE CHAPTER"/"THE", sous-titre de l'appli, et
 // tous les boutons — remplace complètement Bevan, ce qui économise le poids d'une
 // police en moins à charger/stocker en base64. Fichier variable : @font-face
 // déclare une plage de graisse (200-700), utilisée à 700 (gras) partout.
-const OSWALD_BOLD_FONT_URL = 'fonts/Oswald[wght].ttf';
+const OSWALD_BOLD_FONT_URL = 'fonts/oswald/Oswald-Variable.woff2';
 let FONT_B64_OSWALD = null;
 let OSWALD_READY = false;
 // Ni l'une ni l'autre n'a de véritable style italique dessiné : l'inclinaison du

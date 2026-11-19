@@ -161,9 +161,9 @@ function buildBoard() {
   if (FONT_B64_COOPERHEWITT || FONT_B64_ALFASLABONE || FONT_B64_OSWALD) {
     const style = mkEl('style', {});
     let css = '';
-    if (FONT_B64_COOPERHEWITT) css += `@font-face{font-family:'CooperHewittBold';src:url(${FONT_B64_COOPERHEWITT}) format('truetype');font-style:normal;font-weight:700;}`;
-    if (FONT_B64_ALFASLABONE) css += `@font-face{font-family:'AlfaSlabOne';src:url(${FONT_B64_ALFASLABONE}) format('truetype');font-style:normal;font-weight:400;}`;
-    if (FONT_B64_OSWALD) css += `@font-face{font-family:'OswaldBold';src:url(${FONT_B64_OSWALD}) format('truetype');font-style:normal;font-weight:200 700;}`;
+    if (FONT_B64_COOPERHEWITT) css += `@font-face{font-family:'CooperHewittBold';src:url(${FONT_B64_COOPERHEWITT}) format('woff2');font-style:normal;font-weight:700;}`;
+    if (FONT_B64_ALFASLABONE) css += `@font-face{font-family:'AlfaSlabOne';src:url(${FONT_B64_ALFASLABONE}) format('woff2');font-style:normal;font-weight:400;}`;
+    if (FONT_B64_OSWALD) css += `@font-face{font-family:'OswaldBold';src:url(${FONT_B64_OSWALD}) format('woff2');font-style:normal;font-weight:200 700;}`;
     style.textContent = css;
     defs.appendChild(style);
   }
