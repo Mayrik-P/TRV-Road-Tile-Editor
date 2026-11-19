@@ -1,10 +1,9 @@
 // ===== js/export.js — Export PNG à 300 dpi, image de titre personnalisée, champs nom / numéro.
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, state, history,
-// geometry, build-board, render-layers, editing, export, assets, ui. Ne pas changer cet
-// ordre : le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est
-// déclaré dans ce fichier ou dans les précédents.
+// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
+// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
+// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
 
 // ---- Export PNG ----
 // À l'écran, le plateau affiche des aperçus (displayHref, tranche 1c) ; dans la copie

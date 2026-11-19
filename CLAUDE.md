@@ -64,6 +64,10 @@ Le lire avant tout travail.
   abonné au signal ; frappe du nom / numéro fusionnée en une étape ; un geste en plusieurs
   modifications (pinceau) s'entoure de `beginAction()` / `endAction()` pour ne faire qu'une étape.
   Ctrl+Z / Ctrl+Y / Ctrl+Maj+Z (Cmd sur Mac), inactifs dans les champs de texte et sur l'accueil.
+- **Pinceau (tranche 2b, `js/brush.js`)** : Pointer Events sur tout le plateau (plus d'écouteur de clic
+  par case) ; un coup de pinceau = une étape ; 1re case = un clic (visuel suivant d'une case à
+  variantes), cases déjà du bon type ignorées en glissant ; doigt : `touch-action: pinch-zoom`, un 2e
+  doigt annule le coup en cours (`cancelAction`).
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt). Jamais de police chargée depuis Internet.
 - `textures/`, `sprites/`, `items/`, `edges/` : images à 300 dpi chargées par la page, en **WebP qualité
@@ -101,6 +105,8 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   l'ancienne version (par exemple un `git worktree` du commit précédent servi sur un autre port), puis
   comparer la nouvelle. Pour une tranche « sans changement visible », exiger des exports identiques.
 - **`node tools/check-undo.js [url]`** : Annuler / Rétablir avec de vrais clics et de vraies touches.
+- **`node tools/check-brush.js [url]`** : pinceau avec de vrais gestes (souris lente / rapide, doigt,
+  pincement à deux doigts).
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.

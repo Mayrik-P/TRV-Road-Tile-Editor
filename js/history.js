@@ -2,10 +2,9 @@
 // boutons Undo / Redo, raccourcis Ctrl+Z / Ctrl+Y (Cmd sur Mac).
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, state, history,
-// geometry, build-board, render-layers, editing, export, assets, ui. Ne pas changer cet
-// ordre : le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est
-// déclaré dans ce fichier ou dans les précédents.
+// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
+// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
+// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
 //
 // Méthode : historique par instantanés (« snapshots ») — après chaque modification,
 // une photo complète du plateau (getBoardState, ~1 Ko) ; annuler = remettre la photo
@@ -53,6 +52,16 @@ function endAction() {
   if (undoHistory.batch === 0) return;
   undoHistory.batch--;
   if (undoHistory.batch === 0 && undoHistory.batchDirty) { undoHistory.batchDirty = false; recordState('action'); }
+}
+
+// Geste interrompu (2e doigt d'un pincement…) : le plateau revient à l'état d'avant le
+// geste, sans laisser d'étape dans l'historique.
+function cancelAction() {
+  if (undoHistory.batch === 0) return;
+  const dirty = undoHistory.batchDirty;
+  undoHistory.batch = 0;
+  undoHistory.batchDirty = false;
+  if (dirty) applyHistoryState(undoHistory.current);
 }
 
 function applyHistoryState(s) {

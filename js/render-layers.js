@@ -2,10 +2,9 @@
 // route, bordures, bande de titre, overlays, titre, masques, zones de clic, décorations.
 //
 // Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés par index.html dans un ordre fixe — config, state, history,
-// geometry, build-board, render-layers, editing, export, assets, ui. Ne pas changer cet
-// ordre : le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est
-// déclaré dans ce fichier ou dans les précédents.
+// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
+// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
+// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
 
 // ---- 2. Texture layers — one clipPath+image per base terrain type ----
 function renderAllTextures(g, defs) {
@@ -318,7 +317,7 @@ function renderHits(svg) {
       hit.style.cursor = 'pointer';
       hit.addEventListener('mouseenter', function () { this.setAttribute('fill', 'rgba(255,255,255,0.22)'); });
       hit.addEventListener('mouseleave', function () { this.setAttribute('fill', 'transparent'); });
-      hit.addEventListener('click', function () { updateCell(parseInt(this.dataset.idx), sel); });
+      // Peinture : gérée par le pinceau (js/brush.js, pointerdown sur tout le plateau).
       svg.appendChild(hit);
     }
 }

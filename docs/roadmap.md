@@ -151,6 +151,10 @@ la mise à jour des fichiers.
 **2a faite (19/11)** : `js/history.js`, boutons Undo / Redo, raccourcis standard ; Reset + changement de
 format annulables ; image de titre personnalisée non annulable (hors de la photo). Test
 `tools/check-undo.js` (13 contrôles, vérifié par sabotage).
+**2b faite (19/11)** : pinceau (`js/brush.js`), méthodes documentées (MDN / W3C Pointer Events,
+getCoalescedEvents, tracé entre positions successives des éditeurs de pixels, annulation du trait au
+toucher non voulu documentée par Android). Test `tools/check-brush.js` (17 contrôles, vérifié par
+sabotage). 2c (tactile) incluse : un doigt peint, pincement à deux doigts conservé.
 
 | Tranche | Contenu | Référence |
 |---|---|---|
