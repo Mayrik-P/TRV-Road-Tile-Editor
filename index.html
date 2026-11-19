@@ -32,6 +32,8 @@
         <span class="board-type-name">Ignition</span>
         <span class="board-type-desc">4 spaces wide — A4 portrait</span>
       </button>
+      <button class="btn" id="open-project-btn" onclick="document.getElementById('open-project-input').click()">Open project file</button>
+      <input id="open-project-input" type="file" accept=".trvtile,application/json" style="display:none" onchange="openProjectFile(this)"/>
     </div>
   </div>
 </div>
@@ -61,6 +63,7 @@
         <button class="btn" id="undo-btn" onclick="undo()" disabled title="Undo (Ctrl+Z)" aria-label="Undo">↶ Undo</button>
         <button class="btn" id="redo-btn" onclick="redo()" disabled title="Redo (Ctrl+Y)" aria-label="Redo">↷ Redo</button>
       </div>
+      <button class="btn" id="save-project-btn" onclick="saveProject()" title="Download a .trvtile file to reopen this board later, on any device">Save project</button>
       <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
         <span id="export-progress"></span>
         <span id="export-label">Loading… 0%</span>
@@ -104,5 +107,6 @@
 <script src="js/assets.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/autosave.js"></script>
+<script src="js/project.js"></script>
 </body>
 </html>

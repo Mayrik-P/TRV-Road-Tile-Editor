@@ -81,7 +81,11 @@ Le lire avant tout travail.
   dans IndexedDB (`idb-keyval` 6.2.1, `js/vendor/`, licence Apache 2.0) ; écran d'accueil avec
   « Continue » ; nouveau plateau depuis l'accueil = Ctrl+Z ramène l'ancien (`setHistoryBaseline`) ;
   stockage interdit ou sauvegarde abîmée : l'appli marche sans. « Clear board » (`clearBoard`, une
-  étape d'annulation) et « Home » (`goHome`, rien de perdu) remplacent l'ancien « Reset road tile ». Toute évolution de la photo du plateau
+  étape d'annulation) et « Home » (`goHome`, rien de perdu) remplacent l'ancien « Reset road tile ».
+- **Fichier de projet (tranche 4d, `js/project.js`)** : `.trvtile` = JSON `{format: 'trv-road-tile',
+  formatVersion, board: getBoardState(), titleImage}` ; « Save project » (éditeur), « Open project
+  file » (accueil) ; `boardFileBaseName()` donne le nom commun au PNG et au projet. Toute évolution du
+  contenu augmente `formatVersion` avec une conversion des anciens fichiers. Toute évolution de la photo du plateau
   change `BOARD_STATE_VERSION` (et la clé) avec une conversion des anciennes sauvegardes.
 - `fonts/<police>/` : polices en woff2 avec leur licence `OFL.txt` (Alfa Slab One, Oswald, Cooper
   Hewitt pour le plateau ; Anton, D-DIN Condensed pour l'interface). Jamais de police chargée depuis
@@ -127,6 +131,8 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   export sans curseur).
 - **`node tools/check-autosave.js [url]`** : sauvegarde et « Continue » avec de vrais rechargements
   (grande image de titre, sauvegarde abîmée, stockage interdit).
+- **`node tools/check-project.js [url]`** : fichier de projet (enregistrer, rouvrir dans un autre
+  navigateur, fichiers refusés).
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.

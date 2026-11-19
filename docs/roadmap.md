@@ -199,8 +199,13 @@ quitter l'éditeur, nom / numéro / image gardés, confirmation qui rappelle Ctr
 d'annulation ; « Home » (chevron de retour) revient à l'accueil sans rien perdre — « Continue » rouvre
 l'éditeur avec son historique intact, un nouveau format reste annulable (et remet l'image de titre par
 défaut, comme l'ancien Reset) ; phrase de l'accueil « Continue your road or start a new one » quand
-« Continue » est proposé. Contrôles ajoutés à `tools/check-undo.js` (17, vérifiés par sabotage). Reste
-4d (fichier de projet).
+« Continue » est proposé. Contrôles ajoutés à `tools/check-undo.js` (17, vérifiés par sabotage).
+**4d faite (19/11)** : fichier de projet `.trvtile` (`js/project.js`) — JSON signé (`format`) et
+versionné (`formatVersion`), plateau complet et image de titre intégrée ; « Save project » dans la
+barre d'outils (même nom que le PNG), « Open project file » sur l'accueil ; ouvert par-dessus un
+plateau en cours, Ctrl+Z ramène l'ancien ; fichiers refusés avec un message clair (pas un projet,
+abîmé, version plus récente). Test `tools/check-project.js` (16 contrôles, vérifié par sabotage).
+**Phase 4 terminée.**
 
 | Tranche | Contenu |
 |---|---|

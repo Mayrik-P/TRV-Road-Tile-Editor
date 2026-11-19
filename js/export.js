@@ -69,9 +69,7 @@ function exportPNG() {
     canvas.toBlob(b => {
       const a = document.createElement('a');
       const paperSize = BOARD_TYPE === 'ignition' ? 'A4' : 'A3';
-      const name = BOARD_TYPE === 'ignition'
-        ? 'Ignition-' + (document.getElementById('board-number-input').value || '').padStart(3, '0')
-        : (document.getElementById('title-input').value.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-') || 'RoadTile');
+      const name = boardFileBaseName(); // règle commune avec le fichier de projet (js/project.js)
       a.href = URL.createObjectURL(b);
       a.download = name + '-' + paperSize + '.png';
       a.click();
