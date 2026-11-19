@@ -26,11 +26,13 @@
       </button>
       <button class="board-type-btn" id="board-type-vendetta" onclick="startNewBoard('vendetta')">
         <span class="board-type-name">Vendetta</span>
-        <span class="board-type-desc">8 spaces wide — A3 landscape</span>
+        <span class="board-type-desc">8 spaces wide — landscape</span>
+        <span class="board-type-paper">Prints on A3 or Tabloid (11×17″)</span>
       </button>
       <button class="board-type-btn" id="board-type-ignition" onclick="startNewBoard('ignition')">
         <span class="board-type-name">Ignition</span>
-        <span class="board-type-desc">4 spaces wide — A4 portrait</span>
+        <span class="board-type-desc">4 spaces wide — portrait</span>
+        <span class="board-type-paper">Prints on A4 or Letter (8.5×11″)</span>
       </button>
       <button class="btn" id="open-project-btn" onclick="document.getElementById('open-project-input').click()">Open project file</button>
       <input id="open-project-input" type="file" accept=".trvtile,application/json" style="display:none" onchange="openProjectFile(this)"/>

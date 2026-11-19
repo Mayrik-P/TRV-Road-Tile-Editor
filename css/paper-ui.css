@@ -78,6 +78,9 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #open-project-btn::before, #save-project-btn::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #open-project-btn:hover::before, #save-project-btn:hover::before { background: var(--paper-2); }
 #open-project-btn { margin-top: 6px; font-size: 16px; }
+/* Papier nécessaire, annoncé dès l'accueil (tranche 5d) */
+.board-type-paper { font-family: var(--text); font-weight: 700; font-size: 15px; line-height: 1.1; opacity: .9;
+  border-top: 1.5px solid currentColor; padding-top: 4px; margin-top: 2px; }
 #version-tag { font-family: var(--text); font-size: 13px; color: var(--muted); opacity: 1; }
 
 /* ---- Éditeur : bandes ---- */

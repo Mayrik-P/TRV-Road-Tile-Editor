@@ -249,6 +249,10 @@ au premier export PDF ; même image sans perte que le PNG (choix de Mayrik : qua
 papier. Vérifié : pages A3 / A4 / Tabloid (1224 × 792 pt) / Letter, image à 300 ppp, identique pixel
 pour pixel au PNG ; `check-export-dialog.js` étendu (19 contrôles, vérifié par sabotage).
 
+**5d faite (19/11)** : sur l'accueil, chaque format annonce le papier nécessaire (« Prints on A3 or
+Tabloid (11×17″) », « Prints on A4 or Letter (8.5×11″) ») — demande de Mayrik : savoir à l'avance quel
+papier il faudra. **Phase 5 terminée.**
+
 **Demande de Mayrik ajoutée le 19/11 (faite)** : en Ignition, le plateau s'affiche à la même hauteur que
 Vendetta (largeur 2481 / 4961 de la zone), centré — moins de défilement vertical ; pleine largeur sur
 téléphone (< 700 px, cases sinon trop petites). Aperçus Ignition plus légers en conséquence (quart sur
