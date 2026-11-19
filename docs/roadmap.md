@@ -217,6 +217,9 @@ abîmé, version plus récente). Test `tools/check-project.js` (16 contrôles, v
 | 4d | **Fichier de projet** : « Save project » / « Open project » (`.trvtile`, du JSON). Permet de garder une sauvegarde, de changer d'appareil, de partager un plateau. Prépare aussi l'export vers TRV-Pocket (Phase 9). Usage standard de tous les éditeurs (Tiled : `.tmx` / `.tmj`) |
 
 ### Phase 5 — Formats de papier américains
+**5a faite (19/11)** : le PNG exporté contient un bloc `pHYs` (spécification PNG du W3C) à 300 dpi, sans
+réencodage (pixels identiques, fichier vérifié par Pillow). Avant : aucune résolution, l'Aperçu de macOS
+supposait 72 dpi et proposait une échelle de 16 % (constaté par Mayrik).
 **Calcul fait sur l'export réel** (zone imprimée : 268,7 mm de haut pour les deux plateaux) :
 
 | Plateau | Papier US | Taille | Marges obtenues | Verdict |

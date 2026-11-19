@@ -5,6 +5,49 @@
 // Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
 // ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
 
+// ---- Résolution d'impression écrite dans le PNG (tranche 5a) ----
+// Un PNG produit par canvas.toBlob ne dit pas à quelle densité l'imprimer : avec « Taille
+// réelle / 100 % », un logiciel peut supposer 72 ou 96 dpi et imprimer à la mauvaise taille.
+// Correction standard, décrite par la spécification PNG du W3C (§ 11.3.5.3, bloc pHYs) et
+// utilisée par les bibliothèques comme changeDPI : insérer un bloc pHYs juste après l'en-tête
+// IHDR, sans réencoder l'image (pixels strictement identiques). Unité : pixels par mètre
+// (300 dpi = 11 811 px/m).
+const PNG_CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function pngCrc(bytes) {
+  let c = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) c = PNG_CRC_TABLE[(c ^ bytes[i]) & 255] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+function withPngDpi(blob, dpi) {
+  return blob.arrayBuffer().then(buf => {
+    const src = new Uint8Array(buf);
+    // Signature PNG (8 octets) puis IHDR : 4 (longueur) + 4 (type) + 13 (données) + 4 (CRC).
+    const afterIhdr = 8 + 4 + 4 + 13 + 4;
+    // Retire un éventuel bloc pHYs déjà présent, puis insère le nôtre après IHDR.
+    const parts = [src.subarray(0, afterIhdr)];
+    let pos = afterIhdr;
+    while (pos < src.length) {
+      const len = new DataView(buf, pos, 4).getUint32(0);
+      const type = String.fromCharCode(...src.subarray(pos + 4, pos + 8));
+      if (type !== 'pHYs') parts.push(src.subarray(pos, pos + 12 + len));
+      pos += 12 + len;
+    }
+    const ppm = Math.round(dpi / 0.0254);
+    const chunk = new Uint8Array(4 + 4 + 9 + 4);
+    const dv = new DataView(chunk.buffer);
+    dv.setUint32(0, 9);
+    chunk.set([0x70, 0x48, 0x59, 0x73], 4); // « pHYs »
+    dv.setUint32(8, ppm); dv.setUint32(12, ppm); chunk[16] = 1; // unité : mètre
+    dv.setUint32(17, pngCrc(chunk.subarray(4, 17)));
+    parts.splice(1, 0, chunk);
+    return new Blob(parts, { type: 'image/png' });
+  }).catch(() => blob); // en cas d'imprévu, on exporte le PNG tel quel plutôt que rien
+}
+
 // ---- Export PNG ----
 // À l'écran, le plateau affiche des aperçus (displayHref, tranche 1c) ; dans la copie
 // exportée, chaque image est remplacée par son original en pleine définition, déjà
@@ -66,7 +109,7 @@ function exportPNG() {
     ctx.fillRect(0, 0, VW, VH);
     ctx.drawImage(img, 0, 0, VW, VH);
     URL.revokeObjectURL(url);
-    canvas.toBlob(b => {
+    canvas.toBlob(raw => withPngDpi(raw, 300).then(b => {
       const a = document.createElement('a');
       const paperSize = BOARD_TYPE === 'ignition' ? 'A4' : 'A3';
       const name = boardFileBaseName(); // règle commune avec le fichier de projet (js/project.js)
@@ -76,7 +119,7 @@ function exportPNG() {
       // Unlock button after download triggered
       btn.disabled = false;
       label.textContent = 'Export the .png';
-    }, 'image/png');
+    }), 'image/png');
   }
 
   img.onload = () => {
