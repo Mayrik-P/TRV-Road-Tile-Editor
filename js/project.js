@@ -67,10 +67,10 @@ function openProjectFile(input) {
     let project = null;
     try { project = JSON.parse(reader.result); } catch (e) {}
     const err = checkProject(project);
-    if (err) { alert('⚠ ' + err); return; }
+    if (err) { warnUser('⚠ ' + err); return; }
     applyProject(project);
   };
-  reader.onerror = () => alert('⚠ The file could not be read.');
+  reader.onerror = () => warnUser('⚠ The file could not be read.');
   reader.readAsText(file);
 }
 
@@ -81,7 +81,7 @@ function applyProject(project) {
   if (project.titleImage) {
     const img = new Image();
     img.onload = () => applyTitleImage(img);
-    img.onerror = () => alert('⚠ The title image in this project could not be read.');
+    img.onerror = () => warnUser('⚠ The title image in this project could not be read.');
     img.src = project.titleImage;
   } else if (TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE) {
     resetTitleImage();

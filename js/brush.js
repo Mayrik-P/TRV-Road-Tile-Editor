@@ -84,7 +84,7 @@ function endStroke(cancel) {
     Object.assign(brush, { active: true, pointerId: e.pointerId, pointerType: e.pointerType,
                            lastX: e.clientX, lastY: e.clientY });
     try { svg.setPointerCapture(e.pointerId); } catch (err) {}
-    beginAction();
+    beginAction('brush');
     const idx = parseInt(hit.dataset.idx);
     brush.lastIdx = idx;
     if (brush.pointerType === 'mouse') setBrushHover(hit);

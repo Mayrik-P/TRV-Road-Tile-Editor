@@ -164,6 +164,7 @@ function buildPalette() {
     btn.appendChild(lbl);
     btn.title = 'Shortcut: ' + t.label[0].toUpperCase();
     btn.onclick = () => selectTileType(t.id);
+    btn.dataset.sound = 'palette'; // son du choix dans la palette (js/sounds.js)
     pal.appendChild(btn);
   });
 }
@@ -186,7 +187,7 @@ function clearBoard() {
     'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).'
   );
   if (!ok) return;
-  beginAction();
+  beginAction('clear');
   try { for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE); }
   finally { endAction(); }
 }

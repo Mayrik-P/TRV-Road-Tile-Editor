@@ -145,7 +145,7 @@ function exportPNG(format = 'png') {
 
   // Check all images are truly ready before exporting
   if (!allImagesReady()) {
-    alert('⚠ Some images are not fully loaded yet.\nPlease reload the page and try again.');
+    warnUser('⚠ Some images are not fully loaded yet.\nPlease reload the page and try again.');
     return;
   }
 
@@ -174,7 +174,7 @@ function exportPNG(format = 'png') {
   if (missing.length) {
     console.warn('Export: originals missing', missing);
     unlock();
-    alert('⚠ Some high-resolution images are missing.\nPlease reload the page and try again.');
+    warnUser('⚠ Some high-resolution images are missing.\nPlease reload the page and try again.');
     return;
   }
 
@@ -203,6 +203,7 @@ function exportPNG(format = 'png') {
       a.download = boardFileBaseName() + '-' + paper.name + ext; // règle commune avec le projet (js/project.js)
       a.click();
       closeExportDialog(); // téléchargement lancé : la consigne a été lue
+      playSound('export');
       unlock();
     };
     if (format === 'pdf') {
@@ -215,8 +216,8 @@ function exportPNG(format = 'png') {
           doc.setProperties({ title: boardFileBaseName(), creator: 'TRV Road Tile Editor' });
           doc.addImage(canvas, 'PNG', 0, 0, wmm, hmm, undefined, 'FAST');
           download(doc.output('blob'), '.pdf');
-        } catch (e) { console.warn('PDF export failed', e); unlock(); alert('⚠ The PDF export failed. Please try again.'); }
-      }, 30)).catch(() => { unlock(); alert('⚠ The PDF export could not start. Please reload the page and try again.'); });
+        } catch (e) { console.warn('PDF export failed', e); unlock(); warnUser('⚠ The PDF export failed. Please try again.'); }
+      }, 30)).catch(() => { unlock(); warnUser('⚠ The PDF export could not start. Please reload the page and try again.'); });
       return;
     }
     canvas.toBlob(raw => withPngDpi(raw, 300).then(b => download(b, '.png')), 'image/png');
@@ -253,7 +254,7 @@ function exportPNG(format = 'png') {
   };
   img.onerror = () => {
     unlock();
-    alert('Export failed — please try again.');
+    warnUser('Export failed — please try again.');
   };
   img.src = url;
 }
@@ -281,6 +282,7 @@ function loadTitleImage(input) {
     img.onerror = function () {
       document.getElementById('title-img-label').textContent = '✗ Load failed';
       document.getElementById('title-img-btn').style.color = '#E8231A';
+      playSound('refuse');
     };
     img.src = e.target.result;
   };

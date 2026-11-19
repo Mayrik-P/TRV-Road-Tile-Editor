@@ -45,6 +45,7 @@
       <h1>TRV Road Tile Editor</h1>
       <span class="app-subtitle">for use with Thunder Road: Vendetta or Ignition</span>
     </div>
+    <button class="btn" id="sound-btn" data-sound="none" onclick="toggleSound()" aria-pressed="true" aria-label="Sound" title="Sound on — click to turn it off"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="cross" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </div>
   <div id="toolbar">
     <button class="btn" id="home-btn" onclick="goHome()" title="Back to the home screen (nothing is lost)">Home</button>
@@ -63,13 +64,13 @@
     </div>
     <div id="tb-right">
       <div id="undo-group">
-        <button class="btn" id="undo-btn" onclick="undo()" disabled title="Undo (Ctrl+Z)" aria-label="Undo">↶ Undo</button>
-        <button class="btn" id="redo-btn" onclick="redo()" disabled title="Redo (Ctrl+Y)" aria-label="Redo">↷ Redo</button>
+        <button class="btn" id="undo-btn" data-sound="none" onclick="undo()" disabled title="Undo (Ctrl+Z)" aria-label="Undo">↶ Undo</button>
+        <button class="btn" id="redo-btn" data-sound="none" onclick="redo()" disabled title="Redo (Ctrl+Y)" aria-label="Redo">↷ Redo</button>
       </div>
       <button class="btn" id="save-project-btn" onclick="saveProject()" title="Download a .trvtile file to reopen this board later, on any device">Save project</button>
       <button class="btn p" id="export-open-btn" onclick="openExportDialog()">Export the .png</button>
       <div id="reset-group">
-        <button class="btn" id="clear-btn" style="white-space:nowrap;" onclick="clearBoard()">Clear board</button>
+        <button class="btn" id="clear-btn" data-sound="none" style="white-space:nowrap;" onclick="clearBoard()">Clear board</button>
       </div>
     </div>
   </div>
@@ -99,8 +100,8 @@
     <div class="modal-actions">
       <button class="btn" id="export-cancel-btn" onclick="closeExportDialog()">Cancel</button>
       <div class="export-actions">
-        <button class="btn p" id="export-pdf-btn" onclick="exportPNG('pdf')" disabled title="A PDF at the exact paper size, handy for print shops">Download PDF</button>
-        <button class="btn p" id="export-btn" onclick="exportPNG()" disabled style="opacity:0.5">
+        <button class="btn p" id="export-pdf-btn" data-sound="none" onclick="exportPNG('pdf')" disabled title="A PDF at the exact paper size, handy for print shops">Download PDF</button>
+        <button class="btn p" id="export-btn" data-sound="none" onclick="exportPNG()" disabled style="opacity:0.5">
           <span id="export-progress"></span>
           <span id="export-label">Preparing high-res… 0%</span>
         </button>
@@ -137,5 +138,7 @@
 <script src="js/ui.js"></script>
 <script src="js/autosave.js"></script>
 <script src="js/project.js"></script>
+<script src="js/vendor/howler-2.2.4.min.js"></script>
+<script src="js/sounds.js"></script>
 </body>
 </html>

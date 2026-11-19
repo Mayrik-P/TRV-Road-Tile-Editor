@@ -20,7 +20,8 @@
 // Non annulable : l'image de titre personnalisée (hors de la photo, trop lourde).
 
 const HISTORY_LIMIT = 200;
-const undoHistory = { past: [], future: [], current: null, lastReason: null, applying: false, batch: 0, batchDirty: false };
+const undoHistory = { past: [], future: [], current: null, lastReason: null, applying: false, batch: 0, batchDirty: false,
+                      actionKind: null, actionSeq: 0 };
 
 function sameState(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 
@@ -57,7 +58,12 @@ function setHistoryBaseline(state) {
 }
 
 // Geste en plusieurs modifications (coup de pinceau…) : une seule étape d'annulation.
-function beginAction() { undoHistory.batch++; }
+// kind ('brush', 'clear'…) et actionSeq (numéro du geste) se lisent pendant le geste, par
+// exemple par les sons (js/sounds.js) : 1re case d'un coup de pinceau, « Clear board » entier.
+function beginAction(kind) {
+  if (undoHistory.batch === 0) { undoHistory.actionSeq++; undoHistory.actionKind = kind || null; }
+  undoHistory.batch++;
+}
 function endAction() {
   if (undoHistory.batch === 0) return;
   undoHistory.batch--;

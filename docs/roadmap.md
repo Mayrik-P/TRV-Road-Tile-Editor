@@ -278,13 +278,31 @@ plateau. La taille réelle, elle, est toujours conservée.
 | 5d | Sur l'écran d'accueil : « Prints on A3 or Tabloid (11×17″) » / « Prints on A4 or US Letter ». Une ligne de conseil à l'export : « Print at Actual size / 100 %, no Fit to page » |
 | 5e | *(option)* Vendetta sur **2 feuilles Letter** à assembler, pratique courante du *print & play* parce que peu de gens ont une imprimante A3 / Tabloid |
 
-### Phase 6 — Sons
-| Tranche | Contenu |
-|---|---|
-| 6a | Reprendre le **moteur de son de TRV-Pocket** (`sound-engine.js`, basé sur **Howler.js**, la bibliothèque de référence du son des jeux web) : volume, muet mémorisé, fichier absent = silence sans erreur, **limite de 70 ms entre deux mêmes sons** (déjà prévue là-bas pour les dés, parfaite pour le pinceau) |
-| 6b | Petite table des moments : clic de palette, pose d'une case, peinture au pinceau (un son par case peinte, limité), annuler, export terminé, erreur |
-| 6c | Bouton haut-parleur (muet ou non), mémorisé. **Son coupé ou bas par défaut ?** *(décision, voir § 4)* |
-| 6d | **Format** : TRV-Pocket est en OGG seul, mais l'éditeur est une page publique utilisée aussi sur iPhone et Mac. Safari ne lit l'OGG que depuis iOS 18.4 / macOS 15.4. → OGG **et** MP3 (Howler choisit seul), MP3 généré automatiquement par un script *(décision, voir § 4)* |
+### Phase 6 — Sons — FAITE le 19/11
+Sons choisis par Mayrik sur une page d'écoute (variantes par moment), tous de TRV-Pocket (freesound.org,
+CC0, `sounds/CREDITS.md`). Fait :
+- **Lecture par Howler.js 2.2.4** (même version que TRV-Pocket, `js/vendor/`, MIT), dans un petit
+  `js/sounds.js` plutôt que tout `sound-engine.js` : catégories, musiques, boucles et fondus de TRV-Pocket
+  n'ont pas d'usage ici. Repris de lui : table des moments, un seul point de passage (`playSound`),
+  **70 ms au moins entre deux mêmes sons**, fichier absent = silence.
+- **Moments** : palette `dash-zoom` ; pose d'une case `card-flip` (1re case d'un coup de pinceau à volume
+  normal, suivantes à 70 % et hauteur variée de ±8 %) ; Annuler / Rétablir `tap-back` ; Clear board
+  `stamp` (un seul, rien si refusé) ; export terminé `finish-flag` ; refus et erreurs `tap-refuse`
+  (`warnUser` remplace `alert`) ; autres boutons `tap-menu-button`.
+- **Branchement** : sons du plateau abonnés au signal (`beginAction(kind)` dit quel geste est en cours :
+  `brush`, `clear`) ; un seul écouteur de clic pour tous les boutons (`data-sound` pour une exception) ;
+  export et refus appelés à leur endroit.
+- **Bouton haut-parleur** dans le coin droit de la bande du titre (la barre d'outils remplissait déjà sa
+  ligne) ; son allumé par défaut, choix retenu (`trv_road_tile_sound_v1`).
+- **MP3 seul** (proposition de Claude du 19/11, appliquée faute de réponse, à confirmer) : lu par tous les
+  navigateurs, Safari d'avant macOS 15.4 / iOS 18.4 compris ; un seul fichier par son. Silence de fin coupé.
+- Test : `tools/check-sounds.js` (22 vérifications, saboté trois fois).
+
+### Phase 6 bis — Page de crédits (demande de Mayrik du 19/11)
+Bouton « Credits » sur l'écran d'accueil, comme dans TRV-Pocket : textes de licence (polices OFL,
+idb-keyval Apache 2.0, jsPDF et howler.js MIT), mention de Restoration Games, sons freesound.org CC0,
+remerciements aux contributeurs GitHub (ChessMess, PR #1 et #2). Une seule liste des crédits, comme
+`tools/v2/credits.js` de TRV-Pocket.
 
 ### Phase 7 — Décorations libres (remplace le placement automatique)
 | Tranche | Contenu |
@@ -343,8 +361,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
 1. **Ordre des phases** : validé, 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 (→ 9).
 2. **Pinceau sur écran tactile** : validé, un doigt sur le plateau peint (on défile en dehors du plateau).
 3. **Style** : seulement l'**interface** au style de TRV-Pocket ; le titre imprimé du plateau garde son dessin.
-4. **Sons** : sons de TRV-Pocket repris ; OGG + copie MP3 générée automatiquement (Safari) ; **son activé
-   par défaut**. Un petit bouton haut-parleur (muet mémorisé) est gardé quand même : usage courant des
+4. **Sons** : sons de TRV-Pocket repris ; ~~OGG + copie MP3~~ MP3 seul (proposé par Claude le 19/11, à
+   confirmer) ; **son activé par défaut** ; sons choisis moment par moment le 19/11 (Phase 6). Un petit bouton haut-parleur (muet mémorisé) est gardé quand même : usage courant des
    outils web (bureau, transports), coût minime puisque le moteur de TRV-Pocket le gère déjà.
 5. **Papier US** : Tabloid (Vendetta) et Letter (Ignition) seulement, pas d'assemblage sur 2 feuilles
    (option 5e abandonnée). Legal reste à confirmer au moment de la Phase 5.
