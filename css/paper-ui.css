@@ -273,8 +273,11 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
   margin-top: 4px; padding-top: 8px; border-top: 1.5px dashed rgba(29,20,38,.25); }
 .decor-label { font-family: var(--display); font-size: 15px; letter-spacing: .03em; text-transform: uppercase;
   color: var(--rust); margin-right: 4px; }
-.decor-btn { width: 46px; height: 46px; padding: 2px; border: 2px solid var(--ink); border-radius: 0;
-  background: var(--paper); cursor: pointer; line-height: 0; }
+/* Carré de la hauteur d'un bouton de type de case (choix de Mayrik, 22/11) : même calcul que .tb
+   (texte 15 px × 1,05 + marges 5 + 4 px + bordures 2 × 2 px), texte de 14 px sur téléphone comme .tb. */
+.decor-btn { --tb-font: 15px; width: calc(var(--tb-font) * 1.05 + 13px); height: calc(var(--tb-font) * 1.05 + 13px);
+  padding: 1px; border: 2px solid var(--ink); border-radius: 0; background: var(--paper); cursor: pointer; line-height: 0; flex: none; }
+@media (max-width: 600px) { .decor-btn { --tb-font: 14px; } }
 .decor-btn:hover { background: var(--paper-2); }
 .decor-btn.sel { background: var(--orange); box-shadow: inset 0 2px 3px rgba(0,0,0,.3); }
 .decor-btn img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
