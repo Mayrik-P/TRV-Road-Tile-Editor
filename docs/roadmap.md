@@ -405,6 +405,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    avec Mayrik sur un forum (ravi que ses idées soient reprises) ; il est cité dans les crédits.
 7. **Publication de la v1.1 (22/11)** : phases 0 à 6 bis publiées sur le site officiel (fusion de la
    branche de travail dans `main`), avant la phase 7 qui change le format des données.
+8. **Publication de la v1.2 (22/11)** : phase 7 (décorations libres) et retouches (Clear board, ✕ sur
+   téléphone, « Export image », vignettes, textes d'aide sous la palette).
 
 ---
 

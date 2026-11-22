@@ -2,7 +2,7 @@
 
 Éditeur web de tuiles de route pour **Thunder Road: Vendetta** et **Ignition** (éditeur Restoration
 Games) : on peint les cases d'un plateau puis on exporte un PNG à 300 dpi, à imprimer (A3 / A4 ;
-Tabloid / Letter, PDF). **Version 1.1 publiée le 22/11** (site officiel = branche `main`). Projet personnel de Mayrik, lié de loin à **TRV-Pocket**
+Tabloid / Letter, PDF). **Version 1.2 publiée le 22/11** (site officiel = branche `main`). Projet personnel de Mayrik, lié de loin à **TRV-Pocket**
 (`Mayrik-P/TRV-Pocket`, privé), dont on réutilise le savoir-faire (polices, sons, copies réduites
 des images, format des tuiles). Dépôt public `Mayrik-P/TRV-Road-Tile-Editor`, servi tel quel
 (GitHub Pages, aucune étape de construction).
