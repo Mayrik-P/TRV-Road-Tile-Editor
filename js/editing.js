@@ -111,12 +111,6 @@ function updateCell(idx, newType) {
   if (newType === 'off_mine')   drawMinefield(wrap, col, row);
   if (wrap.childNodes.length) insertInIsometricOrder(gOverlays, wrap, idx);
 
-  // --- Décorations de groupe : dépendent de la connectivité globale (un seul
-  // changement peut fusionner/scinder des groupes ailleurs sur le plateau), donc
-  // on les recalcule entièrement à chaque modification — opération peu coûteuse
-  // (48 cases), contrairement aux transitions.
-  rebuildLayer('layer-decor', renderAllDecorations);
-
   // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
   // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
   rebuildLayer('layer-roadedges', renderAllRoadEdges);
@@ -167,11 +161,13 @@ function buildPalette() {
     btn.dataset.sound = 'palette'; // son du choix dans la palette (js/sounds.js)
     pal.appendChild(btn);
   });
+  buildDecorPalette(); // rangée « Decorations » (js/decor.js)
 }
 
 // Point d'entrée unique du choix du type de case (palette, et plus tard clavier) —
 // idée reprise de la PR #2 de ChessMess.
 function selectTileType(id) {
+  leaveDecorMode(); // retour au pinceau (js/decor.js)
   sel = id;
   document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
   document.getElementById('tb-' + id)?.classList.add('sel');

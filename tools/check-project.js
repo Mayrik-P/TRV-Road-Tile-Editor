@@ -39,7 +39,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const file = path.join(tmp, dl.suggestedFilename()); await dl.saveAs(file);
   check(`nom du fichier : ${dl.suggestedFilename()}`, dl.suggestedFilename() === 'DUST-BOWL.trvtile');
   const proj = JSON.parse(fs.readFileSync(file, 'utf8'));
-  check('fichier signé et versionné (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 1);
+  check('fichier signé et versionné (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 2); // 2 depuis la phase 7 (décorations libres)
   check('fichier : plateau complet et image de titre intégrée', JSON.stringify(proj.board) === saved && typeof proj.titleImage === 'string' && proj.titleImage.startsWith('data:image/png'));
   await A.p.click('#export-open-btn');
   await A.p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });

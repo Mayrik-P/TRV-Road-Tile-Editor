@@ -6,7 +6,7 @@
 <title>TRV Road Tile Editor</title>
 <link rel="stylesheet" href="css/app.css?v=6b318bd6af"/>
 <!-- Style TRV-Pocket (phase 3, validé par Mayrik le 19/11) : surcharge css/app.css. -->
-<link rel="stylesheet" href="css/paper-ui.css?v=646f81ec68"/>
+<link rel="stylesheet" href="css/paper-ui.css?v=2d5379e610"/>
 </head>
 <body>
 <div id="board-type-picker">
@@ -127,28 +127,30 @@
       <tr><td><kbd>Enter</kbd> or <kbd>Space</kbd></td><td>Place the selected type (again on Impassable, Oil or Fire: next look)</td></tr>
       <tr><td><kbd>Delete</kbd> or <kbd>Backspace</kbd></td><td>Clear the space back to <span id="help-default-tile">Off-Road</span></td></tr>
       <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / Redo (<kbd>⌘</kbd>+<kbd>Z</kbd> / <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>Z</kbd> on Mac)</td></tr>
+      <tr><td><kbd>Delete</kbd> / <kbd>Esc</kbd></td><td>On a selected decoration: remove it / deselect it</td></tr>
       <tr><td><kbd>?</kbd></td><td>Show or hide this help</td></tr>
     </table>
     <button class="btn" id="shortcut-help-close" onclick="toggleShortcutHelp(false)">Close</button>
   </div>
 </div>
-<script src="js/config.js?v=e91d6a2325"></script>
-<script src="js/state.js?v=04831e978e"></script>
+<script src="js/config.js?v=49125903a8"></script>
+<script src="js/state.js?v=316c607231"></script>
 <script src="js/history.js?v=427dbf1471"></script>
 <script src="js/vendor/idb-keyval-6.2.1.js?v=1f890e0f76"></script>
-<script src="js/geometry.js?v=679cedd2b6"></script>
-<script src="js/build-board.js?v=939e2af057"></script>
-<script src="js/render-layers.js?v=02cd3dcf3d"></script>
-<script src="js/editing.js?v=cd0fbc7106"></script>
+<script src="js/geometry.js?v=7f55f95472"></script>
+<script src="js/build-board.js?v=b3649b5173"></script>
+<script src="js/render-layers.js?v=ac068dbf3f"></script>
+<script src="js/editing.js?v=5c11e65303"></script>
 <script src="js/brush.js?v=35c1e75ba7"></script>
+<script src="js/decor.js?v=1f8d0c46d3"></script>
 <script src="js/keyboard.js?v=b5cba7f2d4"></script>
-<script src="js/export.js?v=06e9a8dce5"></script>
+<script src="js/export.js?v=50610fd9cb"></script>
 <script src="js/assets.js?v=a711f9ee68"></script>
 <script src="js/credits.js?v=6591fb753b"></script>
-<script src="js/ui.js?v=f3639e40a4"></script>
-<script src="js/autosave.js?v=441e263230"></script>
-<script src="js/project.js?v=80f3589417"></script>
+<script src="js/ui.js?v=329aaff6e3"></script>
+<script src="js/autosave.js?v=5e6ead7a2a"></script>
+<script src="js/project.js?v=cedb879da2"></script>
 <script src="js/vendor/howler-2.2.4.min.js?v=736c339444"></script>
-<script src="js/sounds.js?v=c2ab8761cf"></script>
+<script src="js/sounds.js?v=93dd4c3ef0"></script>
 </body>
 </html>

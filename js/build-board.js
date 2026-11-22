@@ -180,11 +180,15 @@ function buildBoard() {
   const gBorders     = mkEl('g', {id: 'layer-borders'});     svg.appendChild(gBorders);
   const gOverlays    = mkEl('g', {id: 'layer-overlays'});    svg.appendChild(gOverlays);
   const gTitleText   = mkEl('g', {id: 'layer-titletext'});   svg.appendChild(gTitleText);
+  // Décorations libres (js/decor.js) : SOUS les masques blancs, qui cachent ce qui déborde sur les
+  // marges ; la bande de titre reste découverte (choix de Mayrik, 22/11).
+  const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
   const gMasks       = mkEl('g', {id: 'layer-masks'});       svg.appendChild(gMasks);
   // Échelle de contrôle d'impression (cm / in), au-dessus des masques blancs du bord.
   const gScale       = mkEl('g', {id: 'layer-scale'});       svg.appendChild(gScale);
   const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
-  const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
+  // Sélection d'une décoration (cercle, bouton ✕) : au-dessus de tout, retirée de la copie exportée.
+  const gDecorUI     = mkEl('g', {id: 'layer-decor-ui'});    svg.appendChild(gDecorUI);
   // Curseur du clavier (js/keyboard.js) : tout en haut, retiré de la copie exportée.
   const gCursor      = mkEl('g', {id: 'layer-cursor'});      svg.appendChild(gCursor);
 
@@ -200,6 +204,7 @@ function buildBoard() {
   renderScaleBar(gScale);
   renderHits(gHits);
   renderAllDecorations(gDecor);
+  renderDecorUI(gDecorUI);
   renderCursor();
 }
 

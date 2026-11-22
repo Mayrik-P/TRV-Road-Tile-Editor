@@ -63,6 +63,7 @@ function warnUser(message) {
 boardEvents.addEventListener('change', e => {
   const { reason } = e.detail;
   if (reason === 'restore' && undoHistory.applying) { playSound('undo'); return; }
+  if (reason === 'decor') { playSound(e.detail.action === 'remove' ? 'undo' : 'place'); return; } // décorations (js/decor.js)
   if (reason !== 'cell') return;
   const inAction = undoHistory.batch > 0, seq = undoHistory.actionSeq;
   if (inAction && undoHistory.actionKind === 'clear') {

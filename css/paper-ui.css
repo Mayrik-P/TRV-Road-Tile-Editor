@@ -267,3 +267,19 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
   color: var(--ink); background: var(--ink); }
 #credits-close::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #credits-close:hover::before { background: var(--paper-2); }
+
+/* ---- Décorations libres (phase 7, js/decor.js) : rangée « Decorations » sous les types de case ---- */
+#decor-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%;
+  margin-top: 4px; padding-top: 8px; border-top: 1.5px dashed rgba(29,20,38,.25); }
+.decor-label { font-family: var(--display); font-size: 15px; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--rust); margin-right: 4px; }
+.decor-btn { width: 46px; height: 46px; padding: 2px; border: 2px solid var(--ink); border-radius: 0;
+  background: var(--paper); cursor: pointer; line-height: 0; }
+.decor-btn:hover { background: var(--paper-2); }
+.decor-btn.sel { background: var(--orange); box-shadow: inset 0 2px 3px rgba(0,0,0,.3); }
+.decor-btn img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.decor-btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.decor-help { display: none; flex-basis: 100%; font-family: var(--text); font-size: 14px; color: var(--muted); }
+#decor-palette.active .decor-help { display: block; }
+/* En mode « decor » : pas de surbrillance des cases (le clic vise les décorations), curseur de pose */
+#bsvg.decor-mode #layer-hits polygon { fill: transparent !important; cursor: copy !important; }

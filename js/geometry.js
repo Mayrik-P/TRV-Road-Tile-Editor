@@ -295,39 +295,4 @@ function pairsForCell(col, row) {
   return neighborsOf(col, row).map(n => [[col, row], n]);
 }
 
-// Types de case qui portent déjà un overlay (hazard/oil/ramp/etc.) — jamais de
-// décoration de groupe sur ces cases-là.
-const OVERLAY_TYPES = ['haz_mud', 'haz_sand', 'haz_road', 'haz_salt', 'oil', 'off_oil', 'ramp', 'multi_ramp', 'rock', 'fire', 'off_mine'];
-
-// Regroupe les cases connectées de même type (même logique de voisinage que les
-// transitions), pour détecter les zones homogènes de plus de 3 cases.
-function findSameTypeGroups() {
-  const visited = new Array(COLS * ROWS).fill(false);
-  const groups = [];
-  for (let start = 0; start < COLS * ROWS; start++) {
-    if (visited[start]) continue;
-    // Les cases à overlay ne rejoignent jamais un groupe et coupent la connexion —
-    // ça fragmente volontairement les zones autour d'elles, pour des décorations
-    // plus rares.
-    if (OVERLAY_TYPES.includes(board[start])) { visited[start] = true; continue; }
-    const type = board[start];
-    visited[start] = true;
-    const group = [start];
-    const stack = [start];
-    while (stack.length) {
-      const cur = stack.pop();
-      const row = Math.floor(cur / COLS), col = cur % COLS;
-      neighborsOf(col, row).forEach(([nc, nr]) => {
-        const nidx = nr * COLS + nc;
-        if (!visited[nidx] && !OVERLAY_TYPES.includes(board[nidx]) && board[nidx] === type) {
-          visited[nidx] = true;
-          group.push(nidx);
-          stack.push(nidx);
-        }
-      });
-    }
-    groups.push({type, cells: group});
-  }
-  return groups;
-}
 

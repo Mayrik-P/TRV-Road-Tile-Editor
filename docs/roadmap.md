@@ -316,14 +316,26 @@ vérifications, dont le garde-fou : chaque police et bibliothèque du dépôt y 
 Même jour : son d'export (`finish-flag`) baissé à 50 % (≈ −6 dB), jugé trop fort par Mayrik ; volume
 propre à chaque son dans `SOUND_TABLE`, comme TRV-Pocket.
 
-### Phase 7 — Décorations libres (remplace le placement automatique)
-| Tranche | Contenu |
-|---|---|
-| 7a | **Données** : une liste `decorations: [{item, x, y, flip?}]` dans l'état (coordonnées du plateau en 300 dpi), sauvegardée, annulable, exportée |
-| 7b | **Interface** : un onglet « Decorations » dans la palette avec les 12 images ; clic sur le plateau = poser ; glisser une décoration = la déplacer (Pointer Events) ; touche Suppr ou glisser hors du plateau = la retirer. Méthode standard des outils à « autocollants » |
-| 7c | **Calque** : on garde l'emplacement actuel (au-dessus du quadrillage, sous les zones de clic). L'ordre entre décorations suit la vue isométrique (plus bas = devant), comme `insertInIsometricOrder` pour les overlays |
-| 7d | *(option)* Aimantation sur les frontières entre cases : la fonction actuelle `pairDecorAnchor` peut servir de point d'accroche |
-| 7e | **Retrait propre de l'ancien système**, *après accord de Mayrik* : `renderAllDecorations`, `findEligiblePairsInGroup`, `pairDecorAnchor` (sauf si gardée pour 7d), l'attribut `data-decor-cell` et la reconstruction de `layer-decor` dans `updateCell`. `findSameTypeGroups()` aussi (prévue pour le remplissage 2e, abandonnée le 19/11 : elle ne sert plus qu'aux décorations automatiques). On vérifie avant de supprimer quoi que ce soit |
+### Phase 7 — Décorations libres (remplace le placement automatique) — FAITE le 22/11, à essayer par Mayrik
+Décisions de Mayrik (22/11) : anciens plateaux sans conversion de leurs décorations (ils s'ouvrent sans) ;
+décoration coupée aux marges blanches mais libre de déborder sur la bande de titre ; ancien système retiré.
+Fait (`js/decor.js`) :
+- **Données** : `decorations: [{item, x, y}]` dans la photo du plateau (version 2, `upgradeBoardState`
+  relit la version 1), clé de sauvegarde `trv_road_tile_board_v2` (la v1 est relue), fichier de projet
+  format 2 (format 1 relu) ; une étape d'annulation par pose, déplacement ou retrait.
+- **Interface** (comme Dungeondraft, Inkarnate, Canva) : rangée « Decorations » de la palette (vignettes
+  recadrées sur le dessin, `tools/make-decor-thumbs.py` → `items/thumb/`) ; clic = poser (poser et glisser
+  en un geste = une étape) ; glisser = déplacer ; sélection (cercle) puis ✕ ou Suppr = retirer, Échap =
+  désélectionner. Deux modes, comme les calques actifs : choisir un type de case revient au pinceau, qui
+  peint à travers les décorations. Doigt : même gestes, 2e doigt = déplacement annulé ; zones de prise et
+  ✕ jamais sous 22-26 px d'écran.
+- **Calque** : `layer-decor` sous les masques blancs (coupe aux marges, bande de titre découverte),
+  profondeur de la vue (plus bas = devant) ; sélection dans `layer-decor-ui`, jamais exportée.
+- **Retiré** (accord de Mayrik) : `renderAllDecorations` automatique, `findEligiblePairsInGroup`,
+  `pairDecorAnchor`, `findSameTypeGroups`, `OVERLAY_TYPES`, `data-decor-cell`, recalcul à chaque case.
+- Test `tools/check-decor.js` (30 vérifications, trois sabotages). Exports identiques à l'ancienne
+  version privée de ses décorations automatiques.
+- Option 7d (aimantation sur les frontières) non faite : à décider après essai.
 
 ### Phase 8 — Barricades (Ignition, pour les deux formats)
 Modèle de données éprouvé : **des « murs fins » posés sur les arêtes** entre deux cases, et non sur les

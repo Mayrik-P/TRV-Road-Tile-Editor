@@ -158,6 +158,7 @@ function exportPNG(format = 'png') {
   const clone = svg.cloneNode(true);
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
   clone.querySelector('#layer-cursor')?.remove(); // curseur du clavier : jamais exporté
+  clone.querySelector('#layer-decor-ui')?.remove(); // sélection d'une décoration : jamais exportée
   clone.setAttribute('width', String(VW));
   clone.setAttribute('height', String(VH));
 
