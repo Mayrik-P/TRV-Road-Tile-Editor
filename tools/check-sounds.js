@@ -96,7 +96,7 @@ const SPY = () => {
   check('clavier, lettre : son de pose seul (pas de son de palette)', (await files()) === 'card-flip');
 
   await p.click('#export-open-btn');
-  check('Export the .png : son « bouton »', (await files()) === 'tap-menu-button');
+  check('Export image : son « bouton »', (await files()) === 'tap-menu-button');
   await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
   await dl.path();

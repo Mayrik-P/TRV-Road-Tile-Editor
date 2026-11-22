@@ -1,5 +1,5 @@
 // VÉRIFICATION DE LA FENÊTRE D'EXPORT (consigne d'impression) dans un vrai navigateur
-// (Chromium via Playwright), sur connexion lente simulée (5 Mbit/s) : « Export the .png »
+// (Chromium via Playwright), sur connexion lente simulée (5 Mbit/s) : « Export image »
 // s'ouvre tout de suite, « Download PNG » attend la fin du chargement des originaux (avec
 // sa progression), papier indiqué selon le format, Annuler / Échap / clic à côté ferment
 // sans exporter, raccourcis clavier bloqués tant qu'elle est ouverte, fermée une fois le

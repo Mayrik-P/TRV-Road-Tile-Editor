@@ -130,7 +130,7 @@ Le lire avant tout travail.
   abandonne une tentative sans aucune donnée depuis 20 s (`LOAD_STALL_MS`, `?stalltimeout=` pour les
   tests), 3 essais (1 s, 3 s), puis « ⚠ Reload page » ; au plus 4 téléchargements à la fois
   (`LOAD_PARALLEL`, sinon ceux en file d'attente seraient pris pour suspendus).
-- **Fenêtre d'export (`#export-dialog`, `js/export.js`)** : « Export the .png » (`#export-open-btn`)
+- **Fenêtre d'export (`#export-dialog`, `js/export.js`)** : « Export image » (`#export-open-btn`)
   l'ouvre ; elle donne la consigne d'impression (100 % / Actual size) et contient le vrai bouton
   d'export `#export-btn` (« Download PNG », débloqué quand les originaux sont chargés). Le PNG porte
   300 dpi (bloc `pHYs`, `withPngDpi`). Clavier et Ctrl+Z inactifs tant qu'elle est ouverte.

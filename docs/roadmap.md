@@ -221,7 +221,7 @@ abîmé, version plus récente). Test `tools/check-project.js` (16 contrôles, v
 réencodage (pixels identiques, fichier vérifié par Pillow). Avant : aucune résolution, l'Aperçu de macOS
 supposait 72 dpi et proposait une échelle de 16 % (constaté par Mayrik). Vérifié par Mayrik : à 100 %,
 Ignition sur A4 et Vendetta sur A3 sont à la bonne taille.
-**Fenêtre d'export (19/11, idée de Mayrik)** : « Export the .png » ouvre une fenêtre « Print at true game
+**Fenêtre d'export (19/11, idée de Mayrik)** : « Export the .png » (renommé « Export image » le 22/11) ouvre une fenêtre « Print at true game
 size » (consigne : Scale 100 % / Actual size, pas Fit ni Fill, papier selon le format), qui occupe le temps
 du téléchargement des originaux ; son bouton « Download PNG » se débloque quand tout est prêt. Raison :
 aucun logiciel d'impression ne propose 100 % de lui-même (Aperçu ≈ 97-98 %, Acrobat « Ajuster »). Test

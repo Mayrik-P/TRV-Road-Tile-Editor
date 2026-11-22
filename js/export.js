@@ -104,7 +104,7 @@ function refreshExportDialog() {
 // ---- Fenêtre d'export (consigne d'impression, demande de Mayrik du 19/11) ----
 // Les logiciels d'impression ne proposent jamais 100 % d'eux-mêmes (Aperçu : « Imprimer
 // toute l'image » ≈ 97-98 % ; Acrobat Reader : « Ajuster ») ; la pratique du print & play est
-// une consigne « 100 % / Taille réelle ». Elle s'affiche au clic sur « Export the .png », et la
+// une consigne « 100 % / Taille réelle ». Elle s'affiche au clic sur « Export image », et la
 // fenêtre occupe le temps du téléchargement des originaux : son bouton « Download PNG »
 // (#export-btn, logique d'export inchangée) se débloque quand tout est prêt.
 function openExportDialog() {
