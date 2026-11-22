@@ -161,6 +161,13 @@ function buildPalette() {
     btn.dataset.sound = 'palette'; // son du choix dans la palette (js/sounds.js)
     pal.appendChild(btn);
   });
+  // Texte d'aide des types de case, sous leur rangée, visible en mode pinceau seulement (comme celui
+  // des décorations ; idée de Mayrik, 22/11 : remplace la ligne d'aide au-dessus de la palette).
+  const help = document.createElement('p');
+  help.className = 'palette-help tile-help';
+  help.innerHTML = 'Click or tap a space to place the selected type · drag to paint several spaces · click again on '
+    + 'Impassable, Oil or Fire to change its look<span class="help-keys"> · press <kbd>?</kbd> for keyboard shortcuts</span>';
+  pal.appendChild(help);
   buildDecorPalette(); // rangée « Decorations » (js/decor.js)
 }
 

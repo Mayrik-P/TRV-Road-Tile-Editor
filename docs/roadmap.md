@@ -338,6 +338,11 @@ Fait (`js/decor.js`) :
 - ✕ hors de la zone de prise (écart en pixels d'écran, autre coin près d'un bord) et actif au relâcher :
   sur téléphone, il recouvrait les petites décorations (impossible de les déplacer, vu par Mayrik, 22/11).
 - « Clear board » retire aussi les décorations, dans la même étape d'annulation (choix de Mayrik, 22/11).
+- Textes d'aide (idée de Mayrik, 22/11) : un texte sous chaque rangée de la palette, seul celui du mode en
+  cours est visible (types de case en mode pinceau, Road choisi à l'ouverture ; décorations en mode
+  décoration) ; remplace la ligne d'aide au-dessus de la palette ; mention du clavier cachée sur écran
+  tactile sans souris.
+- Bouton d'export renommé « Export image » ; vignettes des décorations à la hauteur d'un bouton de case.
 - Option 7d (aimantation sur les frontières) non faite : à décider après essai.
 
 ### Phase 8 — Barricades (Ignition, pour les deux formats)

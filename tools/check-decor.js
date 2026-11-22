@@ -54,7 +54,13 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   await p.click('#board-type-vendetta'); await ready(p);
   check('au départ : mode pinceau, aucune décoration, aide cachée',
         await p.evaluate(() => decor.mode === 'paint' && decorations.length === 0 && getComputedStyle(document.querySelector('.decor-help')).display === 'none'));
-  await p.click('#decor-6');
+  const helps = () => p.evaluate(() => ({ tile: getComputedStyle(document.querySelector('.tile-help')).display !== 'none',
+    decor: getComputedStyle(document.querySelector('.decor-help')).display !== 'none' }));
+  let hv = await helps();
+  check('à l\'ouverture : Road choisi, texte d\'aide des types de case visible, celui des décorations caché',
+        await p.evaluate(() => document.querySelector('.tb.sel')?.id === 'tb-road') && hv.tile && !hv.decor);
+  await p.click('#decor-6'); hv = await helps();
+  check('vignette choisie : seul le texte d\'aide des décorations est visible', !hv.tile && hv.decor);
   check('vignette choisie : mode « decor », vignette en orange, palette des cases désélectionnée, aide visible',
         await p.evaluate(() => decor.mode === 'decor' && decor.item === 6 && document.getElementById('decor-6').classList.contains('sel')
           && !document.querySelector('.tb.sel') && getComputedStyle(document.querySelector('.decor-help')).display !== 'none'));

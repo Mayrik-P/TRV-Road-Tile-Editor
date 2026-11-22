@@ -153,13 +153,14 @@ function buildDecorPalette() {
     row.appendChild(btn);
   });
   const help = document.createElement('span');
-  help.className = 'decor-help';
+  help.className = 'palette-help decor-help';
   help.textContent = 'Click the board to place it · drag to move · select, then ✕ or Delete to remove';
   row.appendChild(help);
   pal.appendChild(row);
   refreshDecorPalette();
 }
 function refreshDecorPalette() {
+  document.getElementById('palette')?.classList.toggle('decor-on', decor.mode === 'decor'); // quel texte d'aide montrer
   document.querySelectorAll('.decor-btn').forEach(b => b.classList.toggle('sel', decor.mode === 'decor' && b.id === 'decor-' + decor.item));
   document.getElementById('decor-palette')?.classList.toggle('active', decor.mode === 'decor');
   document.getElementById('bsvg')?.classList.toggle('decor-mode', decor.mode === 'decor');
