@@ -118,6 +118,10 @@ Le lire avant tout travail.
   `?display=quarter|half|full`. Les originaux sont téléchargés en arrière-plan après les aperçus,
   gardés en base64 (`IMAGES_B64`, jamais décodés), et `exportPNG` remplace chaque aperçu par son
   original dans la copie exportée (un original manquant arrête l'export).
+  Téléchargements jamais suspendus (22/11, export bloqué à 98 % chez Mayrik) : `fetchWithRetry`
+  abandonne une tentative sans aucune donnée depuis 20 s (`LOAD_STALL_MS`, `?stalltimeout=` pour les
+  tests), 3 essais (1 s, 3 s), puis « ⚠ Reload page » ; au plus 4 téléchargements à la fois
+  (`LOAD_PARALLEL`, sinon ceux en file d'attente seraient pris pour suspendus).
 - **Fenêtre d'export (`#export-dialog`, `js/export.js`)** : « Export the .png » (`#export-open-btn`)
   l'ouvre ; elle donne la consigne d'impression (100 % / Actual size) et contient le vrai bouton
   d'export `#export-btn` (« Download PNG », débloqué quand les originaux sont chargés). Le PNG porte

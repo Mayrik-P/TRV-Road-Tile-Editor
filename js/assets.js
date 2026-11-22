@@ -174,12 +174,51 @@ function updateExportButton() {
   }
 }
 
+// Téléchargement qui ne peut pas rester suspendu (bug vu par Mayrik le 22/11 : export bloqué à 98 %,
+// un seul fichier jamais arrivé ; le navigateur n'impose aucun délai à fetch). Méthode des
+// bibliothèques de téléchargement (ky, axios-retry) : une tentative qui ne reçoit plus AUCUNE donnée
+// depuis LOAD_STALL_MS est abandonnée puis relancée, 3 essais au plus, attente croissante (1 s, 3 s).
+// Seule l'absence de données compte : un gros fichier qui arrive lentement n'est jamais coupé.
+// Réglable pour les tests : ?stalltimeout=<ms>.
+const LOAD_STALL_MS = +new URLSearchParams(location.search).get('stalltimeout') || 20000;
+const LOAD_RETRY_DELAYS = [1000, 3000];
+const LOAD_PARALLEL = 4;
+function fetchOnce(src) {
+  const ctrl = new AbortController();
+  let timer;
+  const arm = () => { clearTimeout(timer); timer = setTimeout(() => ctrl.abort(), LOAD_STALL_MS); };
+  arm();
+  return fetch(src, { signal: ctrl.signal })
+    .then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      if (!r.body || !r.body.getReader) return r.blob(); // navigateur ancien : sans surveillance des données
+      const reader = r.body.getReader(), chunks = [];
+      for (;;) {
+        arm();
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      return new Blob(chunks, { type: r.headers.get('content-type') || '' });
+    })
+    .finally(() => clearTimeout(timer));
+}
+async function fetchWithRetry(src) {
+  for (let attempt = 0; ; attempt++) {
+    try { return await fetchOnce(src); }
+    catch (e) {
+      if (attempt >= LOAD_RETRY_DELAYS.length) throw e;
+      console.warn(`Retrying ${src} (${e.name === 'AbortError' ? 'no data for ' + LOAD_STALL_MS / 1000 + ' s' : e.message})`);
+      await new Promise(res => setTimeout(res, LOAD_RETRY_DELAYS[attempt]));
+    }
+  }
+}
+
 // Télécharge un fichier et le garde en base64 ; pour les polices, l'enregistre aussi
 // auprès du navigateur (FontFace) — nécessaire pour l'interface, pour canvas
 // measureText() (calage du titre) et pour ne jamais exporter avant qu'elles soient prêtes.
 function loadOne({key, src, type}) {
-  return fetch(src)
-    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); })
+  return fetchWithRetry(src)
     .then(blob => new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = e => resolve(e.target.result);
@@ -252,7 +291,12 @@ function startFullResLoading() {
   updateExportButton();
   (async () => {
     for (const item of sequential) await loadOne(item);
-    parallel.forEach(item => loadOne(item));
+    // Au plus LOAD_PARALLEL téléchargements à la fois (comme p-limit) : chacun reçoit ses données
+    // dès son départ, sans patienter dans la file du navigateur, où la surveillance des données
+    // (fetchOnce) le prendrait à tort pour suspendu (22 relances sur connexion lente sinon).
+    const queue = parallel.slice();
+    const worker = async () => { while (queue.length) await loadOne(queue.shift()); };
+    for (let i = 0; i < LOAD_PARALLEL; i++) worker();
   })();
 }
 

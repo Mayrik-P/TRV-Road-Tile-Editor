@@ -73,6 +73,29 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   const q = await ctxUs.newPage(); await q.goto(new URL('index.html', base).href); await q.click('#board-type-ignition');
   await q.click('#export-open-btn');
   check('navigateur en-US : papier US proposé par défaut', (await q.textContent('#export-paper')) === 'Letter (8.5×11″), portrait');
+  // Fichier qui ne répond pas (bug du 22/11 : export bloqué à 98 %) : tentative abandonnée après
+  // ?stalltimeout sans aucune donnée, puis nouvel essai ; jamais coupé s'il arrive lentement.
+  const stallRun = async (name, { stallFirstOnly, slow }) => {
+    const c = await b.newContext({ viewport: { width: 1300, height: 900 }, locale: 'en-GB' });
+    const q = await c.newPage(); q.on('pageerror', e => errs.push(e.message));
+    if (slow) { const cd = await c.newCDPSession(q); await cd.send('Network.enable');
+      await cd.send('Network.emulateNetworkConditions', { offline: false, latency: 40, downloadThroughput: 5e6 / 8, uploadThroughput: 1e6 / 8 }); }
+    let asked = 0;
+    if (stallFirstOnly !== undefined) await q.route('**/textures/Texture-Toxic-Goo.webp', route => {
+      asked++; if (stallFirstOnly && asked > 1) route.continue(); /* sinon : ne répond jamais */ });
+    const retries = []; q.on('console', m => { if (m.text().startsWith('Retrying')) retries.push(m.text()); });
+    await q.goto(new URL('index.html?stalltimeout=3000', base).href); await q.click('#board-type-vendetta');
+    await q.waitForFunction(() => /Download PNG|Reload/.test(document.getElementById('export-label').textContent), null, { timeout: 180000 });
+    const label = await q.textContent('#export-label');
+    await c.close();
+    return { label, asked, retries };
+  };
+  let r = await stallRun('1er essai suspendu', { stallFirstOnly: true });
+  check(`fichier suspendu au 1er essai : relancé (${r.asked} demandes), export débloqué (« ${r.label} »)`, r.label === 'Download PNG' && r.asked === 2 && r.retries.length === 1);
+  r = await stallRun('toujours suspendu', { stallFirstOnly: false });
+  check(`fichier qui ne répond jamais : 3 essais puis « ${r.label} » (plus d'attente sans fin)`, r.label === '⚠ Reload page' && r.asked === 3);
+  r = await stallRun('connexion lente', { slow: true });
+  check(`connexion lente et régulière, délai de 3 s : aucun téléchargement coupé (${r.retries.length} relance), « ${r.label} »`, r.label === 'Download PNG' && r.retries.length === 0);
   check('aucune erreur JavaScript', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);
