@@ -381,6 +381,10 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
 6. **PR de ChessMess** : fermées une fois leur contenu réécrit, avec un commentaire de remerciement et le
    lien vers le commit ; crédit par une ligne `Co-authored-by` dans le commit (GitHub affiche alors
    l'auteur comme co-auteur). Texte du commentaire montré à Mayrik avant publication.
+   **Fait autrement (22/11)** : ChessMess a fermé lui-même les PR #1 et #2 le 19/11, après un échange
+   avec Mayrik sur un forum (ravi que ses idées soient reprises) ; il est cité dans les crédits.
+7. **Publication de la v1.1 (22/11)** : phases 0 à 6 bis publiées sur le site officiel (fusion de la
+   branche de travail dans `main`), avant la phase 7 qui change le format des données.
 
 ---
 
