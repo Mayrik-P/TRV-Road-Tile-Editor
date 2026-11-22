@@ -335,6 +335,8 @@ Fait (`js/decor.js`) :
   `pairDecorAnchor`, `findSameTypeGroups`, `OVERLAY_TYPES`, `data-decor-cell`, recalcul à chaque case.
 - Test `tools/check-decor.js` (30 vérifications, trois sabotages). Exports identiques à l'ancienne
   version privée de ses décorations automatiques.
+- ✕ hors de la zone de prise (écart en pixels d'écran, autre coin près d'un bord) et actif au relâcher :
+  sur téléphone, il recouvrait les petites décorations (impossible de les déplacer, vu par Mayrik, 22/11).
 - « Clear board » retire aussi les décorations, dans la même étape d'annulation (choix de Mayrik, 22/11).
 - Option 7d (aimantation sur les frontières) non faite : à décider après essai.
 

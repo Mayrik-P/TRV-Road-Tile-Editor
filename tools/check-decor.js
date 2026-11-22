@@ -183,7 +183,37 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   check(`doigt : bouton ✕ assez grand pour le doigt (${Math.round(xr.width)} px)`, xr.width >= 24);
   await T.ctx.close();
 
-  check('aucune erreur JavaScript', errs.length === 0 && T.errs.length === 0);
+  // ---------- Doigt, page neuve (le pincement ci-dessus zoome réellement la page) ----------
+  const T2 = await open(b, devices['Pixel 7']);
+  { const q = T2.p; const cdp = await T2.ctx.newCDPSession(q);
+    const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
+    let dd;
+    await q.click('#board-type-vendetta'); await ready(q);
+    await q.click('#decor-12'); await q.locator('#bsvg').scrollIntoViewIfNeeded();
+    // Bug du 22/11 (Mayrik, téléphone) : le ✕ recouvrait la décoration. Plus petite décoration (n° 12).
+    await q.evaluate(() => { decorations = []; addDecoration(12, 2500, 1800); }); // posée et sélectionnée
+    const geo = await q.evaluate(() => { const d = decorations[0], g = decorSelectionGeometry(d), m = document.getElementById('bsvg').getScreenCTM();
+      return { sx: m.a * g.grab.cx + m.e, sy: m.d * g.grab.cy + m.f, gr: g.grab.r * m.a, xr: g.R * m.a, xx: m.a * g.rx + m.e, xy: m.d * g.ry + m.f }; });
+    const gap = Math.hypot(geo.xx - geo.sx, geo.xy - geo.sy) - geo.gr - geo.xr;
+    check(`doigt, petite décoration : le ✕ ne touche pas la zone de prise (écart ${gap.toFixed(1)} px, prise ${Math.round(geo.gr * 2)} px)`, gap >= 3 && geo.gr * 2 >= 43);
+    await touch('touchStart', [[geo.sx, geo.sy]]);
+    for (let k = 1; k <= 8; k++) await touch('touchMove', [[geo.sx + 5 * k, geo.sy + 3 * k]]);
+    await touch('touchEnd', []);
+    dd = await decos(q);
+    check(`doigt sur la petite décoration sélectionnée : déplacée, pas supprimée (${dd.length} décoration, x ${dd[0] && dd[0].x})`, dd.length === 1 && dd[0].x > 2500);
+    await q.evaluate(() => { decor.selected = 0; redrawDecorations(); });
+    let xq = await q.locator('#decor-remove').boundingBox();
+    await touch('touchStart', [[xq.x + xq.width / 2, xq.y + xq.height / 2]]);
+    for (let k = 1; k <= 6; k++) await touch('touchMove', [[xq.x + xq.width / 2 - 8 * k, xq.y + xq.height / 2 + 8 * k]]);
+    await touch('touchEnd', []);
+    check('doigt posé sur le ✕ puis glissé ailleurs : rien n\'est supprimé', (await decos(q)).length === 1);
+    await q.evaluate(() => { decor.selected = 0; redrawDecorations(); });
+    xq = await q.locator('#decor-remove').boundingBox();
+    await touch('touchStart', [[xq.x + xq.width / 2, xq.y + xq.height / 2]]); await touch('touchEnd', []);
+    check('toucher le ✕ : décoration retirée', (await decos(q)).length === 0);
+  }
+  await T2.ctx.close();
+  check('aucune erreur JavaScript', errs.length === 0 && T.errs.length === 0 && T2.errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length || T.errs.length) console.log(errs, T.errs);
   process.exit(results.some(r => r.startsWith('ÉCHEC')) ? 1 : 0);

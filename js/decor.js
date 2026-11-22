@@ -86,19 +86,41 @@ function renderAllDecorations(g) {
 function renderDecorUI(g) {
   const d = decor.mode === 'decor' && decorations[decor.selected];
   if (!d) return;
-  const sh = decorShape(d);
-  const ctm = document.getElementById('bsvg').getScreenCTM();
-  const scale = ctm && ctm.a ? ctm.a : 0.25; // pixels d'écran par pixel du plateau
-  // Traits d'épaisseur fixe à l'écran (vector-effect), quelle que soit la réduction du plateau
-  g.appendChild(mkEl('circle', { cx: sh.cx, cy: sh.cy, r: sh.r, fill: 'none', stroke: '#f0952c', 'stroke-width': 2.5,
+  const sel = decorSelectionGeometry(d);
+  if (!sel) return;
+  const { grab, R, rx, ry } = sel;
+  // Cercle = vraie zone de prise (jamais sous 22 px d'écran). Traits d'épaisseur fixe à l'écran.
+  g.appendChild(mkEl('circle', { cx: grab.cx, cy: grab.cy, r: grab.r, fill: 'none', stroke: '#f0952c', 'stroke-width': 2.5,
     'stroke-dasharray': '7 4', 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
-  const R = DECOR_REMOVE_CSS / scale, rx = sh.cx + sh.r * 0.72, ry = sh.cy - sh.r * 0.72;
   const btn = mkEl('g', { id: 'decor-remove', style: 'cursor:pointer' });
   btn.appendChild(mkEl('circle', { cx: rx, cy: ry, r: R, fill: '#e0392b', stroke: '#1d1426', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
   const k = R * 0.42;
   btn.appendChild(mkEl('path', { d: `M${rx - k},${ry - k}L${rx + k},${ry + k}M${rx + k},${ry - k}L${rx - k},${ry + k}`,
     stroke: '#f3e6c8', 'stroke-width': 2.5, 'stroke-linecap': 'round', fill: 'none', 'vector-effect': 'non-scaling-stroke' }));
   g.appendChild(btn);
+}
+// Zone de prise et place du ✕ (pixels du plateau). Le ✕ est posé EN DEHORS de la zone de prise, avec
+// un écart en pixels d'écran : il ne la chevauche jamais, même sur téléphone (bug vu par Mayrik le
+// 22/11 : impossible de déplacer une petite décoration sans la supprimer). Coin en haut à droite,
+// sinon un autre coin s'il sortirait du plateau (comme les poignées des éditeurs à autocollants).
+function decorScale() {
+  const ctm = document.getElementById('bsvg').getScreenCTM();
+  return ctm && ctm.a ? ctm.a : 0.25; // pixels d'écran par pixel du plateau
+}
+function decorGrab(d, scale) {
+  const sh = decorShape(d);
+  return { cx: sh.cx, cy: sh.cy, r: Math.max(sh.r, DECOR_MIN_HIT_CSS / scale) };
+}
+function decorSelectionGeometry(d) {
+  const scale = decorScale(), grab = decorGrab(d, scale), R = DECOR_REMOVE_CSS / scale;
+  const dist = grab.r + R + 4 / scale; // bord à bord : 4 px d'écran d'écart
+  const k = dist / Math.SQRT2;
+  const corners = [[1, -1], [-1, -1], [1, 1], [-1, 1]]; // haut droite, haut gauche, bas droite, bas gauche
+  for (const [sx, sy] of corners) {
+    const rx = grab.cx + sx * k, ry = grab.cy + sy * k;
+    if (rx - R >= 0 && rx + R <= VW && ry - R >= 0 && ry + R <= VH) return { grab, R, rx, ry };
+  }
+  return { grab, R, rx: grab.cx + k, ry: grab.cy - k };
 }
 function redrawDecorations() {
   const g = document.getElementById('layer-decor'), ui = document.getElementById('layer-decor-ui');
@@ -169,8 +191,8 @@ function decorAt(p, svg) { // la plus en avant d'abord
   const scale = svg.getScreenCTM().a; // pixels d'écran par pixel du plateau
   const order = decorDrawOrder();
   for (let k = order.length - 1; k >= 0; k--) {
-    const sh = decorShape(decorations[order[k]]);
-    if (Math.hypot(p.x - sh.cx, p.y - sh.cy) <= Math.max(sh.r, DECOR_MIN_HIT_CSS / scale)) return order[k];
+    const grab = decorGrab(decorations[order[k]], scale);
+    if (Math.hypot(p.x - grab.cx, p.y - grab.cy) <= grab.r) return order[k];
   }
   return -1;
 }
@@ -197,7 +219,11 @@ function cancelDecorDrag() {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    if (e.target.closest && e.target.closest('#decor-remove')) { removeDecoration(decor.selected); return; }
+    if (e.target.closest && e.target.closest('#decor-remove')) { // ✕ : agit au relâcher, comme un bouton
+      decor.drag = { pointerId: e.pointerId, removeArmed: true };
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+      return;
+    }
     const p = toBoardPoint(svg, e.clientX, e.clientY);
     let i = decorAt(p, svg);
     if (i < 0) {
@@ -223,7 +249,7 @@ function cancelDecorDrag() {
 
   svg.addEventListener('pointermove', e => {
     const dr = decor.drag;
-    if (!dr || e.pointerId !== dr.pointerId) return;
+    if (!dr || e.pointerId !== dr.pointerId || dr.removeArmed) return;
     if (!dr.moved && Math.hypot(e.clientX - dr.startX, e.clientY - dr.startY) < 4) return; // simple clic
     dr.moved = true;
     const p = toBoardPoint(svg, e.clientX, e.clientY);
@@ -241,6 +267,11 @@ function cancelDecorDrag() {
     decor.drag = null;
     try { if (svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId); } catch (err) {}
     if (e.type === 'pointercancel') { redrawDecorations(); return; }
+    if (dr.removeArmed) { // retirée seulement si le doigt (ou la souris) est relâché sur le ✕
+      const d = decorations[decor.selected], sel = d && decorSelectionGeometry(d), p = toBoardPoint(svg, e.clientX, e.clientY);
+      if (sel && Math.hypot(p.x - sel.rx, p.y - sel.ry) <= sel.R * 1.3) removeDecoration(decor.selected);
+      return;
+    }
     if (dr.adding) addDecoration(decor.item, dr.x, dr.y);
     else if (dr.moved && dr.x !== undefined) moveDecoration(dr.i, dr.x, dr.y);
     else redrawDecorations();
