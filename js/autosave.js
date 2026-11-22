@@ -19,13 +19,14 @@
 //   - tout accès au stockage est protégé (navigation privée, stockage interdit : l'appli
 //     marche, sans sauvegarde) ; une sauvegarde abîmée ou d'une version inconnue est ignorée.
 
-const AUTOSAVE_KEY = 'trv_road_tile_board_v1';
+const AUTOSAVE_KEY = 'trv_road_tile_board_v2';        // photo version 2 (phase 7 : décorations libres)
+const AUTOSAVE_KEY_V1 = 'trv_road_tile_board_v1';     // relue et convertie si la v2 n'existe pas encore
 const TITLE_IMAGE_KEY = 'trv_road_tile_title_image_v1';
 const autosave = { restoringTitle: false };
 
 function readSavedBoard() {
   try {
-    const s = JSON.parse(localStorage.getItem(AUTOSAVE_KEY));
+    const s = upgradeBoardState(JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || localStorage.getItem(AUTOSAVE_KEY_V1)));
     return validateBoardState(s) === null ? s : null;
   } catch (e) { return null; }
 }

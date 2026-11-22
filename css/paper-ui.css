@@ -86,16 +86,20 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 /* ---- Éditeur : bandes ---- */
 #app { padding: 10px; gap: 0; }
 #title-band { background: transparent; border-radius: 0; padding: 10px 14px 14px; border-bottom: 2.5px solid var(--ink); }
-#toolbar, #hint, #palette { background: transparent; border-bottom: 1.5px solid rgba(29,20,38,.25); }
+#toolbar, #palette { background: transparent; border-bottom: 1.5px solid rgba(29,20,38,.25); }
 #toolbar { padding: 12px 4px; gap: 6px; }
 /* Barre d'outils regroupée par thème (variante C, choix de Mayrik du 19/11) : Home, image de
    titre (charger / remettre par défaut), nom, Undo / Redo, Save / Export, Clear board seul à
    droite ; tient sur une ligne sur ordinateur. */
 #tb-load, #undo-group { gap: 6px; }
 #name-field-group { max-width: 180px; }
-#hint { font-family: var(--text); font-size: 14px; color: var(--muted); padding: 8px 4px; align-items: baseline; line-height: 1.3; }
-/* touche « ? » dans la ligne d'explication : même hauteur que le texte, posée sur sa ligne de base */
-#hint kbd { font-size: inherit; line-height: 1; padding: 1px 4px 0; border-width: 1px; border-bottom-width: 2px; vertical-align: baseline; }
+/* Textes d'aide sous leur rangée de la palette, un seul visible à la fois : types de case en mode pinceau,
+   décorations en mode décoration (idée de Mayrik, 22/11 ; textes d'aide des formulaires, sous l'élément) */
+.palette-help { flex-basis: 100%; margin: 0; font-family: var(--text); font-size: 14px; line-height: 1.3; color: var(--muted); }
+.palette-help kbd { font-size: inherit; line-height: 1; padding: 1px 4px 0; border-width: 1px; border-bottom-width: 2px; vertical-align: baseline; }
+#palette.decor-on .tile-help { display: none; }
+/* écran tactile sans souris ni clavier : pas de mention des raccourcis clavier */
+@media (hover: none) and (pointer: coarse) { .help-keys { display: none; } }
 #palette { padding: 10px 4px; gap: 6px; }
 #bwrap { border-radius: 0; border: 2.5px solid var(--ink); border-top-width: 2.5px; margin-top: 10px; }
 #app > div[style*="background:#e8b459"] { background: var(--paper-2) !important; color: var(--ink) !important;
@@ -267,3 +271,22 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
   color: var(--ink); background: var(--ink); }
 #credits-close::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #credits-close:hover::before { background: var(--paper-2); }
+
+/* ---- Décorations libres (phase 7, js/decor.js) : rangée « Decorations » sous les types de case ---- */
+#decor-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%;
+  margin-top: 4px; padding-top: 8px; border-top: 1.5px dashed rgba(29,20,38,.25); }
+.decor-label { font-family: var(--display); font-size: 15px; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--rust); margin-right: 4px; }
+/* Carré de la hauteur d'un bouton de type de case (choix de Mayrik, 22/11) : même calcul que .tb
+   (texte 15 px × 1,05 + marges 5 + 4 px + bordures 2 × 2 px), texte de 14 px sur téléphone comme .tb. */
+.decor-btn { --tb-font: 15px; width: calc(var(--tb-font) * 1.05 + 13px); height: calc(var(--tb-font) * 1.05 + 13px);
+  padding: 1px; border: 2px solid var(--ink); border-radius: 0; background: var(--paper); cursor: pointer; line-height: 0; flex: none; }
+@media (max-width: 600px) { .decor-btn { --tb-font: 14px; } }
+.decor-btn:hover { background: var(--paper-2); }
+.decor-btn.sel { background: var(--orange); box-shadow: inset 0 2px 3px rgba(0,0,0,.3); }
+.decor-btn img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.decor-btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.decor-help { display: none; }
+#decor-palette.active .decor-help { display: block; }
+/* En mode « decor » : pas de surbrillance des cases (le clic vise les décorations), curseur de pose */
+#bsvg.decor-mode #layer-hits polygon { fill: transparent !important; cursor: copy !important; }

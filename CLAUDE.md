@@ -2,7 +2,7 @@
 
 Éditeur web de tuiles de route pour **Thunder Road: Vendetta** et **Ignition** (éditeur Restoration
 Games) : on peint les cases d'un plateau puis on exporte un PNG à 300 dpi, à imprimer (A3 / A4 ;
-Tabloid / Letter prévus). Projet personnel de Mayrik, lié de loin à **TRV-Pocket**
+Tabloid / Letter, PDF). **Version 1.2 publiée le 22/11** (site officiel = branche `main`). Projet personnel de Mayrik, lié de loin à **TRV-Pocket**
 (`Mayrik-P/TRV-Pocket`, privé), dont on réutilise le savoir-faire (polices, sons, copies réduites
 des images, format des tuiles). Dépôt public `Mayrik-P/TRV-Road-Tile-Editor`, servi tel quel
 (GitHub Pages, aucune étape de construction).
@@ -94,6 +94,14 @@ Le lire avant tout travail.
   Rétablir), un seul écouteur de clic pour tous les boutons (`data-sound="palette"` / `"none"`), l'export
   terminé, et `warnUser(message)` (son de refus + `alert`, à utiliser pour tout message d'erreur).
   Bouton haut-parleur `#sound-btn` dans la bande du titre, choix retenu (`trv_road_tile_sound_v1`).
+- **Décorations libres (phase 7, `js/decor.js`)** : `decorations` = `[{item, x, y}]` (centre, pixels à
+  300 dpi) dans la photo du plateau (`BOARD_STATE_VERSION` 2, `upgradeBoardState` relit la v1 ; clé
+  `trv_road_tile_board_v2` ; projet format 2). Points d'entrée `addDecoration` / `moveDecoration` /
+  `removeDecoration` (signal `decor`). Mode `decor.mode` : « paint » (pinceau) ou « decor » (vignette
+  choisie) ; gestes en capture sur `#bsvg`, avant le pinceau. Calque `layer-decor` SOUS les masques
+  (coupé aux marges, déborde sur la bande de titre), sélection et ✕ dans `layer-decor-ui` (retiré de
+  l'export). Cercles de prise mesurés par dessin (`DECOR_SHAPES`). Vignettes : `items/thumb/`
+  (`python3 tools/make-decor-thumbs.py`, à relancer si une décoration change).
 - **Crédits (phase 6 bis, `js/credits.js`)** : SEULE liste des crédits (comme TRV-Pocket) : toute ressource
   ajoutée (son, image, police, bibliothèque) s'y inscrit, avec son fichier de licence (texte affiché tel
   quel, replié). Bouton « Credits » de l'accueil, fenêtre `<dialog id="credits">` (`openCredits`,
@@ -122,7 +130,7 @@ Le lire avant tout travail.
   abandonne une tentative sans aucune donnée depuis 20 s (`LOAD_STALL_MS`, `?stalltimeout=` pour les
   tests), 3 essais (1 s, 3 s), puis « ⚠ Reload page » ; au plus 4 téléchargements à la fois
   (`LOAD_PARALLEL`, sinon ceux en file d'attente seraient pris pour suspendus).
-- **Fenêtre d'export (`#export-dialog`, `js/export.js`)** : « Export the .png » (`#export-open-btn`)
+- **Fenêtre d'export (`#export-dialog`, `js/export.js`)** : « Export image » (`#export-open-btn`)
   l'ouvre ; elle donne la consigne d'impression (100 % / Actual size) et contient le vrai bouton
   d'export `#export-btn` (« Download PNG », débloqué quand les originaux sont chargés). Le PNG porte
   300 dpi (bloc `pHYs`, `withPngDpi`). Clavier et Ctrl+Z inactifs tant qu'elle est ouverte.
@@ -173,6 +181,7 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   navigateur, fichiers refusés).
 - **`node tools/check-export-dialog.js [url]`** : fenêtre d'export sur connexion lente.
 - **`node tools/check-sounds.js [url]`** : sons (espion de howler.js : fichier, volume, hauteur de chaque son).
+- **`node tools/check-decor.js [url]`** : décorations (pose, glisser, retrait, Annuler, export coupé aux marges, sauvegarde, projet, doigt).
 - **`node tools/check-credits.js [url]`** : crédits (fenêtre, textes exacts des licences, polices et bibliothèques toutes citées).
 - Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.

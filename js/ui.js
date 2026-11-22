@@ -66,6 +66,8 @@ window.addEventListener('resize', fitAllTitleStacks);
 function chooseBoardType(type) {
   applyBoardType(type);
   board = Array(COLS * ROWS).fill(DEFAULT_TILE);
+  decorations = [];
+  decor.selected = -1;
   cellVariant = Array(COLS * ROWS).fill(null);
   overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
   showEditor();

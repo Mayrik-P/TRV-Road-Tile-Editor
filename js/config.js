@@ -146,6 +146,9 @@ let board = Array(COLS * ROWS).fill(DEFAULT_TILE);
 const OVERLAY_VARIANT_COUNTS = { rock: 8, fire: 6, oil: 8 }; // oil partage son pool avec off_oil
 let overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
 let cellVariant = Array(COLS * ROWS).fill(null);
+// Décorations libres (phase 7, js/decor.js) : [{ item: 1..12, x, y }], centre de l'image en
+// pixels du plateau à 300 dpi ; ordre de pose (l'affichage suit la profondeur, voir decor.js).
+let decorations = [];
 
 function overlayFamily(type) {
   if (type === 'rock') return 'rock';

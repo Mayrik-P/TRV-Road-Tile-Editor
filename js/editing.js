@@ -111,12 +111,6 @@ function updateCell(idx, newType) {
   if (newType === 'off_mine')   drawMinefield(wrap, col, row);
   if (wrap.childNodes.length) insertInIsometricOrder(gOverlays, wrap, idx);
 
-  // --- Décorations de groupe : dépendent de la connectivité globale (un seul
-  // changement peut fusionner/scinder des groupes ailleurs sur le plateau), donc
-  // on les recalcule entièrement à chaque modification — opération peu coûteuse
-  // (48 cases), contrairement aux transitions.
-  rebuildLayer('layer-decor', renderAllDecorations);
-
   // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
   // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
   rebuildLayer('layer-roadedges', renderAllRoadEdges);
@@ -167,11 +161,20 @@ function buildPalette() {
     btn.dataset.sound = 'palette'; // son du choix dans la palette (js/sounds.js)
     pal.appendChild(btn);
   });
+  // Texte d'aide des types de case, sous leur rangée, visible en mode pinceau seulement (comme celui
+  // des décorations ; idée de Mayrik, 22/11 : remplace la ligne d'aide au-dessus de la palette).
+  const help = document.createElement('p');
+  help.className = 'palette-help tile-help';
+  help.innerHTML = 'Click or tap a space to place the selected type · drag to paint several spaces · click again on '
+    + 'Impassable, Oil or Fire to change its look<span class="help-keys"> · press <kbd>?</kbd> for keyboard shortcuts</span>';
+  pal.appendChild(help);
+  buildDecorPalette(); // rangée « Decorations » (js/decor.js)
 }
 
 // Point d'entrée unique du choix du type de case (palette, et plus tard clavier) —
 // idée reprise de la PR #2 de ChessMess.
 function selectTileType(id) {
+  leaveDecorMode(); // retour au pinceau (js/decor.js)
   sel = id;
   document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
   document.getElementById('tb-' + id)?.classList.add('sel');
@@ -183,13 +186,15 @@ function selectTileType(id) {
 function clearBoard() {
   const label = TILES.find(t => t.id === DEFAULT_TILE).label;
   const ok = confirm(
-    'Clear all board spaces back to ' + label + '?\n\n' +
+    'Clear all board spaces back to ' + label + ' and remove all decorations?\n\n' +
     'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).'
   );
   if (!ok) return;
   beginAction('clear');
-  try { for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE); }
-  finally { endAction(); }
+  try {
+    for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE);
+    clearDecorations(); // décorations retirées aussi, dans la même étape (choix de Mayrik, 22/11)
+  } finally { endAction(); }
 }
 
 // « Home » (tranche 4c) : retour à l'écran d'accueil sans rien perdre — le plateau reste en

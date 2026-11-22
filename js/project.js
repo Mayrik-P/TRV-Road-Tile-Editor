@@ -17,7 +17,7 @@
 // d'une version plus récente de l'éditeur. Base de l'export vers TRV-Pocket (phase 9).
 
 const PROJECT_FORMAT = 'trv-road-tile';
-const PROJECT_FORMAT_VERSION = 1;
+const PROJECT_FORMAT_VERSION = 2; // 2 (phase 7) : photo du plateau en version 2 (décorations libres) ; 1 converti
 const PROJECT_EXT = '.trvtile';
 
 // Nom de fichier commun au PNG exporté et au projet (nom de la route, ou numéro Ignition).
@@ -52,6 +52,7 @@ function checkProject(p) {
   if (!p || typeof p !== 'object' || p.format !== PROJECT_FORMAT) return 'This file is not a TRV Road Tile Editor project.';
   if (typeof p.formatVersion !== 'number' || p.formatVersion > PROJECT_FORMAT_VERSION)
     return 'This project was saved with a newer version of the editor. Please reload the page to get the latest version.';
+  p.board = upgradeBoardState(p.board); // fichier de la version 1 : converti (sans décoration)
   if (validateBoardState(p.board) !== null) return 'This project file is damaged and cannot be opened.';
   if (p.titleImage != null && !(typeof p.titleImage === 'string' && p.titleImage.startsWith('data:image/')))
     return 'This project file is damaged and cannot be opened.';

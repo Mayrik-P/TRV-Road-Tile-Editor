@@ -221,7 +221,7 @@ abîmé, version plus récente). Test `tools/check-project.js` (16 contrôles, v
 réencodage (pixels identiques, fichier vérifié par Pillow). Avant : aucune résolution, l'Aperçu de macOS
 supposait 72 dpi et proposait une échelle de 16 % (constaté par Mayrik). Vérifié par Mayrik : à 100 %,
 Ignition sur A4 et Vendetta sur A3 sont à la bonne taille.
-**Fenêtre d'export (19/11, idée de Mayrik)** : « Export the .png » ouvre une fenêtre « Print at true game
+**Fenêtre d'export (19/11, idée de Mayrik)** : « Export the .png » (renommé « Export image » le 22/11) ouvre une fenêtre « Print at true game
 size » (consigne : Scale 100 % / Actual size, pas Fit ni Fill, papier selon le format), qui occupe le temps
 du téléchargement des originaux ; son bouton « Download PNG » se débloque quand tout est prêt. Raison :
 aucun logiciel d'impression ne propose 100 % de lui-même (Aperçu ≈ 97-98 %, Acrobat « Ajuster »). Test
@@ -316,14 +316,34 @@ vérifications, dont le garde-fou : chaque police et bibliothèque du dépôt y 
 Même jour : son d'export (`finish-flag`) baissé à 50 % (≈ −6 dB), jugé trop fort par Mayrik ; volume
 propre à chaque son dans `SOUND_TABLE`, comme TRV-Pocket.
 
-### Phase 7 — Décorations libres (remplace le placement automatique)
-| Tranche | Contenu |
-|---|---|
-| 7a | **Données** : une liste `decorations: [{item, x, y, flip?}]` dans l'état (coordonnées du plateau en 300 dpi), sauvegardée, annulable, exportée |
-| 7b | **Interface** : un onglet « Decorations » dans la palette avec les 12 images ; clic sur le plateau = poser ; glisser une décoration = la déplacer (Pointer Events) ; touche Suppr ou glisser hors du plateau = la retirer. Méthode standard des outils à « autocollants » |
-| 7c | **Calque** : on garde l'emplacement actuel (au-dessus du quadrillage, sous les zones de clic). L'ordre entre décorations suit la vue isométrique (plus bas = devant), comme `insertInIsometricOrder` pour les overlays |
-| 7d | *(option)* Aimantation sur les frontières entre cases : la fonction actuelle `pairDecorAnchor` peut servir de point d'accroche |
-| 7e | **Retrait propre de l'ancien système**, *après accord de Mayrik* : `renderAllDecorations`, `findEligiblePairsInGroup`, `pairDecorAnchor` (sauf si gardée pour 7d), l'attribut `data-decor-cell` et la reconstruction de `layer-decor` dans `updateCell`. `findSameTypeGroups()` aussi (prévue pour le remplissage 2e, abandonnée le 19/11 : elle ne sert plus qu'aux décorations automatiques). On vérifie avant de supprimer quoi que ce soit |
+### Phase 7 — Décorations libres (remplace le placement automatique) — FAITE le 22/11, à essayer par Mayrik
+Décisions de Mayrik (22/11) : anciens plateaux sans conversion de leurs décorations (ils s'ouvrent sans) ;
+décoration coupée aux marges blanches mais libre de déborder sur la bande de titre ; ancien système retiré.
+Fait (`js/decor.js`) :
+- **Données** : `decorations: [{item, x, y}]` dans la photo du plateau (version 2, `upgradeBoardState`
+  relit la version 1), clé de sauvegarde `trv_road_tile_board_v2` (la v1 est relue), fichier de projet
+  format 2 (format 1 relu) ; une étape d'annulation par pose, déplacement ou retrait.
+- **Interface** (comme Dungeondraft, Inkarnate, Canva) : rangée « Decorations » de la palette (vignettes
+  recadrées sur le dessin, `tools/make-decor-thumbs.py` → `items/thumb/`) ; clic = poser (poser et glisser
+  en un geste = une étape) ; glisser = déplacer ; sélection (cercle) puis ✕ ou Suppr = retirer, Échap =
+  désélectionner. Deux modes, comme les calques actifs : choisir un type de case revient au pinceau, qui
+  peint à travers les décorations. Doigt : même gestes, 2e doigt = déplacement annulé ; zones de prise et
+  ✕ jamais sous 22-26 px d'écran.
+- **Calque** : `layer-decor` sous les masques blancs (coupe aux marges, bande de titre découverte),
+  profondeur de la vue (plus bas = devant) ; sélection dans `layer-decor-ui`, jamais exportée.
+- **Retiré** (accord de Mayrik) : `renderAllDecorations` automatique, `findEligiblePairsInGroup`,
+  `pairDecorAnchor`, `findSameTypeGroups`, `OVERLAY_TYPES`, `data-decor-cell`, recalcul à chaque case.
+- Test `tools/check-decor.js` (30 vérifications, trois sabotages). Exports identiques à l'ancienne
+  version privée de ses décorations automatiques.
+- ✕ hors de la zone de prise (écart en pixels d'écran, autre coin près d'un bord) et actif au relâcher :
+  sur téléphone, il recouvrait les petites décorations (impossible de les déplacer, vu par Mayrik, 22/11).
+- « Clear board » retire aussi les décorations, dans la même étape d'annulation (choix de Mayrik, 22/11).
+- Textes d'aide (idée de Mayrik, 22/11) : un texte sous chaque rangée de la palette, seul celui du mode en
+  cours est visible (types de case en mode pinceau, Road choisi à l'ouverture ; décorations en mode
+  décoration) ; remplace la ligne d'aide au-dessus de la palette ; mention du clavier cachée sur écran
+  tactile sans souris.
+- Bouton d'export renommé « Export image » ; vignettes des décorations à la hauteur d'un bouton de case.
+- Option 7d (aimantation sur les frontières) non faite : à décider après essai.
 
 ### Phase 8 — Barricades (Ignition, pour les deux formats)
 Modèle de données éprouvé : **des « murs fins » posés sur les arêtes** entre deux cases, et non sur les
@@ -385,6 +405,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    avec Mayrik sur un forum (ravi que ses idées soient reprises) ; il est cité dans les crédits.
 7. **Publication de la v1.1 (22/11)** : phases 0 à 6 bis publiées sur le site officiel (fusion de la
    branche de travail dans `main`), avant la phase 7 qui change le format des données.
+8. **Publication de la v1.2 (22/11)** : phase 7 (décorations libres) et retouches (Clear board, ✕ sur
+   téléphone, « Export image », vignettes, textes d'aide sous la palette).
 
 ---
 

@@ -87,12 +87,16 @@ const SPY = () => {
   check('Clear board refusé : aucun son', (await files()) === '');
   p.once('dialog', dl => dl.accept()); await p.click('#clear-btn');
   check('Clear board accepté : un seul tampon, aucun son de pose', (await files()) === 'stamp');
+  // Cases déjà toutes vides mais une décoration posée : le tampon part quand même (une fois)
+  await p.evaluate(() => addDecoration(3, 2000, 2000)); await p.waitForTimeout(150); await take();
+  p.once('dialog', dl => dl.accept()); await p.click('#clear-btn');
+  check('Clear board, cases vides + décoration : un seul tampon', (await files()) === 'stamp');
 
   await p.keyboard.press('ArrowRight'); await p.keyboard.press('r');
   check('clavier, lettre : son de pose seul (pas de son de palette)', (await files()) === 'card-flip');
 
   await p.click('#export-open-btn');
-  check('Export the .png : son « bouton »', (await files()) === 'tap-menu-button');
+  check('Export image : son « bouton »', (await files()) === 'tap-menu-button');
   await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
   await dl.path();

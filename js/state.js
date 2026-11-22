@@ -25,7 +25,15 @@ function notifyBoardChange(reason, extra) {
 // Version du format de la photo : à augmenter (avec une conversion des anciennes) le
 // jour où son contenu change — décorations libres, barricades… (leçon de TRV-Pocket :
 // une sauvegarde doit toujours pouvoir être relue par les versions suivantes).
-const BOARD_STATE_VERSION = 1;
+const BOARD_STATE_VERSION = 2; // 2 (phase 7) : décorations libres
+
+// Conversion des photos d'une version précédente (sauvegarde du navigateur, fichier de projet),
+// à appeler avant validateBoardState. Version 1 : décorations posées automatiquement, retirées en
+// phase 7 ; Mayrik n'a pas besoin de les retrouver (22/11) : le plateau s'ouvre sans décoration.
+function upgradeBoardState(s) {
+  if (s && typeof s === 'object' && s.version === 1) return Object.assign({}, s, { version: 2, decorations: [] });
+  return s;
+}
 
 // Photo complète et indépendante (copie profonde, convertible en JSON) de tout ce
 // que l'utilisateur a choisi. L'image de titre personnalisée n'en fait pas partie :
@@ -40,6 +48,7 @@ function getBoardState() {
     overlayCycleIndex: Object.assign({}, overlayCycleIndex),
     titleName: document.getElementById('title-input').value,
     boardNumber: document.getElementById('board-number-input').value,
+    decorations: decorations.map(d => ({ item: d.item, x: d.x, y: d.y })),
   };
 }
 
@@ -54,6 +63,8 @@ function validateBoardState(s) {
   if (!Array.isArray(s.board) || s.board.length !== n) return 'wrong number of spaces';
   if (!s.board.every(id => TILES.some(t => t.id === id))) return 'unknown space type';
   if (!Array.isArray(s.cellVariant) || s.cellVariant.length !== n) return 'wrong variant list';
+  if (!Array.isArray(s.decorations) || !s.decorations.every(d => d && Number.isInteger(d.item)
+      && d.item >= 1 && d.item <= ITEM_PATHS.length && Number.isFinite(d.x) && Number.isFinite(d.y))) return 'bad decorations';
   return null;
 }
 
@@ -65,6 +76,8 @@ function setBoardState(s) {
   applyBoardType(s.boardType);
   board = s.board.slice();
   cellVariant = s.cellVariant.slice();
+  decorations = s.decorations.map(d => ({ item: d.item, x: d.x, y: d.y }));
+  decor.selected = -1; // js/decor.js
   overlayCycleIndex = Object.assign({ rock: 0, fire: 0, oil: 0 }, s.overlayCycleIndex);
   document.getElementById('title-input').value = s.titleName || '';
   document.getElementById('board-number-input').value = s.boardNumber || '';

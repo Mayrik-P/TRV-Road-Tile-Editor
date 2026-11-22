@@ -364,47 +364,6 @@ function renderHits(svg) {
     }
 }
 
-// ---- 11. Décorations de groupe — un seul petit élément par zone homogène de plus
-// de 3 cases, posé à une intersection de cases, par-dessus tout le reste (y compris
-// le quadrillage orange) pour casser la monotonie des grandes zones uniformes.
-// Cherche toutes les paires de cases adjacentes, de même nature (dans le même
-// groupe) et sans overlay des deux côtés — les seules frontières valables pour
-// poser une décoration "entre deux cases".
-function findEligiblePairsInGroup(grp) {
-  const groupSet = new Set(grp.cells);
-  const seen = new Set();
-  const pairs = [];
-  grp.cells.forEach(idx => {
-    if (OVERLAY_TYPES.includes(board[idx])) return;
-    const row = Math.floor(idx / COLS), col = idx % COLS;
-    neighborsOf(col, row).forEach(([nc, nr]) => {
-      const nidx = nr * COLS + nc;
-      if (!groupSet.has(nidx) || OVERLAY_TYPES.includes(board[nidx])) return;
-      const key = idx < nidx ? `${idx}-${nidx}` : `${nidx}-${idx}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      pairs.push([[col, row], [nc, nr]]);
-    });
-  });
-  return pairs;
-}
-
-// Point d'ancrage sur la frontière entre deux cases : sur la ligne d'interligne
-// pour deux cases de lignes différentes, ou juste au-dessus de la pointe du
-// chevron (jamais dessus) pour deux cases de la même ligne.
-function pairDecorAnchor(colA, rowA, colB, rowB) {
-  const pts = boundaryLine(colA, rowA, colB, rowB);
-  if (rowA === rowB) {
-    // pts = [coin haut, pointe, coin bas] — on prend un point sur le segment
-    // supérieur, proche de la pointe mais nettement au-dessus.
-    const [top, tip] = pts;
-    const t = 0.7;
-    return {x: top[0] + (tip[0] - top[0]) * t, y: top[1] + (tip[1] - top[1]) * t};
-  }
-  // pts = [gauche, droite] sur la ligne d'interligne — le milieu convient très bien.
-  return {x: (pts[0][0] + pts[1][0]) / 2, y: (pts[0][1] + pts[1][1]) / 2};
-}
-
 // ---- Débordement Route <-> Autre texture ----
 // 7 png (dossier "edges", canevas fixe 657x622, toujours centrés sur la case Route) :
 // LeftEdge / RightEdge pour les frontières intra-ligne (jamais de scission, les
@@ -525,31 +484,4 @@ function renderAllRoadEdges(g) {
     }
 }
 
-function renderAllDecorations(g) {
-  const groups = findSameTypeGroups();
-  groups.forEach(grp => {
-    if (grp.cells.length <= 3) return;
-    const pairs = findEligiblePairsInGroup(grp);
-    if (!pairs.length) return;
-    // Préférence pour l'interligne quand le groupe s'étend sur plusieurs lignes.
-    const crossRowPairs = pairs.filter(([[, rowA], [, rowB]]) => rowA !== rowB);
-    const pool = crossRowPairs.length ? crossRowPairs : pairs;
-    // Choix déterministe (mais varié d'un groupe à l'autre) parmi les paires possibles.
-    const seed = seededRandom(grp.cells[0] * 97 + grp.cells.length * 13);
-    const [[colA, rowA], [colB, rowB]] = pool[Math.floor(seed * pool.length)];
-    const {x, y} = pairDecorAnchor(colA, rowA, colB, rowB);
-    // Les png Items- sont dessinés sur un canevas fixe de 378x378 px, à la même
-    // échelle 300ppp que le reste du plateau (A3 @ 300dpi) — donc leur taille native
-    // est déjà la bonne, pas besoin de la réduire par rapport à la case.
-    const size = 378;
-    // Choix aléatoire (mais reproductible) parmi les 12 png de décoration.
-    const itemSeed = seededRandom(grp.cells[0] * 53 + grp.cells.length * 29 + 7);
-    const itemSrc = ITEM_PATHS[Math.floor(itemSeed * ITEM_PATHS.length)];
-    g.appendChild(mkEl('image', {
-      href: displayHref(itemSrc),
-      x: x - size / 2, y: y - size / 2, width: size, height: size,
-      'pointer-events': 'none', 'data-decor-cell': rowA * COLS + colA
-    }));
-  });
-}
 

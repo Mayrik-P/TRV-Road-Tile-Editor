@@ -63,6 +63,12 @@ function warnUser(message) {
 boardEvents.addEventListener('change', e => {
   const { reason } = e.detail;
   if (reason === 'restore' && undoHistory.applying) { playSound('undo'); return; }
+  if (reason === 'decor') { // décorations (js/decor.js) ; « Clear board » : couvert par son tampon
+    if (e.detail.action === 'clear') { // un seul tampon par « Clear board », même si aucune case ne change
+      if (sounds.clearSeq !== undoHistory.actionSeq) { sounds.clearSeq = undoHistory.actionSeq; playSound('clear'); }
+    } else playSound(e.detail.action === 'remove' ? 'undo' : 'place');
+    return;
+  }
   if (reason !== 'cell') return;
   const inAction = undoHistory.batch > 0, seq = undoHistory.actionSeq;
   if (inAction && undoHistory.actionKind === 'clear') {
