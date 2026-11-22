@@ -127,6 +127,12 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   await exportPng(p, path.join(tmp, 'selected.png'));
   check('export avec une décoration sélectionnée = export sans sélection (cercle et ✕ jamais exportés)',
         Buffer.compare(fs.readFileSync(path.join(tmp, 'with.png')), fs.readFileSync(path.join(tmp, 'selected.png'))) === 0);
+  // « Clear board » : cases ET décorations, en une seule étape ; Ctrl+Z ramène tout
+  { const before = JSON.stringify(await p.evaluate(() => ({ b: board, d: decorations }))); const s0 = await steps(p);
+    p.once('dialog', dlg => dlg.accept()); await p.click('#clear-btn');
+    check('Clear board : décorations retirées aussi, une seule étape', (await decos(p)).length === 0 && await steps(p) === s0 + 1);
+    await p.keyboard.press('Control+z');
+    check('Ctrl+Z après Clear board : cases et décorations reviennent', JSON.stringify(await p.evaluate(() => ({ b: board, d: decorations }))) === before); }
   // Sauvegarde : rechargement + Continue
   const saved = JSON.stringify(await decos(p));
   await p.reload(); await p.click('#board-type-continue'); await ready(p);

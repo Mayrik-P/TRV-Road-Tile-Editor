@@ -58,6 +58,15 @@ function removeDecoration(i) {
   notifyBoardChange('decor', { action: 'remove' });
 }
 
+// Toutes les décorations retirées (« Clear board », js/editing.js, dans son étape d'annulation).
+function clearDecorations() {
+  if (!decorations.length) return;
+  decorations = [];
+  decor.selected = -1;
+  redrawDecorations();
+  notifyBoardChange('decor', { action: 'clear' });
+}
+
 // ---- Dessin ----
 // Ordre de profondeur de la vue du plateau : plus bas = devant (comme les overlays).
 function decorDrawOrder() {

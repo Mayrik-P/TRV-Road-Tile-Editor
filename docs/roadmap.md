@@ -335,6 +335,7 @@ Fait (`js/decor.js`) :
   `pairDecorAnchor`, `findSameTypeGroups`, `OVERLAY_TYPES`, `data-decor-cell`, recalcul à chaque case.
 - Test `tools/check-decor.js` (30 vérifications, trois sabotages). Exports identiques à l'ancienne
   version privée de ses décorations automatiques.
+- « Clear board » retire aussi les décorations, dans la même étape d'annulation (choix de Mayrik, 22/11).
 - Option 7d (aimantation sur les frontières) non faite : à décider après essai.
 
 ### Phase 8 — Barricades (Ignition, pour les deux formats)

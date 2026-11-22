@@ -179,13 +179,15 @@ function selectTileType(id) {
 function clearBoard() {
   const label = TILES.find(t => t.id === DEFAULT_TILE).label;
   const ok = confirm(
-    'Clear all board spaces back to ' + label + '?\n\n' +
+    'Clear all board spaces back to ' + label + ' and remove all decorations?\n\n' +
     'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).'
   );
   if (!ok) return;
   beginAction('clear');
-  try { for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE); }
-  finally { endAction(); }
+  try {
+    for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE);
+    clearDecorations(); // décorations retirées aussi, dans la même étape (choix de Mayrik, 22/11)
+  } finally { endAction(); }
 }
 
 // « Home » (tranche 4c) : retour à l'écran d'accueil sans rien perdre — le plateau reste en
