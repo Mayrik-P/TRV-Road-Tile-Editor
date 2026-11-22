@@ -1,0 +1,217 @@
+/* ===== css/app.css — styles de l'interface (sortis tels quels de index.html). */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#ecd5a7;color:#ddd;min-height:100vh;}
+/* Écran de choix du format de plateau (Vendetta/Ignition), affiché une seule
+   fois avant que le reste de l'appli n'apparaisse. Le nom du format ne
+   réapparaît nulle part ailleurs dans l'UI une fois le choix fait. */
+#board-type-picker{position:fixed;inset:0;background:#565558;display:flex;
+  align-items:center;justify-content:center;z-index:1000;padding:20px;}
+/* Position adaptative : ancré en bas à droite via le conteneur position:fixed
+   parent, la marge en % + clamp() garde un espacement raisonnable aussi bien
+   sur mobile étroit que sur grand écran, sans jamais toucher le bord. */
+#version-tag{position:absolute;bottom:clamp(8px,2vw,20px);right:clamp(10px,2vw,20px);
+  font-family:Arial,sans-serif;font-size:11px;color:#c9c4b6;opacity:0.65;
+  pointer-events:none;white-space:nowrap;}
+#board-type-picker-inner{display:flex;flex-direction:column;align-items:center;}
+#board-type-picker-inner h2{font-family:"OswaldBold","Arial Narrow",Arial,sans-serif;
+  color:#ececec;font-size:20px;margin:0 0 20px;text-shadow:1px 1px 2px rgba(0,0,0,0.75);}
+/* Titre + sous-titre de l'appli, repris à l'identique de #title-band, affichés
+   aussi sur l'écran d'accueil (au-dessus de "Choose your board format") —
+   empilés (titre puis sous-titre), sous-titre callé à droite sous le titre
+   (voir .app-title-stack) ; centré comme le reste via align-items:center sur
+   #board-type-picker-inner, plus besoin de centrage propre ici. */
+#picker-title-band{margin-bottom:28px;}
+#board-type-options{display:flex;flex-direction:column;align-items:center;gap:16px;}
+.board-type-btn{display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:#e8b459;color:#000;border:2px solid #b0956e;border-radius:8px;
+  padding:16px 28px;cursor:pointer;font-family:"OswaldBold",Arial,sans-serif;width:240px;
+  box-shadow:0 2px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);}
+.board-type-btn:hover{background:#d9a34a;}
+.board-type-btn:active{box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);}
+#board-type-vendetta{background:#d9542b;color:#000;}
+#board-type-vendetta:hover{background:#c94a24;}
+#board-type-ignition{background:#f5f0e6;color:#c0392b;}
+#board-type-ignition:hover{background:#e9e1d1;}
+/* Vendetta/Ignition reprennent le même traitement que le titre du plateau
+   (police Alfa Slab One, inclinaison simulée, ombre extrudée) — même chaîne de
+   text-shadow que h1 ci-dessous, même angle ~130°, pour rester cohérent avec le
+   reste de l'identité visuelle de l'appli. */
+.board-type-name{font-family:"AlfaSlabOne",serif;font-weight:400;font-size:18px;
+  display:inline-block;transform:skewX(-12deg);
+  text-shadow:0.163px 0.194px 0 #000,0.326px 0.388px 0 #000,0.489px 0.583px 0 #000,
+    0.651px 0.776px 0 #000,0.814px 0.970px 0 #000,0.977px 1.164px 0 #000,
+    1.140px 1.358px 0 #000,1.302px 1.553px 0 #000,1.466px 1.747px 0 #000,
+    1.629px 1.941px 0 #000,1.791px 2.134px 0 #000,1.954px 2.329px 0 #000,
+    2.117px 2.523px 0 #000,2.280px 2.717px 0 #000,2.442px 2.911px 0 #000,
+    2.606px 3.105px 0 #000,2.768px 3.300px 0 #000,2.931px 3.493px 0 #000,
+    3.094px 3.687px 0 #000,3.257px 3.881px 0 #000;}
+.board-type-desc{font-family:"OswaldBold",Arial,sans-serif;font-size:11px;opacity:0.75;white-space:nowrap;}
+/* "Vendetta" en noir + ombre noire était illisible sur le fond orangé du bouton :
+   on reprend la couleur de fond du bouton Ignition pour le remplissage des lettres,
+   le contour/l'ombre noire (héritée de .board-type-name) reste inchangée. */
+#board-type-vendetta .board-type-name{color:#f5f0e6;}
+#app{display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:8px;}
+/* Rendu repris de l'écriture "Name of the road" du plateau (même recette :
+   contour noir + ombre extrudée), mais avec des ratios contour/taille et
+   ombre/taille recalculés pour la taille de police bien plus petite de l'appli
+   (261px sur le plateau vs 19px ici) — mêmes proportions, pas les mêmes px. */
+h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transform:uppercase;
+  font-family:"AlfaSlabOne",serif;white-space:nowrap;
+  transform:scaleX(0.85) skewX(-12deg);transform-origin:right center;
+  -webkit-text-stroke-width:0.73px;-webkit-text-stroke-color:#000;
+  text-shadow:0.120px 0.143px 0 #000,0.240px 0.286px 0 #000,0.359px 0.428px 0 #000,
+    0.479px 0.571px 0 #000,0.599px 0.714px 0 #000,0.719px 0.857px 0 #000,
+    0.839px 0.999px 0 #000,0.958px 1.142px 0 #000,1.078px 1.285px 0 #000,
+    1.198px 1.428px 0 #000,1.318px 1.570px 0 #000,1.437px 1.713px 0 #000,
+    1.557px 1.856px 0 #000,1.677px 1.999px 0 #000,1.797px 2.141px 0 #000,
+    1.917px 2.284px 0 #000,2.036px 2.427px 0 #000,2.156px 2.570px 0 #000,
+    2.276px 2.712px 0 #000,2.396px 2.855px 0 #000;}
+/* Bandeau dédié titre + sous-titre — pensé pour être remplacé plus tard par un
+   visuel graphique unique (image) sans toucher au reste de la mise en page. */
+#title-band{background:#565558;border-radius:10px 10px 0 0;padding:12px 14px;
+  display:flex;justify-content:center;
+  border-bottom:1px solid #c8b89a;}
+/* Rendu repris de l'écriture "FAN-MADE CHAPTER" du plateau (même recette :
+   contour noir + ombre extrudée + resserrement/inclinaison), ratios recalculés
+   pour la taille de police de l'appli (74px sur le plateau vs 9px ici).
+   Collé juste sous le titre (le haut du sous-titre touche le bas de l'ombrage
+   du titre, via margin-top négatif) et callé à droite via .app-title-stack. */
+.app-subtitle{font-size:9px;font-weight:700;color:#ecd5a7;letter-spacing:0.2px;
+  font-family:"OswaldBold",Arial,sans-serif;white-space:nowrap;
+  transform:scaleX(0.85) skewX(-12deg);transform-origin:right center;
+  margin-top:-2px;
+  -webkit-text-stroke-width:0.4px;-webkit-text-stroke-color:#000;
+  text-shadow:0.059px 0.071px 0 #000,0.118px 0.141px 0 #000,0.178px 0.212px 0 #000,
+    0.237px 0.282px 0 #000,0.296px 0.353px 0 #000,0.355px 0.423px 0 #000,
+    0.414px 0.494px 0 #000,0.474px 0.564px 0 #000,0.533px 0.635px 0 #000,
+    0.592px 0.705px 0 #000,0.651px 0.776px 0 #000,0.710px 0.846px 0 #000,
+    0.769px 0.917px 0 #000,0.829px 0.988px 0 #000;}
+/* Bloc titre+sous-titre. Sur l'accueil : empilé (titre au-dessus, sous-titre
+   callé à droite en dessous, via align-items:flex-end) et centré dans sa bande.
+   scaleX(0.85)+skewX(-12deg) sur h1 sont pivotés à droite (transform-origin:right)
+   pour que le bord droit du titre reste collé à celui du sous-titre — mais ça
+   laisse un vide visuel à gauche du texte que le centrage flex ne voit pas (il
+   centre la boîte de mise en page, pas le rendu visuel après transform) ; les
+   deux corrections de centrage ci-dessous (translateX) compensent ce vide,
+   mesurées précisément par écran (valeur proportionnelle à la taille du texte). */
+.app-title-stack{display:inline-flex;flex-direction:column;align-items:flex-end;
+  transform-origin:center top;}
+/* --fit-scale (posée par fitAllTitleStacks() en JS) réduit l'ensemble du bloc si
+   sa largeur naturelle dépasse celle de l'écran/du conteneur — préserve les
+   proportions contour/ombrage déjà calibrées (contrairement à changer le
+   font-size), voir la fonction JS pour le détail. transform-origin:center top
+   pour que la réduction se fasse depuis le haut sans décaler la ligne du dessous.
+   Combiné au translateX de recentrage propre à chaque écran ci-dessous (le
+   transform de base n'est jamais utilisé seul : chaque .app-title-stack est
+   toujours dans #title-band OU #picker-title-band). */
+#picker-title-band .app-title-stack{transform:translateX(-40px) scale(var(--fit-scale, 1));}
+/* Éditeur : sous-titre replacé à droite du titre (une seule ligne, gain de place
+   verticale) au lieu d'en dessous, avec un espacement ≈ largeur d'un espace du
+   titre (9px) et le bas du sous-titre calé sur le bas du titre. Le pivot à gauche
+   du sous-titre (au lieu de la valeur par défaut à droite) évite un vide visuel
+   entre les deux textes ; translateX compense le petit résidu de décentrage que
+   ce changement de pivot introduit. */
+#title-band .app-title-stack{flex-direction:row;align-items:flex-end;gap:9px;
+  transform:translateX(-11px) scale(var(--fit-scale, 1));}
+#title-band .app-subtitle{margin-top:0;transform-origin:left center;}
+/* Taille doublée sur les deux écrans (accueil ET éditeur, mêmes valeurs) —
+   contour et ombrage doublés en même temps pour garder les mêmes proportions
+   visuelles qu'à la taille normale (pas juste un agrandissement du texte seul). */
+#title-band h1, #picker-title-band h1{font-size:38px;
+  -webkit-text-stroke-width:1.46px;
+  text-shadow:0.240px 0.286px 0 #000,0.480px 0.572px 0 #000,0.718px 0.856px 0 #000,
+    0.958px 1.142px 0 #000,1.198px 1.428px 0 #000,1.438px 1.714px 0 #000,
+    1.678px 1.998px 0 #000,1.916px 2.284px 0 #000,2.156px 2.570px 0 #000,
+    2.396px 2.856px 0 #000,2.636px 3.140px 0 #000,2.874px 3.426px 0 #000,
+    3.114px 3.712px 0 #000,3.354px 3.998px 0 #000,3.594px 4.282px 0 #000,
+    3.834px 4.568px 0 #000,4.072px 4.854px 0 #000,4.312px 5.140px 0 #000,
+    4.552px 5.424px 0 #000,4.792px 5.710px 0 #000;}
+#title-band .app-subtitle, #picker-title-band .app-subtitle{font-size:18px;
+  -webkit-text-stroke-width:0.8px;
+  text-shadow:0.118px 0.142px 0 #000,0.236px 0.282px 0 #000,0.356px 0.424px 0 #000,
+    0.474px 0.564px 0 #000,0.592px 0.706px 0 #000,0.710px 0.846px 0 #000,
+    0.828px 0.988px 0 #000,0.948px 1.128px 0 #000,1.066px 1.270px 0 #000,
+    1.184px 1.410px 0 #000,1.302px 1.552px 0 #000,1.420px 1.692px 0 #000,
+    1.538px 1.834px 0 #000,1.658px 1.976px 0 #000;}
+#toolbar{background:#ecd5a7;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #c8b89a;}
+/* Trois groupes indépendants dans #toolbar : Load, Name+compteur, Export+Reset.
+   Chacun peut passer à sa propre ligne si la largeur manque (flex-wrap sur
+   #toolbar), et à l'inverse tous tiennent sur une seule ligne si l'écran est
+   assez large. name-field-group a la priorité sur l'espace disponible
+   (flex:3) par rapport à tb-right (flex:1), qui ne s'étire que pour garder
+   Reset collé au bord droit. */
+#tb-load{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;flex:0 0 auto;}
+#title-img-btn{flex:0 0 auto;width:130px;white-space:nowrap;position:relative;}
+/* Info-bulle custom : le délai natif du navigateur pour l'attribut title (souvent
+   1 à 1.5s) est trop long pour être vu par la plupart des utilisateurs — on le
+   remplace par une bulle CSS qui apparaît après un délai bien plus court (0.2s). */
+#tb-load .tooltip{
+  position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(-4px);
+  background:#222;color:#fff;font-size:10px;font-weight:400;padding:4px 8px;border-radius:4px;
+  white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity 0.15s ease 0.2s;z-index:10;}
+/* Bulle posée À CÔTÉ du bouton (dans .tip-wrap), pas dedans : le chevron du bouton (clip-path,
+   paper-ui.css) masquerait tout ce qui dépasse. Visible au survol et au focus clavier. */
+.tip-wrap{position:relative;display:inline-flex;}
+#tb-load .tip-wrap:hover .tooltip,#tb-load .tip-wrap:focus-within .tooltip{opacity:1;}
+#name-field-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:3 1 auto;min-width:0;max-width:322px;}
+#number-field-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:0 0 auto;}
+#board-number-input{background:#ede3cf;border:1px solid #b0956e;color:#3a2c1a;padding:5px 9px;
+  border-radius:5px;font-size:12px;font-weight:700;letter-spacing:2px;text-align:center;width:60px;}
+#tb-right{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 auto;}
+/* Les deux boutons "reset" (image de titre + plateau) restent groupés l'un à
+   côté de l'autre, tout en étant poussés ensemble au bord droit (comme Reset
+   l'était seul auparavant) — margin-left:auto est donc sur le groupe, pas sur
+   un bouton individuel. */
+#undo-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;}
+#undo-group .btn:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none;transform:none;}
+#undo-group .btn:disabled:hover{background:#e8b459;}
+/* Clavier (js/keyboard.js) : 1re lettre des types soulignée, panneau des raccourcis. */
+.tb-label{display:inline-block;}
+.tb-label::first-letter{text-decoration:underline;text-underline-offset:2px;}
+#shortcut-help{position:fixed;inset:0;background:rgba(20,16,24,0.55);display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px;}
+#shortcut-help[hidden]{display:none;}
+#shortcut-help-box{background:#ecd5a7;color:#000;border:2px solid #b0956e;border-radius:8px;padding:18px 20px;max-width:620px;width:100%;max-height:90vh;overflow:auto;display:grid;gap:12px;}
+#shortcut-help-box h2{font-family:"OswaldBold",Arial,sans-serif;font-size:18px;margin:0;}
+#shortcut-help-box table{border-collapse:collapse;font-size:13px;}
+#shortcut-help-box td{padding:6px 10px 6px 0;vertical-align:top;border-bottom:1px solid #c8b89a;}
+#shortcut-help-box td:first-child{white-space:nowrap;}
+#shortcut-help-close{justify-self:end;}
+kbd{display:inline-block;min-width:1.4em;padding:1px 5px;border:1px solid #8a7556;border-bottom-width:2px;border-radius:4px;background:#f5ecd8;font:600 11px/1.4 Arial,sans-serif;text-align:center;color:#000;}
+/* Sur écran tactile seul, pas de clavier : on n'affiche pas l'invitation « ? ». */
+@media (hover:none) and (pointer:coarse){.hint-keys{display:none;}}
+#reset-group{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;}
+#reset-title-btn,#reset-btn{background:#000;color:#fff;border-color:#b0956e;}
+#reset-title-btn:hover,#reset-btn:hover{background:#da613d;color:#fff;border-color:#a8492b;}
+#title-input{background:#ede3cf;border:1px solid #b0956e;color:#3a2c1a;padding:5px 9px;border-radius:5px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;flex:1 1 auto;min-width:50px;max-width:280px;width:auto;}
+#title-input::placeholder{color:#9a8060;font-weight:400;text-transform:none;letter-spacing:0;}
+#cc{font-size:11px;color:#555;min-width:36px;flex:0 0 auto;}
+.btn{background:#e8b459;border:1px solid #b0956e;color:#000;padding:6px 11px;border-radius:5px;font-size:11px;cursor:pointer;
+  font-family:"OswaldBold",Arial,sans-serif;
+  box-shadow:0 2px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);}
+.btn:hover{background:#d9a34a;}
+.btn:active{box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);transform:translateY(1px);}
+.btn.p{background:#e8b459;color:#000;border-color:#b0956e;font-weight:700;}
+.btn.p:hover{background:#d9a34a;}
+.btn.p:disabled{background:#cbb187;color:#555;cursor:not-allowed;opacity:0.7;box-shadow:none;}
+#palette{background:#ecd5a7;padding:8px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-bottom:1px solid #c8b89a;}
+.tb{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#e8b459;border:2px solid #b0956e;border-radius:5px;cursor:pointer;font-size:11px;color:#000;white-space:nowrap;user-select:none;-webkit-user-select:none;
+  font-family:"OswaldBold",Arial,sans-serif;
+  box-shadow:0 2px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);}
+.tb:hover{background:#d9a34a;}
+.tb:active{box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);transform:translateY(1px);}
+.tb.sel{border-color:#a8492b;background:#da613d;color:#fff;box-shadow:inset 0 2px 3px rgba(0,0,0,0.35);}
+.sw{width:11px;height:11px;border-radius:2px;flex-shrink:0;border:1px solid rgba(255,255,255,0.15);}
+#bwrap{background:#fff;overflow:hidden;border-radius:0 0 10px 10px;}
+/* Pinceau (js/brush.js) : un doigt peint au lieu de faire défiler (avant : manipulation),
+   le pincement à deux doigts reste possible ; pas de sélection de texte pendant un geste. */
+#bsvg{display:block;width:100%;touch-action:pinch-zoom;-webkit-user-select:none;user-select:none;}
+#hint{font-size:10px;color:#555;text-align:center;padding:6px 10px;background:#ecd5a7;border-bottom:1px solid #c8b89a;
+  display:flex;flex-wrap:wrap;justify-content:center;column-gap:6px;row-gap:2px;}
+/* Chaque phrase reste un bloc insécable : sur écran large les deux se retrouvent
+   côte à côte sur une ligne ; sur écran étroit, le retour à la ligne se fait entre
+   les deux phrases (jamais au milieu d'une phrase), grâce au flex-wrap ci-dessus. */
+.hint-part{white-space:normal;}
+/* Progress bar inside export button */
+#export-btn{position:relative;overflow:hidden;width:130px;flex:0 0 auto;}
+#export-progress{position:absolute;left:0;top:0;height:100%;width:0%;background:rgba(0,0,0,0.15);transition:width 0.2s;pointer-events:none;}
