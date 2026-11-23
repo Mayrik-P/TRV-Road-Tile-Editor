@@ -44,5 +44,5 @@ then open http://localhost:8765/index.html.
 
 Details in [LICENSE](LICENSE). Exported tiles are for personal use only.
 
-Created by **Mayrik Padey**. This is an unofficial fan project; its free distribution is authorized by
+Created by **Mayrik PADEY**. This is an unofficial fan project; its free distribution is authorized by
 Restoration Games, LLC.

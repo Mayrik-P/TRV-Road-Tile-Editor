@@ -414,6 +414,11 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    code ensuite », petites demandes de fusion, code écrit par IA signalé et testé), `ROADMAP.md`,
    `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, contact par GitHub, pas d'e-mail), modèles de ticket
    et de demande de fusion (`.github/`), `README.md`.
+   Précisions de Mayrik (23/11) : but = éditeur de plateau (formes des extensions possibles), pas d'appli
+   à tout faire (ni lanceur de dés, ni plateau virtuel) ; code écrit par IA (« vibe coding ») accepté
+   s'il est testé sur téléphone et ordinateur, fonctionnel et optimisé ; interdit d'extraire les
+   graphismes du jeu pour les diffuser ailleurs ; commentaires du code en anglais (traduction des
+   commentaires existants) ; nom « Mayrik PADEY » ; pas d'e-mail personnel.
 
 ---
 

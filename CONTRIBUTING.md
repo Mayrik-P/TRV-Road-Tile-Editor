@@ -1,7 +1,7 @@
 # Contributing to TRV Road Tile Editor
 
 Thank you for wanting to help! This is a small community project with a single maintainer,
-**Mayrik Padey**, who decides its direction and what gets merged. These rules keep the project
+**Mayrik PADEY**, who decides its direction and what gets merged. These rules keep the project
 coherent and keep reviews manageable.
 
 ## 1. Discuss first, code second
@@ -40,21 +40,21 @@ node tools/check-app.js http://localhost:8765/ /tmp/out
 Run the checks related to what you changed and report the results in the pull request.
 If you change a CSS or JS file, run `python3 tools/stamp-assets.py` before committing.
 
-## 4. AI-assisted contributions
+## 4. AI-assisted contributions ("vibe coding")
 
-This project is itself written with the help of an AI coding assistant, so AI tools are fine, with
-three conditions:
+This project is itself written with an AI coding assistant, so AI-written code is welcome, including
+"vibe coded" contributions. What matters is the result:
 
-- **Say so** in the pull request.
-- **You understand and have tested** everything you submit.
+- **Tested before submitting, on a phone AND on a computer.** Untested pull requests will be closed.
+- **Only working and technically sound code is accepted**: no regressions, no needless complexity, no
+  slower loading, no dead code.
+- **Say so** in the pull request when an AI tool wrote the code.
 - The usual rules apply: accepted issue first, one small topic.
-
-Large, untested or unexplained generated changes will be closed.
 
 ## 5. Conventions
 
 - Texts shown in the app, file names and code identifiers are in **English**.
-- Existing code comments are in **French** (the maintainer's language); English comments are fine.
+- Code comments are in **English**.
 - The app is plain HTML, CSS and JavaScript with no build step and no dependencies to install for
   users; keep it that way.
 - Every third-party resource (image, sound, font, library) must have a license allowing its use in a
@@ -66,7 +66,8 @@ By submitting a contribution, you agree that it is licensed under the same terms
 project it belongs to: code under the [PolyForm Noncommercial License 1.0.0](LICENSES/PolyForm-Noncommercial-1.0.0.md),
 artwork and documentation under [CC BY-NC-SA 4.0](LICENSES/CC-BY-NC-SA-4.0.txt) (see [LICENSE](LICENSE)).
 Do not submit material you do not have the right to share, and never submit Restoration Games
-artwork without their permission.
+artwork without their permission. Extracting the games' artwork from this project to use or distribute it
+elsewhere is not allowed.
 
 ## 7. Code of conduct
 

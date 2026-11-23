@@ -17,7 +17,7 @@ Closes #
 
 ## AI assistance
 
-- [ ] This contribution was written with the help of an AI tool, and I understand and have tested all of it
+- [ ] An AI tool wrote all or part of this contribution (allowed: it must still be tested on a phone and a computer)
 
 ## Licensing
 

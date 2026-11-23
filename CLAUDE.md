@@ -21,8 +21,9 @@ Le lire avant tout travail.
   `/Users/mayrik/HDD Mayrik/Perso/JeuxSociete/Thunder Road/TRV_Road_Tile_Editor`
   (fichier de création = ses ressources de travail ; sauvegarde de la v1.00 dans
   « Sauvegarde version actuelle (v1.00 - 2026-11-19) »).
-- **Langue** : échanges en **français** ; textes affichés, noms de fichiers et code en **anglais** ;
-  commentaires du code et messages de commit en **français**.
+- **Langue** : échanges en **français** ; textes affichés, noms de fichiers, code et **commentaires du code
+  en anglais** (décision de Mayrik du 23/11, projet ouvert à la communauté) ; messages de commit en
+  **français**. Nom de l'auteur : **Mayrik PADEY** (à la française).
 - Mayrik n'est **pas graphiste** : il assemble des images sous Photoshop à partir de ressources
   gratuites. Ne pas lui demander de dessiner : donner des gabarits, des tailles exactes, des essais.
 
@@ -157,7 +158,10 @@ Le lire avant tout travail.
   documentation sous CC BY-NC-SA 4.0, graphismes de Restoration Games exclus (`LICENSE`, textes dans
   `LICENSES/`, rangement REUSE). Mayrik seul décideur ; règles publiques en anglais : `README.md`,
   `CONTRIBUTING.md`, `ROADMAP.md` (à tenir à jour avec `docs/roadmap.md`), `CODE_OF_CONDUCT.md`,
-  modèles dans `.github/`. Toute demande de fusion externe se juge selon `CONTRIBUTING.md`.
+  modèles dans `.github/`. Toute demande de fusion externe se juge selon `CONTRIBUTING.md`. But : un
+  éditeur de plateau (nouvelles formes selon les extensions possibles), jamais une appli à tout faire
+  (ni lanceur de dés, ni plateau virtuel) ; code écrit par IA accepté s'il est testé (téléphone et
+  ordinateur), fonctionnel et techniquement optimisé ; pas d'e-mail personnel dans les fichiers.
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 

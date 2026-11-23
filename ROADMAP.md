@@ -1,6 +1,10 @@
 # Roadmap
 
-TRV Road Tile Editor is led by its author, **Mayrik Padey**, who decides the direction of the project.
+TRV Road Tile Editor is led by its author and lead developer, **Mayrik PADEY**, who decides the direction
+of the project and what gets merged (the "benevolent dictator" model used by many community projects).
+
+**The goal: a board editor** for Thunder Road: Vendetta and Ignition, possibly with new board shapes for the
+games' expansions. It is **not meant to become an all-purpose app**: no dice roller, no virtual tabletop.
 This page tells you what is planned, so you can check whether your idea fits before proposing it
 (see [CONTRIBUTING.md](CONTRIBUTING.md)). The detailed working plan, in French, is in
 [docs/roadmap.md](docs/roadmap.md).
@@ -22,9 +26,9 @@ This page tells you what is planned, so you can check whether your idea fits bef
 
 ## Out of scope
 
-To keep the app simple, reliable and free, these will not be accepted:
+These will not be accepted:
 
-- Anything commercial (ads, paid features, selling exports).
-- Online accounts, servers or cloud storage: the app runs entirely in the browser.
-- Build steps, frameworks or package managers: the repository is served as-is.
-- New artwork reproduced from the games without Restoration Games' permission.
+- Anything commercial (ads, paid features, selling exports or code).
+- Features outside board editing: dice rollers, virtual tabletops, game rules engines, etc.
+- Extracting the games' artwork from this project to use or distribute it elsewhere, or adding new
+  artwork reproduced from the games without Restoration Games' permission.
