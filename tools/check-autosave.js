@@ -37,7 +37,7 @@ function noisePng(w, h) {
   const continueVisible = () => p.evaluate(() => !document.getElementById('board-type-continue').hidden && getComputedStyle(document.getElementById('board-type-continue')).display !== 'none');
 
   await p.goto(url);
-  check('1re visite : pas de bouton Continue', !(await continueVisible()));
+  check('1st visit: no Continue button', !(await continueVisible()));
   await p.click('#board-type-vendetta'); await ready();
   await paint('road', 3); await paint('rock', 12); await paint('goo', 20);
   await p.click('#title-input'); await p.keyboard.type('Dust Bowl'); await p.evaluate(() => document.activeElement.blur());
@@ -49,7 +49,7 @@ function noisePng(w, h) {
 
   await p.reload();
   check('after reload: Continue button visible', await continueVisible());
-  check('Continue indique le format et le nom', (await p.textContent('#board-type-continue-desc')) === 'Vendetta — DUST BOWL');
+  check('Continue shows the format and the name', (await p.textContent('#board-type-continue-desc')) === 'Vendetta — DUST BOWL');
   await p.click('#board-type-continue'); await ready();
   check('Continue: board, variants and name restored identically', await state() === before);
   await p.waitForFunction(() => TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE, null, { timeout: 30000 }).catch(() => {});
@@ -61,9 +61,9 @@ function noisePng(w, h) {
   // New board while there was one: Ctrl+Z brings back the old one
   await p.reload();
   await p.click('#board-type-ignition'); await ready();
-  check('nouveau plateau Ignition', await p.evaluate(() => BOARD_TYPE) === 'ignition');
+  check('new Ignition board', await p.evaluate(() => BOARD_TYPE) === 'ignition');
   await p.keyboard.press('Control+z');
-  check('nouveau plateau puis Ctrl+Z : l\'ancien plateau Vendetta revient', await state() === before);
+  check('new board then Ctrl+Z: the previous Vendetta board comes back', await state() === before);
 
   // Title image reset to default: no longer restored
   await p.click('#reset-title-btn'); await p.waitForTimeout(1000);
@@ -77,7 +77,7 @@ function noisePng(w, h) {
   await p.evaluate(() => localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ version: 99, boardType: 'vendetta', board: [], cellVariant: [] })));
   await p.reload();
   check('save from an unknown version: ignored', !(await continueVisible()));
-  check('aucune erreur JavaScript', errs.length === 0);
+  check('no JavaScript error', errs.length === 0);
   await ctx.close();
 
   // Storage forbidden by the browser (strict private browsing, settings): the app works
@@ -90,7 +90,7 @@ function noisePng(w, h) {
   await q.goto(url); await q.click('#board-type-vendetta');
   await q.waitForFunction(() => Object.keys(TEXTURES).length === Object.keys(TEXTURE_PATHS).length, null, { timeout: 60000 });
   await q.click('#tb-road'); const bb = await q.locator('#bsvg [data-idx="5"]').first().boundingBox(); await q.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
-  check('stockage interdit : la case se peint, aucune erreur', await q.evaluate(() => board[5]) === 'road' && errs2.length === 0);
+  check('storage forbidden: the space gets painted, no error', await q.evaluate(() => board[5]) === 'road' && errs2.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length || errs2.length) console.log(errs, errs2);
   process.exit(results.some(r => r.startsWith('FAIL')) ? 1 : 0);

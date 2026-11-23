@@ -118,7 +118,7 @@ async function paintAndExport(browser, format) {
     const file2 = path.join(outDir, format + '-restored.png');
     await exportTo(page, file2);
     const cmp = await comparePng(browser, file2, rebuilt);
-    checks.push({ name: 'restauration : export identique au redessin complet', ok: cmp.identical || cmp.diff === 0 });
+    checks.push({ name: 'restore: export identical to the full redraw', ok: cmp.identical || cmp.diff === 0 });
     // 3. Damaged snapshot (one cell missing): rejected, board untouched.
     const bad = await page.evaluate(() => {
       const before = JSON.stringify(getBoardState());
@@ -162,8 +162,8 @@ async function comparePng(browser, a, b) {
   for (const format of ['vendetta', 'ignition']) {
     const t0 = Date.now();
     const { file, errors, checks } = await paintAndExport(browser, format);
-    console.log(`${format} : export ${path.basename(file)} en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
-    if (errors.length) { failed = true; console.log('  ERREURS de la page :', errors); }
+    console.log(`${format} : export ${path.basename(file)} in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+    if (errors.length) { failed = true; console.log('  PAGE ERRORS:', errors); }
     for (const c of checks) { if (!c.ok) failed = true; console.log(`  ${c.ok ? 'ok' : 'FAIL'} : ${c.name}`); }
     if (refDir) {
       const res = await comparePng(browser, file, path.join(refDir, format + '.png'));

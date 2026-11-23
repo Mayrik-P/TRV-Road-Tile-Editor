@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path');
 const base = process.argv[2] || 'http://localhost:8765/';
 const url = new URL('index.html', base).href;
-const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉCHEC'} : ${name}`);
+const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAIL'} : ${name}`);
 // Small valid PNG (1 x 1 red pixel) as the custom title image.
 const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==', 'base64');
 
@@ -37,34 +37,34 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const saved = await state(A.p);
   const [dl] = await Promise.all([A.p.waitForEvent('download'), A.p.click('#save-project-btn')]);
   const file = path.join(tmp, dl.suggestedFilename()); await dl.saveAs(file);
-  check(`nom du fichier : ${dl.suggestedFilename()}`, dl.suggestedFilename() === 'DUST-BOWL.trvtile');
+  check(`file name: ${dl.suggestedFilename()}`, dl.suggestedFilename() === 'DUST-BOWL.trvtile');
   const proj = JSON.parse(fs.readFileSync(file, 'utf8'));
-  check('fichier signé et versionné (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 2); // 2 since phase 7 (free decorations)
-  check('fichier : plateau complet et image de titre intégrée', JSON.stringify(proj.board) === saved && typeof proj.titleImage === 'string' && proj.titleImage.startsWith('data:image/png'));
+  check('file is signed and versioned (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 2); // 2 since phase 7 (free decorations)
+  check('file: full board and embedded title image', JSON.stringify(proj.board) === saved && typeof proj.titleImage === 'string' && proj.titleImage.startsWith('data:image/png'));
   await A.p.click('#export-open-btn');
   await A.p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [dl2] = await Promise.all([A.p.waitForEvent('download'), A.p.click('#export-btn')]);
-  check(`nom du PNG inchangé : ${dl2.suggestedFilename()}`, dl2.suggestedFilename() === 'DUST-BOWL-A3.png');
-  check('enregistrement : aucune erreur JavaScript', A.errs.length === 0);
+  check(`PNG name unchanged: ${dl2.suggestedFilename()}`, dl2.suggestedFilename() === 'DUST-BOWL-A3.png');
+  check('saving: no JavaScript error', A.errs.length === 0);
   await A.ctx.close();
 
   // ---- Open in another browser (blank context) ----
   const B = await open();
-  check('accueil : bouton Open project file visible', await B.p.isVisible('#open-project-btn'));
+  check('home: Open project file button visible', await B.p.isVisible('#open-project-btn'));
   await B.p.setInputFiles('#open-project-input', file); await ready(B.p);
-  check('ouverture : plateau, variantes et nom identiques', await state(B.p) === saved);
+  check('opening: board, variants and name identical', await state(B.p) === saved);
   await B.p.waitForFunction(() => TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE, null, { timeout: 10000 }).catch(() => {});
-  check('ouverture : image de titre retrouvée', await B.p.evaluate(src => TITLE_IMAGE && TITLE_IMAGE.src === src, proj.titleImage));
-  check('ouverture dans une page neuve : Undo grisé', await B.p.evaluate(() => document.getElementById('undo-btn').disabled));
+  check('opening: title image restored', await B.p.evaluate(src => TITLE_IMAGE && TITLE_IMAGE.src === src, proj.titleImage));
+  check('opening in a fresh page: Undo greyed out', await B.p.evaluate(() => document.getElementById('undo-btn').disabled));
   // Over a board in progress: Ctrl+Z brings back the old one
   await B.p.click('#home-btn'); await B.p.click('#board-type-ignition'); await ready(B.p);
   await paint(B.p, 'glass', 5);
   const ign = await state(B.p);
   await B.p.click('#home-btn'); await B.p.setInputFiles('#open-project-input', file);
   await B.p.waitForFunction(() => BOARD_TYPE === 'vendetta');
-  check('ouvert par-dessus un plateau Ignition : projet chargé', await state(B.p) === saved);
+  check('opened over an Ignition board: project loaded', await state(B.p) === saved);
   await B.p.keyboard.press('Control+z');
-  check('puis Ctrl+Z : le plateau Ignition revient', await state(B.p) === ign);
+  check('then Ctrl+Z: the Ignition board comes back', await state(B.p) === ign);
   // Files rejected without changing anything (a single, permanent alert listener: a file
   // wrongly accepted opens no alert and must not skew the next check)
   let lastDialog = '';
@@ -75,15 +75,15 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
     await B.p.click('#home-btn'); await B.p.setInputFiles('#open-project-input', f); await B.p.waitForTimeout(500);
     await B.p.evaluate(() => { if (document.getElementById('board-type-picker').style.display !== 'none') continueSavedBoard(); });
     const msg = lastDialog;
-    check(`fichier refusé (${name}) : message « ${msg.slice(0, 60)}… », plateau inchangé`, msg.includes(expectWord) && await state(B.p) === before);
+    check(`file rejected (${name}): message "${msg.slice(0, 60)}…", board unchanged`, msg.includes(expectWord) && await state(B.p) === before);
   };
   await bad('photo.trvtile', 'not json at all', 'not a TRV');
   await bad('autre.trvtile', JSON.stringify({ hello: 1 }), 'not a TRV');
   await bad('futur.trvtile', JSON.stringify({ ...proj, formatVersion: 99 }), 'newer version');
   const broken = JSON.parse(JSON.stringify(proj)); broken.board.board.pop();
   await bad('abime.trvtile', JSON.stringify(broken), 'damaged');
-  check('ouverture : aucune erreur JavaScript', B.errs.length === 0);
+  check('opening: no JavaScript error', B.errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (A.errs.length || B.errs.length) console.log(A.errs, B.errs);
-  process.exit(results.some(r => r.startsWith('ÉCHEC')) ? 1 : 0);
+  process.exit(results.some(r => r.startsWith('FAIL')) ? 1 : 0);
 })();

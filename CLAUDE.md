@@ -193,6 +193,8 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
 - **`node tools/check-decor.js [url]`** : décorations (pose, glisser, retrait, Annuler, export coupé aux marges, sauvegarde, projet, doigt).
 - **`node tools/check-credits.js [url]`** : crédits (fenêtre, textes exacts des licences, polices et bibliothèques toutes citées).
 - Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.
+- Les outils affichent leurs résultats **en anglais** (`ok : …` / `FAIL : …`, 23/11) ; code de sortie 1 au
+  moindre `FAIL`. Je les résume à Mayrik en français.
 - **Un test vert ne prouve rien s'il ne peut pas échouer** : saboter, vérifier qu'il tombe, restaurer.
 - Captures d'écran : la barre de progression du bouton Export s'anime encore juste après le
   chargement (écart de quelques pixels d'une capture à l'autre, même version) : attendre ou l'ignorer.

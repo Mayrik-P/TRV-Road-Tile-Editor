@@ -51,9 +51,9 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAI
   await p.keyboard.press('r'); const r2 = await cell(8);
   await p.keyboard.press('r'); const r3 = await cell(8);
   check(`R R R on the same cell: ${r1}, ${r2}, ${r3} (expected ${want.join(', ')})`, r1 === want[0] && r2 === want[1] && r3 === want[2]);
-  check('la palette suit la lettre', await p.evaluate(() => document.querySelector('.tb.sel').id) === 'tb-' + want[2]);
+  check('the palette follows the letter', await p.evaluate(() => document.querySelector('.tb.sel').id) === 'tb-' + want[2]);
   await p.keyboard.press('ArrowRight'); await p.keyboard.press('r');
-  check(`R sur une autre case : repose le choix en cours (${want[2]})`, await cell(9) === want[2]);
+  check(`R on another space: places the current choice again (${want[2]})`, await cell(9) === want[2]);
   // Enter / Space: places the chosen type; on Impassable, next visual
   await p.keyboard.press('i'); // cell 9 -> Impassable
   const v1 = await p.evaluate(() => cellVariant[9]);
@@ -63,13 +63,13 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAI
   // Delete: cell reset to the type of a new board; one undo step per key
   const def = await p.evaluate(() => DEFAULT_TILE);
   await p.keyboard.press('Delete');
-  check('Suppr : case remise en ' + def, await cell(9) === def);
+  check('Delete: space reset to ' + def, await cell(9) === def);
   await p.keyboard.press('Control+z');
   check('Ctrl+Z after Delete: the cell comes back', await cell(9) === 'rock');
   // Letter without a type: nothing
   const before = await p.evaluate(() => JSON.stringify(getBoardState()));
   await p.keyboard.press('q');
-  check('lettre sans type (Q) : rien ne change', await p.evaluate(() => JSON.stringify(getBoardState())) === before);
+  check('letter with no type (Q): nothing changes', await p.evaluate(() => JSON.stringify(getBoardState())) === before);
   // In a text field: letters are typed, the board does not move
   await p.click('#title-input'); await p.keyboard.type('Road');
   check('in the text field: letters typed, board unchanged',
@@ -80,11 +80,11 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAI
   await p.keyboard.press('?');
   check('"?" opens the help', await p.evaluate(() => !document.getElementById('shortcut-help').hidden));
   await p.keyboard.press('r');
-  check('aide ouverte : les lettres ne peignent pas', await p.evaluate(() => JSON.stringify(getBoardState().board)) === JSON.stringify(JSON.parse(before).board));
+  check('help open: letters do not paint', await p.evaluate(() => JSON.stringify(getBoardState().board)) === JSON.stringify(JSON.parse(before).board));
   await p.keyboard.press('Escape');
   check('Escape closes the help', await p.evaluate(() => document.getElementById('shortcut-help').hidden));
   await p.keyboard.press('?'); await p.mouse.click(5, 5);
-  check('clic en dehors ferme l\'aide', await p.evaluate(() => document.getElementById('shortcut-help').hidden));
+  check('click outside closes the help', await p.evaluate(() => document.getElementById('shortcut-help').hidden));
   // Mouse on the board: the cursor hides and follows the hovered cell
   await p.keyboard.press('ArrowRight');
   const bb = await p.locator('#bsvg [data-idx="20"]').first().boundingBox();
@@ -99,7 +99,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAI
   await exportTo(path.join(tmp, 'hidden.png'));
   await p.evaluate(() => document.activeElement.blur());
   await p.keyboard.press('ArrowRight');
-  check('curseur visible avant l\'export', (await cur()).drawn === 1);
+  check('cursor visible before the export', (await cur()).drawn === 1);
   await exportTo(path.join(tmp, 'visible.png'));
   check('identical export with or without the cursor shown',
         Buffer.compare(fs.readFileSync(path.join(tmp, 'hidden.png')), fs.readFileSync(path.join(tmp, 'visible.png'))) === 0);
@@ -111,7 +111,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAI
   const tip = await p.evaluate(() => { const t = document.getElementById('title-img-tooltip').getBoundingClientRect(),
     btn = document.getElementById('title-img-btn'), clip = btn.getBoundingClientRect();
     return { text: document.getElementById('title-img-tooltip').textContent, outside: t.bottom <= clip.top + 1, inBtn: btn.contains(document.getElementById('title-img-tooltip')) }; });
-  check(`Load title image : tooltip hidden at rest, visible on hover ("${tip.text}")`,
+  check(`Load title image: tooltip hidden at rest, visible on hover ("${tip.text}")`,
         tipRest === '0' && (await tipOpacity()) === '1' && /^Ideal size: \d+ × \d+ px$/.test(tip.text));
   check('tooltip outside the chevron-cut button (otherwise it would be clipped)', tip.outside && !tip.inBtn);
   // Announced size = actual size of the title image frame in the board (Vendetta here)
@@ -140,7 +140,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAI
     const m = await q.evaluate(() => ({ w: innerWidth, sw: document.documentElement.scrollWidth, right: document.getElementById('title-img-warn').getBoundingClientRect().right }));
     check(`phone: warning shown without widening the page (page ${m.w} px, content ${m.sw} px)`, m.w === 411 && m.sw === 411 && m.right <= 411);
     await q.close(); }
-  check('aucune erreur JavaScript', errs.length === 0);
+  check('no JavaScript error', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);
   process.exit(results.some(r => r.startsWith('FAIL')) ? 1 : 0);

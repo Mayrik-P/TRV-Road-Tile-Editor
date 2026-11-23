@@ -35,7 +35,7 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     check('slow drag: a single undo step', await undoCount(p) === n0 + 1);
     await p.keyboard.press('Control+z'); t = await types(p);
     const initial = await p.evaluate(() => DEFAULT_TILE);
-    check('Ctrl+Z annule tout le coup de pinceau', row.every(i => t[i] === initial));
+    check('Ctrl+Z undoes the whole brush stroke', row.every(i => t[i] === initial));
     // very fast drag: a single movement from end to end
     const r3 = [16, 17, 18, 19, 20, 21, 22, 23];
     await p.click('#tb-goo');
@@ -54,19 +54,19 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     check('drag: cell already Impassable crossed without changing visual', v2[25] === v1[25]);
     await p.mouse.click(e2.x, e2.y);
     const v3 = await p.evaluate(() => cellVariant.slice());
-    check('clic sur une case Impassable : visuel suivant', v3[25] !== v2[25]);
+    check('click on an Impassable space: next look', v3[25] !== v2[25]);
     // right click: nothing
     await p.click('#tb-salt'); const f = await center(p, 30);
     const before = (await types(p))[30];
     await p.mouse.click(f.x, f.y, { button: 'right' });
-    check('clic droit : case non peinte', (await types(p))[30] === before);
+    check('right click: space not painted', (await types(p))[30] === before);
     // text field then click on the board: Ctrl+Z targets the board
     await p.click('#title-input'); await p.keyboard.type('Dust');
     await p.mouse.click(f.x, f.y);
-    check('clic sur le plateau : le champ de texte n\'a plus le focus', await p.evaluate(() => document.activeElement.id !== 'title-input'));
+    check('click on the board: the text field loses focus', await p.evaluate(() => document.activeElement.id !== 'title-input'));
     await p.keyboard.press('Control+z');
-    check('puis Ctrl+Z annule la case peinte', (await types(p))[30] === before);
-    check('souris : aucune erreur JavaScript', errs.length === 0);
+    check('then Ctrl+Z undoes the painted space', (await types(p))[30] === before);
+    check('mouse: no JavaScript error', errs.length === 0);
     await b.close();
   }
   // ---------- Finger (touch screen) ----------
@@ -100,7 +100,7 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     check('pinch: the cells were painted before the 2nd finger', midway === 'mud');
     check('pinch: brush stroke cancelled, board as before', await p.evaluate(() => JSON.stringify(getBoardState())) === stateBefore);
     check('pinch: no step added to the history', await undoCount(p) === n0);
-    check('doigt : aucune erreur JavaScript', errs.length === 0);
+    check('finger: no JavaScript error', errs.length === 0);
     await b.close();
   }
   console.log(results.join('\n'));

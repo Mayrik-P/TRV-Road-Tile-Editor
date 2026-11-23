@@ -22,7 +22,7 @@ const { chromium } = require('playwright');
   await paint('rock', 4); const s3 = await state(); // re-click: next visual
   check('clicking Impassable again = new step (different visual)', s3 !== s2);
   await p.click('#undo-btn'); check('Undo (button): previous Impassable visual', await state() === s2);
-  await p.keyboard.press('Control+z'); check('Ctrl+Z : avant la pose Impassable', await state() === s1);
+  await p.keyboard.press('Control+z'); check('Ctrl+Z: before the Impassable placement', await state() === s1);
   await p.keyboard.press('Control+z'); check('Ctrl+Z: starting board', await state() === s0);
   check('Undo greyed out, Redo active', await btn('undo-btn') && !(await btn('redo-btn')));
   await p.keyboard.press('Control+y'); check('Ctrl+Y: redone', await state() === s1);
@@ -52,7 +52,7 @@ const { chromium } = require('playwright');
   // Home then Continue: editor reopened, history intact
   await p.click('#home-btn'); await p.click('#board-type-continue');
   await p.keyboard.press('Control+y'); await p.keyboard.press('Control+z');
-  check('Home puis Continue : historique intact (Ctrl+Y / Ctrl+Z fonctionnent)', await state() === sBeforeClear && !(await btn('undo-btn')));
+  check('Home then Continue: history intact (Ctrl+Y / Ctrl+Z work)', await state() === sBeforeClear && !(await btn('undo-btn')));
   // Home + new format, then undo
   const sBeforeReset = await state();
   await p.click('#home-btn'); await p.click('#board-type-ignition');
@@ -63,6 +63,6 @@ const { chromium } = require('playwright');
   await p.click('#home-btn');
   const sPicker = await state(); await p.keyboard.press('Control+z');
   check("shortcuts inactive on the home screen", await state() === sPicker);
-  console.log(results.join('\n')); console.log('erreurs :', errs.length ? errs : 'aucune');
+  console.log(results.join('\n')); console.log('errors:', errs.length ? errs : 'none');
   await b.close(); process.exit(results.some(r => r.startsWith('FAIL')) || errs.length ? 1 : 0);
 })();

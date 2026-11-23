@@ -21,4 +21,4 @@ for png in sorted(SRC.glob('*.png')):
     small = canvas.resize((inner, inner), Image.LANCZOS)
     thumb.paste(small, ((SIZE - inner) // 2, (SIZE - inner) // 2), small)
     thumb.save(OUT / (png.stem + '.webp'), 'WEBP', quality=90, method=6)
-    print(f'{png.name} : dessin {crop.width} × {crop.height} px -> items/thumb/{png.stem}.webp')
+    print(f'{png.name}: drawing {crop.width} × {crop.height} px -> items/thumb/{png.stem}.webp')

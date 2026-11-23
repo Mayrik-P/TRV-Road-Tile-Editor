@@ -31,11 +31,11 @@ def main():
     new = REF.sub(stamp, html)
     if check:
         for p in stale:
-            print('empreinte périmée ou absente :', p)
-        print('empreintes à jour' if not stale else 'lancer : python3 tools/stamp-assets.py')
+            print('stale or missing fingerprint:', p)
+        print('fingerprints up to date' if not stale else 'run: python3 tools/stamp-assets.py')
         sys.exit(1 if stale else 0)
     if new != html:
         INDEX.write_text(new, encoding='utf-8')
-    print(f'{len(REF.findall(html))} fichiers, {len(stale)} empreinte(s) mise(s) à jour' + (' : ' + ', '.join(stale) if stale else ''))
+    print(f'{len(REF.findall(html))} files, {len(stale)} fingerprint(s) updated' + (' : ' + ', '.join(stale) if stale else ''))
 
 main()

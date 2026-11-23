@@ -271,7 +271,7 @@ function drawTransition(target, defs, pairA, pairB) {
   target.appendChild(gB);
   } catch (e) {
     // A failed transition must never break the rest of the board or the export.
-    console.warn('Transition non affichée pour la paire', colA, rowA, colB, rowB, e);
+    console.warn('Transition not shown for pair', colA, rowA, colB, rowB, e);
   }
 }
 

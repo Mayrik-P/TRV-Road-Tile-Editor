@@ -47,7 +47,7 @@ total_var = {name: 0 for name, _ in VARIANTS}
 for d in folders:
     files = sorted(glob.glob(os.path.join(root, d, 'source', '*.png')))
     if not files:
-        print(f'{d} : aucun PNG dans {d}/source/'); continue
+        print(f'{d}: no PNG in {d}/source/'); continue
     for name, _ in VARIANTS:
         os.makedirs(os.path.join(root, d, name), exist_ok=True)
     for f in files:
@@ -57,7 +57,7 @@ for d in folders:
         total_out += save_webp(im, os.path.join(root, d, base), QUALITY)
         for name, scale in VARIANTS:
             total_var[name] += save_webp(reduce(im, scale), os.path.join(root, d, name, base), VARIANT_QUALITY)
-    print(f'{d} : {len(files)} images')
-print(f'Total : {total_src / 1e6:.1f} Mo de PNG -> {total_out / 1e6:.2f} Mo de WebP (originaux)')
+    print(f'{d}: {len(files)} images')
+print(f'Total: {total_src / 1e6:.1f} MB of PNG -> {total_out / 1e6:.2f} MB of WebP (originals)')
 for name, _ in VARIANTS:
-    print(f'  aperçus {name} : {total_var[name] / 1e6:.2f} Mo')
+    print(f'  previews {name}: {total_var[name] / 1e6:.2f} MB')
