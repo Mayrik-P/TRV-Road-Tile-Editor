@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# VIGNETTES DES DÉCORATIONS (phase 7) : items/thumb/Item-N.webp, 96 × 96 px, recadrées sur le
-# dessin (sans le vide transparent autour), pour la rangée « Decorations » de la palette.
-# Tirées des originaux sans perte (items/source/*.png), comme make-webp.py ; à relancer dès
-# qu'une décoration change ou s'ajoute. Usage (à la racine) : python3 tools/make-decor-thumbs.py
+# DECORATION THUMBNAILS (phase 7): items/thumb/Item-N.webp, 96 x 96 px, cropped to the
+# drawing (without the transparent empty space around it), for the "Decorations" row of the palette.
+# Derived from the lossless originals (items/source/*.png), like make-webp.py; to be rerun whenever
+# a decoration changes or is added. Usage (at the root): python3 tools/make-decor-thumbs.py
 import pathlib
 from PIL import Image
 
@@ -21,4 +21,4 @@ for png in sorted(SRC.glob('*.png')):
     small = canvas.resize((inner, inner), Image.LANCZOS)
     thumb.paste(small, ((SIZE - inner) // 2, (SIZE - inner) // 2), small)
     thumb.save(OUT / (png.stem + '.webp'), 'WEBP', quality=90, method=6)
-    print(f'{png.name} : dessin {crop.width} × {crop.height} px -> items/thumb/{png.stem}.webp')
+    print(f'{png.name}: drawing {crop.width} × {crop.height} px -> items/thumb/{png.stem}.webp')

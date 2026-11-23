@@ -1,10 +1,10 @@
-// ===== js/build-board.js — Dessin des overlays (Hazard, Oil, Ramp, Fire, Impassable…), texte à ombre
-// extrudée du titre, et buildBoard() qui reconstruit tout le SVG du plateau.
+// ===== js/build-board.js — Drawing of the overlays (Hazard, Oil, Ramp, Fire, Impassable…), the title's
+// extruded-shadow text, and buildBoard() which rebuilds the whole board SVG.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope
+// and are loaded in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in
+// that file or the previous ones; functions, called later, see everything.
 
 function drawHazard(svg, col, rowIdx) {
   const {cx, cy} = cellCenter(col, rowIdx);
@@ -13,14 +13,14 @@ function drawHazard(svg, col, rowIdx) {
   placeOverlay(svg, [HAZARD_1, HAZARD_2, HAZARD_3][(col * 7 + rowIdx * 13) % 3], cx, cy, symW, symH, 17, 0);
 }
 
-// Minefield : un seul visuel (pas de variantes pour l'instant, cf. Hazard/Oil qui
-// en ont plusieurs), simplement centré sur la case par-dessus la texture Off-Road.
-// Taille provisoire (carré, 60% de la case) en attendant le fichier réel — à
-// ajuster une fois sprites/Minefield.png fourni, pour respecter ses vraies
-// proportions (comme pour tous les autres overlays).
-// Minefield : fichier réel confirmé à 704×815px (même taille native que les
-// sprites Impassable) — même échelle qu'eux (0.95) plutôt qu'une fraction
-// arbitraire de la case, pour respecter la taille voulue par Mayrik.
+// Minefield: a single visual (no variants for now, cf. Hazard/Oil which
+// have several), simply centered on the cell over the Off-Road texture.
+// Provisional size (square, 60% of the cell) while waiting for the real file — to
+// be adjusted once sprites/Minefield.png is provided, to respect its real
+// proportions (as for all the other overlays).
+// Minefield: real file confirmed at 704×815px (same native size as the
+// Impassable sprites) — same scale as them (0.95) rather than an
+// arbitrary fraction of the cell, to respect the size wanted by Mayrik.
 function drawMinefield(svg, col, rowIdx) {
   const {cx, cy} = cellCenter(col, rowIdx);
   const scale = 0.95;
@@ -71,18 +71,18 @@ function drawImpassable(svg, col, rowIdx) {
   placeOverlay(svg, srcs[variant], cx, cy, Math.round(704 * scale) + 3, Math.round(815 * scale) + 3);
 }
 
-// Décalage d'ombre reproduisant le réglage Photoshop fourni : Angle 130°, Distance 10px
-// (conversion angle Photoshop → décalage x/y : la case cochée n'utilise pas l'éclairage
-// global, donc l'ombre est calculée uniquement à partir de cet angle et cette distance).
+// Shadow offset reproducing the supplied Photoshop setting: Angle 130°, Distance 10px
+// (Photoshop angle → x/y offset conversion: the checked box does not use the global
+// lighting, so the shadow is computed only from this angle and distance).
 const SHADOW_ANGLE_DEG = 130, SHADOW_DISTANCE = 10;
 const SHADOW_DX = -Math.cos(SHADOW_ANGLE_DEG * Math.PI / 180) * SHADOW_DISTANCE;
 const SHADOW_DY = Math.sin(SHADOW_ANGLE_DEG * Math.PI / 180) * SHADOW_DISTANCE;
-// Pas fixe entre deux copies (calé sur la densité d'origine à 24 copies pour 10px) :
-// ainsi, augmenter le nombre de copies allonge réellement l'extrusion au lieu de
-// se contenter de répartir les mêmes copies sur la même distance totale.
-const SHADOW_STEP_DIST = (SHADOW_DISTANCE / 24) * 4; // surface d'ombre x4, même angle 130°
+// Fixed step between two copies (set from the original density of 24 copies per 10px):
+// this way, increasing the number of copies really lengthens the extrusion instead of
+// just spreading the same copies over the same total distance.
+const SHADOW_STEP_DIST = (SHADOW_DISTANCE / 24) * 4; // shadow area x4, same angle 130°
 const SHADOW_UNIT_X = SHADOW_DX / SHADOW_DISTANCE, SHADOW_UNIT_Y = SHADOW_DY / SHADOW_DISTANCE;
-// Nombre de copies empilées — donne la profondeur de l'extrusion (50 ≈ 20px de long).
+// Number of stacked copies — gives the extrusion depth (50 ≈ 20px long).
 const SHADOW_STEPS = 50;
 
 function makeTitleText(x, y, size, txt, fillColor, groupId, steps, opts = {}) {
@@ -95,15 +95,15 @@ function makeTitleText(x, y, size, txt, fillColor, groupId, steps, opts = {}) {
     strokeWidth = 0,
   } = opts;
   const fontFamilyCss = `'${fontFamily}', serif`;
-  // Pivot commun (x,y) pour le resserrement horizontal (scale) ET l'inclinaison
-  // simulée (skewX) : la baseline/ancrage du texte reste exactement en (x,y),
-  // seule sa forme est déformée autour de ce point — voir mesures roadNameX/theX.
+  // Common pivot (x,y) for the horizontal squeeze (scale) AND the simulated
+  // slant (skewX): the text's baseline/anchor stays exactly at (x,y),
+  // only its shape is distorted around this point — see roadNameX/theX measurements.
   const grp = mkEl('g', {transform: `translate(${x},${y}) scale(${xScale},1) skewX(${skewDeg}) translate(${-x},${-y})`});
   const shadowGroup = mkEl('g', {id: groupId + '-shadow-group'});
-  // Le contour noir fait désormais partie de la silhouette dont on tire l'ombre :
-  // chaque copie d'ombrage reprend le même contour que le texte final (au lieu de
-  // n'empiler que le glyphe nu), pour que l'ombre soit calculée à partir de la
-  // forme réellement visible (glyphe + contour), pas juste du glyphe seul.
+  // The black outline is now part of the silhouette the shadow is cast from:
+  // each shadow copy reuses the same outline as the final text (instead of
+  // stacking only the bare glyph), so that the shadow is computed from the
+  // really visible shape (glyph + outline), not just the glyph alone.
   const shadowAttrsExtra = {};
   if (strokeWidth > 0) {
     shadowAttrsExtra['stroke'] = '#000000';
@@ -120,12 +120,12 @@ function makeTitleText(x, y, size, txt, fillColor, groupId, steps, opts = {}) {
     shadowGroup.appendChild(sh);
   }
   grp.appendChild(shadowGroup);
-  // Contour noir calé sur les vrais plateaux (mesuré par Mayrik au Photoshop,
-  // appliqué AVANT l'ombrage dans l'esprit visuel, donc sous le fill dans l'ordre
-  // de peinture — paint-order:stroke garantit que le trait n'empiète pas sur le
-  // remplissage). Valeur constante en px (pas proportionnelle à chaque taille de
-  // texte), comme un liseré graphique fixe plutôt qu'un effet qui grossirait avec
-  // la police.
+  // Black outline matched to the real boards (measured by Mayrik in Photoshop,
+  // applied BEFORE the shadow in the visual mindset, hence under the fill in the
+  // paint order — paint-order:stroke ensures the stroke does not encroach on the
+  // fill). Constant value in px (not proportional to each text size), like a
+  // fixed graphic hairline rather than an effect that would grow with the
+  // font.
   const fillAttrs = {
     x: x, y: y, fill: fillColor, 'font-size': size,
     'font-family': fontFamilyCss, 'font-weight': weight, id: groupId + '-display'
@@ -147,16 +147,16 @@ function buildBoard() {
   svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
   const defs = mkEl('defs', {});
   svg.appendChild(defs);
-  // Cache des images de texture partagées par les transitions (une seule <image> par
-  // terrain, réutilisée via <use> — évite de dupliquer les données base64 à chaque paire).
+  // Cache of the texture images shared by the transitions (a single <image> per
+  // terrain, reused via <use> — avoids duplicating the base64 data for each pair).
   transTexCache = {};
 
-  // Police du titre intégrée directement dans le SVG (en base64, comme les textures) —
-  // reste valide même une fois le SVG exporté/sérialisé isolément, contrairement à un
-  // <link> externe qui ne serait pas repris dans l'image exportée. Alfa Slab One et
-  // Oswald servent au titre Vendetta (+ chrome de l'appli, via CSS globale une fois
-  // enregistrées) ; Cooper Hewitt Bold sert uniquement au numéro Ignition (rendu
-  // volontairement différent, pas le même style que le titre Vendetta).
+  // Title font embedded directly in the SVG (as base64, like the textures) —
+  // stays valid even once the SVG is exported/serialized on its own, unlike an
+  // external <link> which would not be carried into the exported image. Alfa Slab One and
+  // Oswald are used for the Vendetta title (+ app chrome, via global CSS once
+  // registered); Cooper Hewitt Bold is used only for the Ignition number (rendered
+  // deliberately differently, not the same style as the Vendetta title).
   if (FONT_B64_COOPERHEWITT || FONT_B64_ALFASLABONE || FONT_B64_OSWALD) {
     const style = mkEl('style', {});
     let css = '';
@@ -170,8 +170,8 @@ function buildBoard() {
   // 1. White page background
   svg.appendChild(mkEl('rect', {x:0, y:0, width:VW, height:VH, fill:'#FFFFFF'}));
 
-  // Couches persistantes, dans l'ordre d'affichage — permet de ne mettre à jour
-  // qu'une case précise (voir updateCell) sans tout reconstruire à chaque clic.
+  // Persistent layers, in display order — makes it possible to update
+  // just one specific cell (see updateCell) without rebuilding everything at each click.
   const gTitleBand   = mkEl('g', {id: 'layer-titleband'});   svg.appendChild(gTitleBand);
   const gTextures    = mkEl('g', {id: 'layer-textures'});    svg.appendChild(gTextures);
   const gTransitions = mkEl('g', {id: 'layer-transitions'}); svg.appendChild(gTransitions);
@@ -180,16 +180,16 @@ function buildBoard() {
   const gBorders     = mkEl('g', {id: 'layer-borders'});     svg.appendChild(gBorders);
   const gOverlays    = mkEl('g', {id: 'layer-overlays'});    svg.appendChild(gOverlays);
   const gTitleText   = mkEl('g', {id: 'layer-titletext'});   svg.appendChild(gTitleText);
-  // Décorations libres (js/decor.js) : SOUS les masques blancs, qui cachent ce qui déborde sur les
-  // marges ; la bande de titre reste découverte (choix de Mayrik, 22/11).
+  // Free decorations (js/decor.js): UNDER the white masks, which hide what overflows onto the
+  // margins; the title band stays uncovered (Mayrik's choice, 22/11).
   const gDecor       = mkEl('g', {id: 'layer-decor'});       svg.appendChild(gDecor);
   const gMasks       = mkEl('g', {id: 'layer-masks'});       svg.appendChild(gMasks);
-  // Échelle de contrôle d'impression (cm / in), au-dessus des masques blancs du bord.
+  // Print check scale (cm / in), above the white edge masks.
   const gScale       = mkEl('g', {id: 'layer-scale'});       svg.appendChild(gScale);
   const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
-  // Sélection d'une décoration (cercle, bouton ✕) : au-dessus de tout, retirée de la copie exportée.
+  // Decoration selection (circle, ✕ button): above everything, removed from the exported copy.
   const gDecorUI     = mkEl('g', {id: 'layer-decor-ui'});    svg.appendChild(gDecorUI);
-  // Curseur du clavier (js/keyboard.js) : tout en haut, retiré de la copie exportée.
+  // Keyboard cursor (js/keyboard.js): at the very top, removed from the exported copy.
   const gCursor      = mkEl('g', {id: 'layer-cursor'});      svg.appendChild(gCursor);
 
   renderAllTextures(gTextures, defs);

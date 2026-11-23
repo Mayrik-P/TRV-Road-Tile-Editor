@@ -1,32 +1,32 @@
-/* ===== css/paper-ui.css — Phase 3 (docs/roadmap.md) : interface au style de TRV-Pocket.
-   Chargée APRÈS css/app.css, qu'elle surcharge (même sélecteurs, ordre de la cascade) :
-   l'ancienne feuille reste intacte, retirer ce fichier ramène l'ancien style.
-   Reprise de la charte des écrans hors plateau de TRV-Pocket (`.paper-ui`, tools/v2/index.html,
-   docs/v2-home-menu-redesign.md § 5, choix de Mayrik du 25-26/10) :
-   - papier crème grainé (bruit fractal SVG, sans fichier), encre violet-noir ;
-   - titres « livret » : Anton, remplissage sable, contour encre, relief en PIXELS ENTIERS
-     (1px 1px … 5px 5px : net, au lieu des 20 copies décalées de 0,16 px de la v1.00, floues),
-     inclinaison de 6° ;
-   - textes : D-DIN Condensed ;
-   - boutons en CHEVRON, la forme des cases des tuiles de route (« version B ») : encre pleine,
-     ou contour (.ghost), rouge pour une action destructrice ;
-   - choix exclusifs en boutons « segmentés », sélection en orange avec texte à l'encre.
-   Le plateau lui-même (SVG, titre imprimé compris) n'est pas concerné (décision de Mayrik). */
+/* ===== css/paper-ui.css — Phase 3 (docs/roadmap.md): TRV-Pocket-style interface.
+   Loaded AFTER css/app.css, which it overrides (same selectors, cascade order):
+   the old stylesheet stays intact, removing this file brings back the old style.
+   Takes over the TRV-Pocket charter for screens outside the board (`.paper-ui`, tools/v2/index.html,
+   docs/v2-home-menu-redesign.md § 5, Mayrik's choice of 25-26/10):
+   - grainy cream paper (SVG fractal noise, no file), purple-black ink;
+   - "booklet" titles: Anton, sand fill, ink outline, relief in WHOLE PIXELS
+     (1px 1px … 5px 5px: sharp, instead of the 20 offset copies of 0.16 px of v1.00, blurry),
+     6° slant;
+   - text: D-DIN Condensed;
+   - CHEVRON buttons, the shape of the road tile cells ("version B"): solid ink,
+     or outline (.ghost), red for a destructive action;
+   - exclusive choices as "segmented" buttons, selection in orange with ink-coloured text.
+   The board itself (SVG, printed title included) is not affected (Mayrik's decision). */
 
 @font-face { font-family: "Anton"; src: url(../fonts/anton/Anton-Regular-latin.woff2) format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "D-DIN Condensed"; src: url(../fonts/d-din/D-DINCondensed.woff2) format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "D-DIN Condensed"; src: url(../fonts/d-din/D-DINCondensed-Bold.woff2) format("woff2"); font-weight: 700; font-display: swap; }
 
 :root {
-  /* couleurs de TRV-Pocket (.paper-ui) */
+  /* TRV-Pocket colours (.paper-ui) */
   --paper: #f3e6c8; --paper-2: #e9d8b4; --ink: #1d1426; --red: #e0392b; --orange: #f0952c; --tan: #eaa552;
   --terracotta: #bf5d3e; --rust: #6b3324; --muted: #7a6a5c;
   --extrude-text: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink), 3px 3px 0 var(--ink), 4px 4px 0 var(--ink), 5px 5px 0 var(--ink);
   --extrude-small: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink);
-  /* chevron des boutons : côté gauche rentrant, côté droit en pointe ; --k = profondeur */
+  /* button chevron: indented left side, pointed right side; --k = depth */
   --k: 7px;
   --chev: polygon(0 0, calc(100% - var(--k)) 0, 100% 50%, calc(100% - var(--k)) 100%, 0 100%, var(--k) 50%);
-  /* chevron vers la gauche : boutons de retour dans TRV-Pocket (.btn.back), ici Undo */
+  /* chevron pointing left: back buttons in TRV-Pocket (.btn.back), here Undo */
   --chev-back: polygon(var(--k) 0, 100% 0, calc(100% - var(--k)) 50%, 100% 100%, var(--k) 100%, 0 50%);
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .15  0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --display: "Anton", Impact, "Arial Narrow", sans-serif;
@@ -37,7 +37,7 @@
 body { font-family: var(--text); color: var(--ink); background: var(--paper);
   background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain); }
 
-/* ---- Titre de l'appli (accueil et éditeur) : titre « livret » ---- */
+/* ---- App title (home and editor): "booklet" title ---- */
 h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-spacing: .02em;
   -webkit-text-stroke: 1.6px var(--ink); text-shadow: var(--extrude-text);
   transform: skew(-6deg); transform-origin: center; }
@@ -46,12 +46,12 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .app-subtitle { font-family: var(--text); font-weight: 700; font-style: italic; color: var(--rust);
   -webkit-text-stroke: 0; text-shadow: none; letter-spacing: 0; transform: skew(-6deg); margin-top: 6px; }
 #title-band .app-subtitle, #picker-title-band .app-subtitle { font-size: 19px; -webkit-text-stroke-width: 0; text-shadow: none; }
-/* plus de corrections de centrage calibrées pour l'ancienne police (translateX) */
+/* no more centring corrections calibrated for the old font (translateX) */
 #picker-title-band .app-title-stack { align-items: center; transform: scale(var(--fit-scale, 1)); }
 #title-band .app-title-stack { align-items: baseline; gap: 14px; transform: scale(var(--fit-scale, 1)); }
 #title-band .app-subtitle { margin-top: 0; transform-origin: center; }
 
-/* ---- Écran d'accueil (choix du format) ---- */
+/* ---- Home screen (format choice) ---- */
 #board-type-picker { background: var(--paper);
   background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain); }
 #board-type-picker-inner h2 { font-family: var(--text); font-weight: 700; font-style: italic; font-size: 20px;
@@ -69,70 +69,70 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .board-type-name, #board-type-vendetta .board-type-name { font-family: var(--display); font-size: 30px; line-height: 1;
   text-transform: uppercase; letter-spacing: .03em; color: var(--paper); transform: none; text-shadow: none; }
 .board-type-desc { font-family: var(--text); font-weight: 700; font-size: 15px; opacity: .9; }
-/* « Continue » (js/autosave.js) : orange et encre, la couleur de sélection de TRV-Pocket */
+/* "Continue" (js/autosave.js): orange and ink, the TRV-Pocket selection colour */
 #board-type-continue, #board-type-continue .board-type-name { background: var(--orange); color: var(--ink); }
 #board-type-continue:hover { background: #e0841f; }
 #board-type-continue[hidden] { display: none; }
-/* « Open project file » (js/project.js) : bouton secondaire en contour, sous les formats */
+/* "Open project file" (js/project.js): secondary outline button, under the formats */
 #open-project-btn, #save-project-btn { color: var(--ink); background: var(--ink); }
 #open-project-btn::before, #save-project-btn::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #open-project-btn:hover::before, #save-project-btn:hover::before { background: var(--paper-2); }
 #open-project-btn { margin-top: 6px; font-size: 16px; }
-/* Papier nécessaire, annoncé dès l'accueil (tranche 5d) */
+/* Paper needed, announced from the home screen (tranche 5d) */
 .board-type-paper { font-family: var(--text); font-weight: 700; font-size: 15px; line-height: 1.1; opacity: .9;
   border-top: 1.5px solid currentColor; padding-top: 4px; margin-top: 2px; }
 #version-tag { font-family: var(--text); font-size: 13px; color: var(--muted); opacity: 1; }
 
-/* ---- Éditeur : bandes ---- */
+/* ---- Editor: bands ---- */
 #app { padding: 10px; gap: 0; }
 #title-band { background: transparent; border-radius: 0; padding: 10px 14px 14px; border-bottom: 2.5px solid var(--ink); }
 #toolbar, #palette { background: transparent; border-bottom: 1.5px solid rgba(29,20,38,.25); }
 #toolbar { padding: 12px 4px; gap: 6px; }
-/* Barre d'outils regroupée par thème (variante C, choix de Mayrik du 19/11) : Home, image de
-   titre (charger / remettre par défaut), nom, Undo / Redo, Save / Export, Clear board seul à
-   droite ; tient sur une ligne sur ordinateur. */
+/* Toolbar grouped by theme (variant C, Mayrik's choice of 19/11): Home, title
+   image (load / reset to default), name, Undo / Redo, Save / Export, Clear board alone on
+   the right; fits on one line on a computer. */
 #tb-load, #undo-group { gap: 6px; }
 #name-field-group { max-width: 180px; }
-/* Textes d'aide sous leur rangée de la palette, un seul visible à la fois : types de case en mode pinceau,
-   décorations en mode décoration (idée de Mayrik, 22/11 ; textes d'aide des formulaires, sous l'élément) */
+/* Help texts under their palette row, only one visible at a time: tile types in brush mode,
+   decorations in decoration mode (Mayrik's idea, 22/11; form help texts, under the element) */
 .palette-help { flex-basis: 100%; margin: 0; font-family: var(--text); font-size: 14px; line-height: 1.3; color: var(--muted); }
 .palette-help kbd { font-size: inherit; line-height: 1; padding: 1px 4px 0; border-width: 1px; border-bottom-width: 2px; vertical-align: baseline; }
 #palette.decor-on .tile-help { display: none; }
-/* écran tactile sans souris ni clavier : pas de mention des raccourcis clavier */
+/* touch screen with no mouse or keyboard: no mention of keyboard shortcuts */
 @media (hover: none) and (pointer: coarse) { .help-keys { display: none; } }
 #palette { padding: 10px 4px; gap: 6px; }
 #bwrap { border-radius: 0; border: 2.5px solid var(--ink); border-top-width: 2.5px; margin-top: 10px; }
 #app > div[style*="background:#e8b459"] { background: var(--paper-2) !important; color: var(--ink) !important;
   font-family: var(--text); font-size: 13px !important; border: 1.5px solid var(--ink); border-radius: 0 !important; margin-top: 10px !important; }
 
-/* Plateau Ignition (portrait) : même hauteur d'affichage que Vendetta, centré (demande de Mayrik
-   du 19/11 : moins de défilement vertical). Largeur = 2481 / 4961 de la zone. Sur téléphone (< 700 px),
-   pleine largeur : à la hauteur de Vendetta, les cases seraient trop petites pour le doigt.
-   À garder en accord avec boardDisplayFraction() (js/assets.js).
-   Le cadre blanc (la « feuille ») suit le plateau, pas la zone : une feuille en paysage autour d'un
-   plateau en portrait faisait croire à une impression en paysage (Mayrik, 19/11 ; convention des
-   logiciels de mise en page : la page à ses vraies proportions, posée sur un fond neutre). */
+/* Ignition board (portrait): same display height as Vendetta, centred (Mayrik's request
+   of 19/11: less vertical scrolling). Width = 2481 / 4961 of the area. On phones (< 700 px),
+   full width: at Vendetta's height, the cells would be too small for a finger.
+   Keep consistent with boardDisplayFraction() (js/assets.js).
+   The white frame (the "sheet") follows the board, not the area: a landscape sheet around a
+   portrait board made people think of a landscape print (Mayrik, 19/11; layout
+   software convention: the page at its true proportions, laid on a neutral background). */
 #bwrap.board-ignition { width: calc(100% * 2481 / 4961); margin-left: auto; margin-right: auto; }
 @media (max-width: 699px) { #bwrap.board-ignition { width: auto; margin-left: 0; margin-right: 0; } }
 
-/* ---- Boutons de la barre d'outils : chevrons ---- */
+/* ---- Toolbar buttons: chevrons ---- */
 .btn { position: relative; isolation: isolate; font-family: var(--display); font-weight: 400; text-transform: uppercase;
   letter-spacing: .03em; font-size: 15px; line-height: 1; padding: 9px calc(12px + var(--k)) 8px; border: none; border-radius: 0;
   color: var(--paper); background: var(--ink); box-shadow: none; clip-path: var(--chev); cursor: pointer; }
 .btn:hover { background: #33263f; }
 .btn:active { box-shadow: none; transform: translateY(1px); }
-/* bouton en contour : chevron plein à l'encre + 2e couche crème plus petite (épaisseur du trait) */
+/* outline button: solid ink chevron + 2nd, smaller cream layer (stroke thickness) */
 .btn.ghost, #title-img-btn, #undo-btn, #redo-btn, #reset-title-btn, #shortcut-help-close { color: var(--ink); background: var(--ink); }
 .btn.ghost::before, #title-img-btn::before, #undo-btn::before, #redo-btn::before, #reset-title-btn::before, #shortcut-help-close::before {
   content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #title-img-btn:hover::before, #undo-btn:hover::before, #redo-btn:hover::before, #reset-title-btn:hover::before, #shortcut-help-close:hover::before { background: var(--paper-2); }
-/* couleur du texte aussi : app.css passait celui de « Reset title image » en blanc au survol (vu par Mayrik, 19/11) */
+/* text colour too: app.css turned that of "Reset title image" white on hover (seen by Mayrik, 19/11) */
 #title-img-btn:hover, #undo-btn:hover, #redo-btn:hover, #reset-title-btn:hover, #shortcut-help-close:hover { background: var(--ink); color: var(--ink); }
-#undo-btn { clip-path: var(--chev-back); } /* annuler = revenir en arrière (idée de Mayrik, 19/11) */
+#undo-btn { clip-path: var(--chev-back); } /* undo = go back (Mayrik's idea, 19/11) */
 #undo-group .btn:disabled { opacity: .35; cursor: default; transform: none; }
 #undo-group .btn:disabled:hover { background: var(--ink); }
 #undo-group .btn:disabled:hover::before { background: var(--paper); }
-/* action principale : Export (encre) ; action destructrice : Reset road tile (rouge) */
+/* main action: Export (ink); destructive action: Reset road tile (red) */
 .btn.p { background: var(--ink); color: var(--paper); font-weight: 400; }
 .btn.p:hover { background: #33263f; }
 .btn.p:disabled { background: var(--ink); color: var(--paper); opacity: .55; cursor: default; }
@@ -140,9 +140,9 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #export-progress { background: rgba(240,149,44,.55); }
 #clear-btn { background: var(--red); color: var(--paper); }
 #clear-btn:hover { background: #c92f22; color: var(--paper); }
-/* Haut-parleur (phase 6, js/sounds.js) : carré en contour, ondes si le son est allumé, croix s'il est coupé.
-   Dans le coin droit de la bande du titre (la barre d'outils remplit déjà sa ligne) ; marges égales des
-   deux côtés de la bande : le titre reste centré et fitAllTitleStacks (js/ui.js) le garde hors du bouton. */
+/* Speaker (phase 6, js/sounds.js): outline square, waves when sound is on, cross when it is off.
+   In the right corner of the title band (the toolbar already fills its line); equal margins on
+   both sides of the band: the title stays centred and fitAllTitleStacks (js/ui.js) keeps it clear of the button. */
 #title-band { position: relative; padding-left: 54px; padding-right: 54px; }
 #sound-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); }
 #sound-btn:active { transform: translateY(calc(-50% + 1px)); }
@@ -152,27 +152,27 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #sound-btn .cross, #sound-btn.muted .wave { display: none; }
 #sound-btn.muted .cross { display: inline; }
 #sound-btn.muted { color: var(--muted); }
-/* « Home » : bouton de retour (chevron vers la gauche, contour), comme dans TRV-Pocket */
+/* "Home": back button (chevron pointing left, outline), as in TRV-Pocket */
 #home-btn { clip-path: var(--chev-back); color: var(--ink); background: var(--ink); }
 #home-btn::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #home-btn:hover::before { background: var(--paper-2); }
 #title-img-btn { width: auto; }
 #tb-load .tooltip { font-family: var(--text); font-size: 13px; background: var(--ink); color: var(--paper); border-radius: 0; clip-path: none; }
 #title-img-warn { font-family: var(--text); font-size: 13px !important; color: var(--red) !important; }
-/* avertissement sur sa propre ligne, sous les deux boutons : il était coupé au bord de l'écran sur téléphone.
-   Grille de deux colonnes (et non flex qui passe à la ligne, dont la largeur serait boutons + message) :
-   largeur = la plus grande des deux lignes, plafonnée à l'écran (le message passe alors à la ligne). */
+/* warning on its own line, under the two buttons: it was cut off at the screen edge on phones.
+   Two-column grid (not flex wrapping, whose width would be buttons + message):
+   width = the larger of the two lines, capped at the screen (the message then wraps). */
 #tb-load { display: grid; grid-template-columns: auto auto; justify-content: start; align-items: center; max-width: 100%; }
 #title-img-warn { grid-column: 1 / -1; }
 
-/* ---- Champs de texte ---- */
+/* ---- Text fields ---- */
 #title-input, #board-number-input { background: var(--paper-2); border: 2px solid var(--ink); border-radius: 0;
   color: var(--ink); font-family: var(--text); font-weight: 700; font-size: 16px; padding: 6px 9px; }
 #title-input::placeholder { color: var(--muted); font-weight: 400; }
 #cc { font-family: var(--text); font-size: 14px; color: var(--muted); }
 
-/* ---- Palette : boutons de choix (sélection en orange, texte à l'encre, comme les
-   boutons segmentés de TRV-Pocket) ---- */
+/* ---- Palette: choice buttons (selection in orange, ink-coloured text, like the
+   TRV-Pocket segmented buttons) ---- */
 .tb { font-family: var(--text); font-weight: 700; font-size: 15px; line-height: 1.05; color: var(--ink);
   background: var(--paper); border: 2px solid var(--ink); border-radius: 0; box-shadow: none; padding: 5px 9px 4px; gap: 6px; }
 .tb:hover { background: var(--paper-2); }
@@ -180,7 +180,7 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .tb.sel { background: var(--orange); color: var(--ink); border-color: var(--ink); box-shadow: none; }
 .sw { width: 13px; height: 13px; border-radius: 0; border: 1.5px solid var(--ink); }
 
-/* ---- Fenêtre d'export (consigne d'impression) ---- */
+/* ---- Export window (print instructions) ---- */
 #export-dialog { position: fixed; inset: 0; background: rgba(29,20,38,.72); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
 #export-dialog[hidden] { display: none; }
 #export-dialog .modal-box { background: var(--paper); background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain);
@@ -189,7 +189,7 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #export-dialog h2 { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.05; color: var(--tan); text-transform: uppercase;
   -webkit-text-stroke: 1.2px var(--ink); text-shadow: 1px 1px 0 var(--ink), 2px 2px 0 var(--ink), 3px 3px 0 var(--ink); transform: skew(-6deg); margin: 0; }
 #export-dialog p { margin: 0; }
-/* Choix du papier (tranche 5b) : boutons segmentés de TRV-Pocket, sélection orange */
+/* Paper choice (tranche 5b): TRV-Pocket segmented buttons, orange selection */
 .paper-choice { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .paper-choice > span { font-family: var(--display); text-transform: uppercase; font-size: 16px; letter-spacing: .03em; }
 .paper-choice .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 2px solid var(--ink); flex: 1; min-width: 240px; }
@@ -206,8 +206,8 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 .print-rules li.paper::before { content: "▭"; color: var(--ink); }
 .modal-note { font-size: 15px; color: var(--muted); }
 .modal-actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 4px; }
-/* Cancel à gauche, les deux exports groupés à droite (disposition habituelle des dialogues,
-   remarque de Mayrik du 19/11) ; sur téléphone, exports l'un sous l'autre, Cancel en dessous. */
+/* Cancel on the left, the two exports grouped on the right (usual dialog layout,
+   Mayrik's remark of 19/11); on phones, exports one under the other, Cancel below. */
 .export-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 520px) {
   .modal-actions { flex-direction: column-reverse; align-items: stretch; }
@@ -221,7 +221,7 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #export-dialog #export-pdf-btn { font-size: 16px; }
 #export-dialog #export-pdf-btn:disabled { opacity: .55; cursor: default; }
 
-/* ---- Panneau des raccourcis ---- */
+/* ---- Shortcuts panel ---- */
 #shortcut-help { background: rgba(29,20,38,.72); }
 #shortcut-help-box { background: var(--paper); background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain);
   color: var(--ink); border: 2.5px solid var(--ink); border-radius: 0; font-family: var(--text); }
@@ -231,15 +231,15 @@ h1 { font-family: var(--display); font-weight: 400; color: var(--tan); letter-sp
 #shortcut-help-box td { border-bottom: 1.5px solid rgba(29,20,38,.25); }
 kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: var(--paper-2); border: 1.5px solid var(--ink); border-bottom-width: 3px; border-radius: 0; color: var(--ink); }
 
-/* ---- Téléphone ---- */
+/* ---- Phone ---- */
 @media (max-width: 600px) {
   #title-band h1, #picker-title-band h1 { font-size: 34px; }
   .btn { font-size: 14px; }
   .tb { font-size: 14px; }
 }
 
-/* ---- Crédits (phase 6 bis, js/credits.js + openCredits dans js/ui.js) : repris de TRV-Pocket
-   (#credits.paper-ui) — fenêtre papier qui défile, titre « livret », intertitres terre brûlée ---- */
+/* ---- Credits (phase 6 bis, js/credits.js + openCredits in js/ui.js): taken from TRV-Pocket
+   (#credits.paper-ui) — scrolling paper window, "booklet" title, burnt-earth subheadings ---- */
 #home-credits { display: flex; align-items: center; gap: 14px; width: min(400px, 100%); margin-top: 26px;
   padding-top: 12px; border-top: 1.5px solid rgba(29,20,38,.25); }
 #home-notice { flex: 1; margin: 0; font-family: var(--text); font-size: 12px; line-height: 1.25; text-transform: uppercase;
@@ -247,7 +247,7 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
 #credits-btn { flex: none; color: var(--ink); background: var(--ink); font-size: 16px; }
 #credits-btn::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #credits-btn:hover::before { background: var(--paper-2); }
-#credits { margin: auto; /* centrage natif des <dialog>, annulé par le « * { margin: 0 } » de app.css */
+#credits { margin: auto; /* native centring of <dialog>, cancelled by the "* { margin: 0 }" of app.css */
   width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; flex-direction: column;
   background: var(--paper); background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain);
   color: var(--ink); border: 2.5px solid var(--ink); border-radius: 0; box-shadow: 6px 6px 0 rgba(29,20,38,.45); }
@@ -272,13 +272,13 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
 #credits-close::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
 #credits-close:hover::before { background: var(--paper-2); }
 
-/* ---- Décorations libres (phase 7, js/decor.js) : rangée « Decorations » sous les types de case ---- */
+/* ---- Free decorations (phase 7, js/decor.js): "Decorations" row under the tile types ---- */
 #decor-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%;
   margin-top: 4px; padding-top: 8px; border-top: 1.5px dashed rgba(29,20,38,.25); }
 .decor-label { font-family: var(--display); font-size: 15px; letter-spacing: .03em; text-transform: uppercase;
   color: var(--rust); margin-right: 4px; }
-/* Carré de la hauteur d'un bouton de type de case (choix de Mayrik, 22/11) : même calcul que .tb
-   (texte 15 px × 1,05 + marges 5 + 4 px + bordures 2 × 2 px), texte de 14 px sur téléphone comme .tb. */
+/* Square the height of a tile-type button (Mayrik's choice, 22/11): same calculation as .tb
+   (text 15 px × 1.05 + margins 5 + 4 px + borders 2 × 2 px), 14 px text on phones like .tb. */
 .decor-btn { --tb-font: 15px; width: calc(var(--tb-font) * 1.05 + 13px); height: calc(var(--tb-font) * 1.05 + 13px);
   padding: 1px; border: 2px solid var(--ink); border-radius: 0; background: var(--paper); cursor: pointer; line-height: 0; flex: none; }
 @media (max-width: 600px) { .decor-btn { --tb-font: 14px; } }
@@ -288,5 +288,5 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
 .decor-btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
 .decor-help { display: none; }
 #decor-palette.active .decor-help { display: block; }
-/* En mode « decor » : pas de surbrillance des cases (le clic vise les décorations), curseur de pose */
+/* In "decor" mode: no cell highlighting (the click targets decorations), placement cursor */
 #bsvg.decor-mode #layer-hits polygon { fill: transparent !important; cursor: copy !important; }

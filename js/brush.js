@@ -1,43 +1,43 @@
-// ===== js/brush.js — Pinceau (tranche 2b) : appuyer puis glisser pour peindre plusieurs
-// cases, à la souris, au stylet ou au doigt.
+// ===== js/brush.js — Brush (tranche 2b): press then drag to paint several
+// cells, with a mouse, stylus or finger.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference). Code run
+// when a file loads can only use what is declared in that file or the previous ones;
+// functions, called later, see everything.
 //
-// Méthode recommandée par MDN / W3C pour les outils de dessin : Pointer Events (un seul
-// code pour souris, stylet et doigt), capture du pointeur sur le plateau
-// (setPointerCapture) à l'appui, puis à chaque mouvement la case sous le pointeur
-// (elementFromPoint : forme exacte des cases en chevron), en ne peignant que lorsqu'elle
-// change. Les points intermédiaires d'un geste rapide sont repris (événements
-// « coalescés » + points intercalés) pour ne sauter aucune case.
+// Method recommended by MDN / W3C for drawing tools: Pointer Events (a single
+// code path for mouse, stylus and finger), pointer capture on the board
+// (setPointerCapture) on press, then on every move the cell under the pointer
+// (elementFromPoint: exact shape of the chevron cells), painting only when it
+// changes. The intermediate points of a fast gesture are picked up ("coalesced"
+// events + interpolated points) so that no cell is skipped.
 //
-// Règles :
-//   - un coup de pinceau = une seule étape d'annulation (beginAction / endAction) ;
-//   - la première case se comporte comme un clic : recliquer une case Impassable / Fire /
-//     Oil fait défiler son visuel ; en glissant, une case déjà du bon type n'est pas
-//     touchée (pas de défilement des visuels sans le vouloir) ;
-//   - souris : bouton principal seulement ;
-//   - doigt (décision de Mayrik du 19/11) : un doigt peint ; le pincement à deux doigts
-//     reste possible (CSS touch-action: pinch-zoom sur #bsvg) — si un 2e doigt se pose
-//     pendant un coup de pinceau, celui-ci est annulé (cancelAction) pour ne pas laisser
-//     de case peinte au début d'un zoom. Principe documenté par Google pour Android
-//     (« Stylus palm rejection » : un toucher non voulu reçoit une annulation, l'appli
-//     de dessin annule le dernier trait grâce à son historique).
-// Sources : MDN Pointer events et getCoalescedEvents ; démo de dessin du W3C (TPAC 2023) ;
-// tracé entre deux positions successives = méthode des éditeurs de pixels (Bresenham).
+// Rules:
+//   - one brush stroke = a single undo step (beginAction / endAction);
+//   - the first cell behaves like a click: clicking an Impassable / Fire / Oil cell
+//     again cycles its visual; while dragging, a cell that already has the right type is
+//     not touched (no unwanted cycling of visuals);
+//   - mouse: primary button only;
+//   - finger (Mayrik's decision of 19/11): one finger paints; the two-finger pinch
+//     remains possible (CSS touch-action: pinch-zoom on #bsvg) — if a 2nd finger lands
+//     during a brush stroke, the stroke is cancelled (cancelAction) so as not to leave a
+//     painted cell at the start of a zoom. Principle documented by Google for Android
+//     ("Stylus palm rejection": an unwanted touch receives a cancel, the drawing app
+//     undoes the last stroke thanks to its history).
+// Sources: MDN Pointer events and getCoalescedEvents; W3C drawing demo (TPAC 2023);
+// drawing between two successive positions = method of pixel editors (Bresenham).
 
 const brush = { active: false, pointerId: null, pointerType: null, lastIdx: -1, lastX: 0, lastY: 0, hovered: null };
-const BRUSH_STEP_PX = 6; // écart maximal entre deux points testés pendant un geste rapide
+const BRUSH_STEP_PX = 6; // maximum gap between two points tested during a fast gesture
 
 function hitAt(x, y) {
   const el = document.elementFromPoint(x, y);
   return (el && el.dataset && el.dataset.idx !== undefined && el.parentNode && el.parentNode.id === 'layer-hits') ? el : null;
 }
 
-// Surbrillance de la case survolée pendant un geste (la capture du pointeur empêche
-// les cases de recevoir leurs propres événements mouseenter / mouseleave).
+// Highlight of the hovered cell during a gesture (pointer capture prevents
+// the cells from receiving their own mouseenter / mouseleave events).
 function setBrushHover(el) {
   if (brush.hovered === el) return;
   if (brush.hovered) brush.hovered.setAttribute('fill', 'transparent');
@@ -69,7 +69,7 @@ function endStroke(cancel) {
   const svg = document.getElementById('bsvg');
 
   svg.addEventListener('pointerdown', e => {
-    // 2e doigt pendant un coup de pinceau : c'est un pincement, on annule le geste.
+    // 2nd finger during a brush stroke: it is a pinch, so the gesture is cancelled.
     if (brush.active) {
       if (e.pointerType === 'touch' && e.pointerId !== brush.pointerId) endStroke(true);
       return;
@@ -77,9 +77,9 @@ function endStroke(cancel) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     const hit = hitAt(e.clientX, e.clientY);
     if (!hit) return;
-    e.preventDefault(); // pas de sélection de texte ni de glisser d'image
-    // preventDefault empêche aussi le plateau de prendre le focus : on quitte donc
-    // nous-mêmes un champ de texte en cours de saisie (pour que Ctrl+Z vise le plateau).
+    e.preventDefault(); // no text selection or image dragging
+    // preventDefault also stops the board from taking focus: so we leave a text field
+    // being typed in ourselves (so that Ctrl+Z targets the board).
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     Object.assign(brush, { active: true, pointerId: e.pointerId, pointerType: e.pointerType,
                            lastX: e.clientX, lastY: e.clientY });
@@ -88,7 +88,7 @@ function endStroke(cancel) {
     const idx = parseInt(hit.dataset.idx);
     brush.lastIdx = idx;
     if (brush.pointerType === 'mouse') setBrushHover(hit);
-    updateCell(idx, sel); // 1re case = un clic (fait défiler le visuel d'une case à variantes)
+    updateCell(idx, sel); // 1st cell = a click (cycles the visual of a cell with variants)
   });
 
   svg.addEventListener('pointermove', e => {

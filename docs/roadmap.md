@@ -407,6 +407,20 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    branche de travail dans `main`), avant la phase 7 qui change le format des données.
 8. **Publication de la v1.2 (22/11)** : phase 7 (décorations libres) et retouches (Clear board, ✕ sur
    téléphone, « Export image », vignettes, textes d'aide sous la palette).
+9. **Ouverture du projet (23/11)** : projet offert à la communauté, Mayrik reste seul décideur (modèle
+   « BDFL ») ; code sous **PolyForm Noncommercial 1.0.0** (« Required Notice » qui impose de le citer),
+   images originales et documentation sous **CC BY-NC-SA 4.0**, graphismes de Restoration Games exclus
+   (rangement REUSE : `LICENSE`, `LICENSES/`). Règles : `CONTRIBUTING.md` (« une discussion d'abord, du
+   code ensuite », petites demandes de fusion, code écrit par IA signalé et testé), `ROADMAP.md`,
+   `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, contact par GitHub, pas d'e-mail), modèles de ticket
+   et de demande de fusion (`.github/`), `README.md`.
+   Précisions de Mayrik (23/11) : but = éditeur de plateau (formes des extensions possibles), pas d'appli
+   à tout faire (ni lanceur de dés, ni plateau virtuel) ; code écrit par IA (« vibe coding ») accepté
+   s'il est testé sur téléphone et ordinateur, fonctionnel et optimisé ; interdit d'extraire les
+   graphismes du jeu pour les diffuser ailleurs ; commentaires du code en anglais (traduction des
+   commentaires existants) ; nom « Mayrik PADEY » ; pas d'e-mail personnel.
+   Traduction faite le 23/11 (1 214 commentaires, 33 fichiers) : code sans commentaires identique jeton
+   par jeton au commit d'avant (vérificateur acorn), exports identiques, tous les tests verts.
 
 ---
 

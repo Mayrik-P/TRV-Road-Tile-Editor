@@ -1,26 +1,26 @@
-// ===== js/autosave.js — Sauvegarde automatique dans le navigateur et bouton « Continue » de
-// l'écran d'accueil (tranches 4a + 4b).
+// ===== js/autosave.js — Automatic saving in the browser and the "Continue" button of
+// the home screen (tranches 4a + 4b).
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference). Code run
+// when a file loads can only use what is declared in that file or the previous ones;
+// functions, called later, see everything.
 //
-// D'après la PR #1 de ChessMess (persist-road-tile-state), réévaluée (docs/roadmap.md § 2) :
-//   - le plateau (photo getBoardState, ~1 Ko, champ version) va dans localStorage, à chaque
-//     modification : l'abonnement au signal unique de state.js suffit, aucun crochet ailleurs ;
-//   - l'image de titre personnalisée va dans IndexedDB (bibliothèque idb-keyval de Jake
-//     Archibald, js/vendor/) : localStorage est limité à ~5 Mo et une grande image n'y aurait
-//     pas été sauvegardée, sans prévenir (limite signalée par l'auteur de la PR) ;
-//   - à l'ouverture, la page ne saute plus l'écran d'accueil : elle y propose « Continue »
-//     (modèle des jeux et de l'accueil de TRV-Pocket) ;
-//   - choisir un nouveau plateau alors qu'il y en avait un : Ctrl+Z ramène l'ancien
-//     (setHistoryBaseline) — seule l'image de titre personnalisée n'est pas rétablie ;
-//   - tout accès au stockage est protégé (navigation privée, stockage interdit : l'appli
-//     marche, sans sauvegarde) ; une sauvegarde abîmée ou d'une version inconnue est ignorée.
+// After ChessMess's PR #1 (persist-road-tile-state), re-evaluated (docs/roadmap.md § 2):
+//   - the board (getBoardState snapshot, ~1 KB, version field) goes into localStorage, on every
+//     modification: subscribing to the single signal of state.js is enough, no hook elsewhere;
+//   - the custom title image goes into IndexedDB (idb-keyval library by Jake
+//     Archibald, js/vendor/): localStorage is limited to ~5 MB and a large image would not
+//     have been saved there, without warning (limit pointed out by the PR author);
+//   - on opening, the page no longer skips the home screen: it offers "Continue" there
+//     (modelled on the games and home screen of TRV-Pocket);
+//   - choosing a new board when there was one: Ctrl+Z brings the old one back
+//     (setHistoryBaseline) — only the custom title image is not restored;
+//   - every storage access is guarded (private browsing, storage forbidden: the app
+//     works, without saving); a damaged save or one of an unknown version is ignored.
 
-const AUTOSAVE_KEY = 'trv_road_tile_board_v2';        // photo version 2 (phase 7 : décorations libres)
-const AUTOSAVE_KEY_V1 = 'trv_road_tile_board_v1';     // relue et convertie si la v2 n'existe pas encore
+const AUTOSAVE_KEY = 'trv_road_tile_board_v2';        // version 2 snapshot (phase 7: free decorations)
+const AUTOSAVE_KEY_V1 = 'trv_road_tile_board_v1';     // re-read and converted if v2 does not exist yet
 const TITLE_IMAGE_KEY = 'trv_road_tile_title_image_v1';
 const autosave = { restoringTitle: false };
 
@@ -35,7 +35,7 @@ function writeSavedBoard() {
   try { localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(getBoardState())); } catch (e) {}
 }
 
-// IndexedDB indisponible (ancien navigateur, stockage interdit) : on continue sans.
+// IndexedDB unavailable (old browser, storage forbidden): we carry on without it.
 function titleStore(fn) {
   try { return (typeof idbKeyval !== 'undefined' ? fn(idbKeyval) : Promise.resolve()).catch(() => {}); }
   catch (e) { return Promise.resolve(); }
@@ -44,7 +44,7 @@ function titleStore(fn) {
 boardEvents.addEventListener('change', e => {
   const reason = e.detail.reason;
   if (reason === 'title-image') {
-    if (autosave.restoringTitle) return; // image qu'on est justement en train de relire
+    if (autosave.restoringTitle) return; // image we are in the middle of re-reading
     const custom = TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE;
     titleStore(db => custom ? db.set(TITLE_IMAGE_KEY, TITLE_IMAGE.src) : db.del(TITLE_IMAGE_KEY));
     return;
@@ -52,7 +52,7 @@ boardEvents.addEventListener('change', e => {
   writeSavedBoard();
 });
 
-// ---- Écran d'accueil : bouton « Continue » ----
+// ---- Home screen: "Continue" button ----
 function refreshContinueButton() {
   const btn = document.getElementById('board-type-continue');
   const saved = readSavedBoard();
@@ -69,10 +69,10 @@ function refreshContinueButton() {
 function continueSavedBoard() {
   const saved = readSavedBoard();
   if (!saved) { refreshContinueButton(); return; }
-  // Retour depuis « Home » : le plateau est déjà en mémoire (identique à la sauvegarde) —
-  // on rouvre simplement l'éditeur, son historique d'annulation reste intact.
+  // Return from "Home": the board is already in memory (identical to the save) —
+  // we simply reopen the editor, its undo history stays intact.
   if (undoHistory.current && JSON.stringify(getBoardState()) === JSON.stringify(saved)) { showEditor(); return; }
-  setBoardState(saved); // affiche l'éditeur ; 'restore' devient le point de départ de l'historique
+  setBoardState(saved); // shows the editor; 'restore' becomes the starting point of the history
   titleStore(db => db.get(TITLE_IMAGE_KEY).then(dataUrl => {
     if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return;
     const img = new Image();
@@ -84,14 +84,14 @@ function continueSavedBoard() {
   }));
 }
 
-// Nouveau plateau depuis l'accueil. S'il y avait un plateau en cours (sauvegardé) et que
-// l'historique de cette page est vide (page tout juste ouverte), ce plateau devient le point
-// de départ de l'historique : Ctrl+Z après « nouveau plateau » le ramène.
+// New board from the home screen. If there was a board in progress (saved) and the
+// history of this page is empty (page just opened), that board becomes the starting point
+// of the history: Ctrl+Z after "new board" brings it back.
 function startNewBoard(type) {
   const saved = readSavedBoard();
   if (saved && !undoHistory.current) setHistoryBaseline(saved);
-  // Nouveau plateau = image de titre par défaut (sa taille idéale dépend du format ; même
-  // règle que l'ancien « Reset road tile »). Non rétablie par Ctrl+Z (hors de la photo).
+  // New board = default title image (its ideal size depends on the format; same
+  // rule as the former "Reset road tile"). Not restored by Ctrl+Z (outside the snapshot).
   if (TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE) resetTitleImage();
   chooseBoardType(type);
 }

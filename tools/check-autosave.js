@@ -1,19 +1,19 @@
-// VÉRIFICATION DE LA SAUVEGARDE AUTOMATIQUE ET DU BOUTON « CONTINUE » (tranches 4a + 4b) dans
-// un vrai navigateur (Chromium via Playwright), avec de vrais rechargements de page :
-// pas de « Continue » sans sauvegarde ; plateau, nom et GRANDE image de titre (plus de 5 Mo,
-// au-delà de la limite de localStorage) retrouvés après rechargement ; la restauration est le
-// point de départ de l'historique ; « nouveau plateau » puis Ctrl+Z ramène l'ancien ; image
-// de titre remise par défaut = plus restaurée ; sauvegarde abîmée ignorée ; stockage interdit
-// par le navigateur = appli utilisable sans erreur.
-// Usage (dépôt servi en HTTP) : node tools/check-autosave.js [http://localhost:8765/]
-// Code de sortie 1 au moindre échec ou à la moindre erreur JavaScript de la page.
+// AUTOSAVE AND "CONTINUE" BUTTON CHECK (slices 4a + 4b) in
+// a real browser (Chromium via Playwright), with real page reloads:
+// no "Continue" without a save; board, name and LARGE title image (over 5 MB,
+// beyond the localStorage limit) found again after reload; the restoration is the
+// starting point of the history; "new board" then Ctrl+Z brings back the old one; title
+// image reset to default = no longer restored; damaged save ignored; storage forbidden
+// by the browser = app usable without error.
+// Usage (repo served over HTTP): node tools/check-autosave.js [http://localhost:8765/]
+// Exit code 1 on the slightest failure or on any JavaScript error from the page.
 const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path'), zlib = require('zlib');
 const base = process.argv[2] || 'http://localhost:8765/';
 const url = new URL('index.html', base).href;
-const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉCHEC'} : ${name}`);
+const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAIL'} : ${name}`);
 
-// PNG de bruit (incompressible) aux dimensions de la bande de titre : > 5 Mo.
+// Noise PNG (incompressible) with the dimensions of the title band: > 5 MB.
 function noisePng(w, h) {
   const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
   const crc = b => { let c = 0xffffffff; for (const x of b) c = crcTable[(c ^ x) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
@@ -37,7 +37,7 @@ function noisePng(w, h) {
   const continueVisible = () => p.evaluate(() => !document.getElementById('board-type-continue').hidden && getComputedStyle(document.getElementById('board-type-continue')).display !== 'none');
 
   await p.goto(url);
-  check('1re visite : pas de bouton Continue', !(await continueVisible()));
+  check('1st visit: no Continue button', !(await continueVisible()));
   await p.click('#board-type-vendetta'); await ready();
   await paint('road', 3); await paint('rock', 12); await paint('goo', 20);
   await p.click('#title-input'); await p.keyboard.type('Dust Bowl'); await p.evaluate(() => document.activeElement.blur());
@@ -45,42 +45,42 @@ function noisePng(w, h) {
   await p.waitForFunction(() => TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE, null, { timeout: 30000 });
   const titleSrc = await p.evaluate(() => TITLE_IMAGE.src.length);
   const before = await state();
-  await p.waitForTimeout(1500); // écriture IndexedDB (asynchrone)
+  await p.waitForTimeout(1500); // IndexedDB write (asynchronous)
 
   await p.reload();
-  check('après rechargement : bouton Continue visible', await continueVisible());
-  check('Continue indique le format et le nom', (await p.textContent('#board-type-continue-desc')) === 'Vendetta — DUST BOWL');
+  check('after reload: Continue button visible', await continueVisible());
+  check('Continue shows the format and the name', (await p.textContent('#board-type-continue-desc')) === 'Vendetta — DUST BOWL');
   await p.click('#board-type-continue'); await ready();
-  check('Continue : plateau, variantes et nom retrouvés à l\'identique', await state() === before);
+  check('Continue: board, variants and name restored identically', await state() === before);
   await p.waitForFunction(() => TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE, null, { timeout: 30000 }).catch(() => {});
-  check(`Continue : grande image de titre retrouvée (${bigMb.toFixed(1)} Mo)`, await p.evaluate(n => !!TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE && TITLE_IMAGE.src.length === n, titleSrc));
-  check('Continue : Undo grisé (la restauration est le point de départ)', await p.evaluate(() => document.getElementById('undo-btn').disabled));
+  check(`Continue: large title image restored (${bigMb.toFixed(1)} MB)`, await p.evaluate(n => !!TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE && TITLE_IMAGE.src.length === n, titleSrc));
+  check('Continue: Undo greyed out (the restore is the starting point)', await p.evaluate(() => document.getElementById('undo-btn').disabled));
   await paint('salt', 30); await p.keyboard.press('Control+z');
-  check('Continue puis une case, Ctrl+Z : retour à l\'état restauré', await state() === before);
+  check('Continue then a cell, Ctrl+Z: back to the restored state', await state() === before);
 
-  // Nouveau plateau alors qu'il y en avait un : Ctrl+Z ramène l'ancien
+  // New board while there was one: Ctrl+Z brings back the old one
   await p.reload();
   await p.click('#board-type-ignition'); await ready();
-  check('nouveau plateau Ignition', await p.evaluate(() => BOARD_TYPE) === 'ignition');
+  check('new Ignition board', await p.evaluate(() => BOARD_TYPE) === 'ignition');
   await p.keyboard.press('Control+z');
-  check('nouveau plateau puis Ctrl+Z : l\'ancien plateau Vendetta revient', await state() === before);
+  check('new board then Ctrl+Z: the previous Vendetta board comes back', await state() === before);
 
-  // Image de titre remise par défaut : plus restaurée
+  // Title image reset to default: no longer restored
   await p.click('#reset-title-btn'); await p.waitForTimeout(1000);
   await p.reload(); await p.click('#board-type-continue'); await ready(); await p.waitForTimeout(1500);
-  check('image remise par défaut : plus restaurée ensuite', await p.evaluate(() => !TITLE_IMAGE || TITLE_IMAGE === DEFAULT_TITLE_IMAGE));
+  check('image reset to default: no longer restored afterwards', await p.evaluate(() => !TITLE_IMAGE || TITLE_IMAGE === DEFAULT_TITLE_IMAGE));
 
-  // Sauvegarde abîmée : ignorée
+  // Damaged save: ignored
   await p.evaluate(() => localStorage.setItem(AUTOSAVE_KEY, '{"version":1,"boardType":"vendetta","board":[1,2'));
   await p.reload();
-  check('sauvegarde abîmée : pas de bouton Continue', !(await continueVisible()));
+  check('damaged save: no Continue button', !(await continueVisible()));
   await p.evaluate(() => localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ version: 99, boardType: 'vendetta', board: [], cellVariant: [] })));
   await p.reload();
-  check('sauvegarde d\'une version inconnue : ignorée', !(await continueVisible()));
-  check('aucune erreur JavaScript', errs.length === 0);
+  check('save from an unknown version: ignored', !(await continueVisible()));
+  check('no JavaScript error', errs.length === 0);
   await ctx.close();
 
-  // Stockage interdit par le navigateur (navigation privée stricte, réglages) : l'appli marche
+  // Storage forbidden by the browser (strict private browsing, settings): the app works
   const ctx2 = await b.newContext({ viewport: { width: 1300, height: 1300 } });
   await ctx2.addInitScript(() => {
     Object.defineProperty(window, 'localStorage', { get() { throw new Error('storage blocked'); } });
@@ -90,8 +90,8 @@ function noisePng(w, h) {
   await q.goto(url); await q.click('#board-type-vendetta');
   await q.waitForFunction(() => Object.keys(TEXTURES).length === Object.keys(TEXTURE_PATHS).length, null, { timeout: 60000 });
   await q.click('#tb-road'); const bb = await q.locator('#bsvg [data-idx="5"]').first().boundingBox(); await q.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
-  check('stockage interdit : la case se peint, aucune erreur', await q.evaluate(() => board[5]) === 'road' && errs2.length === 0);
+  check('storage forbidden: the space gets painted, no error', await q.evaluate(() => board[5]) === 'road' && errs2.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length || errs2.length) console.log(errs, errs2);
-  process.exit(results.some(r => r.startsWith('ÉCHEC')) ? 1 : 0);
+  process.exit(results.some(r => r.startsWith('FAIL')) ? 1 : 0);
 })();

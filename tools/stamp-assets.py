@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-# EMPREINTES DES FICHIERS CSS / JS DANS index.html (contre les copies périmées en cache).
+# FINGERPRINTS OF THE CSS / JS FILES IN index.html (against stale cached copies).
 #
-# Chaque <link href="css/…"> et <script src="js/…"> de index.html reçoit « ?v=<empreinte> »,
-# les 10 premiers caractères du SHA-256 du contenu du fichier. Un fichier modifié change
-# d'adresse : navigateur, GitHub Pages et raw.githack le rechargent forcément ; les autres
-# restent en cache. Méthode des outils de construction (« content hash » de webpack, Vite…),
-# appliquée à la main puisque le dépôt est servi tel quel.
+# Each <link href="css/..."> and <script src="js/..."> of index.html gets "?v=<fingerprint>",
+# the first 10 characters of the SHA-256 of the file content. A modified file changes
+# address: browser, GitHub Pages and raw.githack are forced to reload it; the others
+# stay cached. Method of build tools (webpack's "content hash", Vite...),
+# applied by hand since the repo is served as is.
 #
-# Usage (à la racine du dépôt) :
-#   python3 tools/stamp-assets.py          met les empreintes à jour (à lancer avant chaque commit)
-#   python3 tools/stamp-assets.py --check  code de sortie 1 si une empreinte est périmée ou absente
+# Usage (at the repo root):
+#   python3 tools/stamp-assets.py          updates the fingerprints (run before each commit)
+#   python3 tools/stamp-assets.py --check  exit code 1 if a fingerprint is stale or missing
 import hashlib, pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -31,11 +31,11 @@ def main():
     new = REF.sub(stamp, html)
     if check:
         for p in stale:
-            print('empreinte périmée ou absente :', p)
-        print('empreintes à jour' if not stale else 'lancer : python3 tools/stamp-assets.py')
+            print('stale or missing fingerprint:', p)
+        print('fingerprints up to date' if not stale else 'run: python3 tools/stamp-assets.py')
         sys.exit(1 if stale else 0)
     if new != html:
         INDEX.write_text(new, encoding='utf-8')
-    print(f'{len(REF.findall(html))} fichiers, {len(stale)} empreinte(s) mise(s) à jour' + (' : ' + ', '.join(stale) if stale else ''))
+    print(f'{len(REF.findall(html))} files, {len(stale)} fingerprint(s) updated' + (' : ' + ', '.join(stale) if stale else ''))
 
 main()

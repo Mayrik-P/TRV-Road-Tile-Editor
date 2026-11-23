@@ -1,29 +1,29 @@
-// ===== js/keyboard.js — Clavier (tranche 2d) : curseur aux flèches, lettres pour choisir et
-// poser un type de case, Entrée / Espace pour poser, Suppr pour effacer, « ? » pour l'aide.
+// ===== js/keyboard.js — Keyboard (tranche 2d): arrow-key cursor, letters to choose and
+// place a tile type, Enter / Space to place, Delete to erase, "?" for help.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference). Code run
+// when a file loads can only use what is declared in that file or the previous ones;
+// functions, called later, see everything.
 //
-// Réécriture de la PR #2 de ChessMess (keyboard-navigation), dont on garde le principe :
-//   - flèches : un curseur (contour cyan) se déplace de case en case, bloqué aux bords ;
-//     caché jusqu'au premier appui, il se cache dès que la souris passe sur le plateau ;
-//   - le curseur est « la dernière case touchée », quel que soit le moyen (survol, clic,
-//     pinceau, clavier) : les touches agissent toujours là où l'on vient d'agir ;
-//   - lettre = choisir ET poser le type de case dont le nom commence par elle ; répétée
-//     sur la même case, elle fait défiler les types qui partagent cette lettre (R : Ramp ->
-//     Road -> Road + Hazard -> Road + Oil) ; sur une autre case, elle repose le choix en
-//     cours (s'il commence par cette lettre) ;
-//   - Entrée = poser le type choisi (comme un clic : visuel suivant d'une case à
-//     variantes) ;
-//   - rien pendant la saisie dans un champ, avec Ctrl / Cmd / Alt, ni sur l'accueil ;
-//     le curseur n'apparaît jamais dans l'export.
-// Changements par rapport à la PR (docs/roadmap.md, § 2) : Échap n'annule plus la case
-// (le vrai Ctrl+Z de js/history.js s'en charge) et ferme l'aide ; le curseur suit le
-// signal unique de state.js au lieu de crochets ajoutés dans le code ; ajouts courants
-// des éditeurs : Espace (comme Entrée), Suppr / Retour arrière (case remise en
-// DEFAULT_TILE), « ? » (panneau des raccourcis, usage de Gmail, GitHub, Figma).
+// Rewrite of ChessMess's PR #2 (keyboard-navigation), whose principle is kept:
+//   - arrows: a cursor (cyan outline) moves from cell to cell, blocked at the edges;
+//     hidden until the first key press, it hides as soon as the mouse passes over the board;
+//   - the cursor is "the last cell touched", whatever the means (hover, click,
+//     brush, keyboard): keys always act where one has just acted;
+//   - letter = choose AND place the tile type whose name starts with it; repeated
+//     on the same cell, it cycles through the types sharing that letter (R: Ramp ->
+//     Road -> Road + Hazard -> Road + Oil); on another cell, it places the current
+//     choice again (if it starts with that letter);
+//   - Enter = place the chosen type (like a click: next visual of a cell with
+//     variants);
+//   - nothing while typing in a field, with Ctrl / Cmd / Alt, or on the home screen;
+//     the cursor never appears in the export.
+// Changes compared to the PR (docs/roadmap.md, § 2): Escape no longer undoes the cell
+// (the real Ctrl+Z of js/history.js handles that) and closes the help; the cursor follows the
+// single signal of state.js instead of hooks added in the code; common additions
+// from editors: Space (like Enter), Delete / Backspace (cell put back to
+// DEFAULT_TILE), "?" (shortcuts panel, as used by Gmail, GitHub, Figma).
 
 const kb = { cursorIdx: 0, visible: false, lastLetter: null, lastLetterIdx: -1, lastLetterCell: -1 };
 
@@ -34,7 +34,7 @@ function resetKeyboardNav() {
 }
 resetKeyboardNav();
 
-// Calque du curseur, tout en haut du plateau (créé par buildBoard, jamais exporté).
+// Cursor layer, at the very top of the board (created by buildBoard, never exported).
 function renderCursor() {
   const g = document.getElementById('layer-cursor');
   if (!g) return;
@@ -49,8 +49,8 @@ function renderCursor() {
 
 function showCursorAt(idx) { kb.cursorIdx = idx; kb.visible = true; renderCursor(); }
 
-// Le curseur suit toute modification d'une case (clic, pinceau, clavier) et se recentre
-// à chaque nouveau plateau / restauration (dimensions possiblement changées).
+// The cursor follows any modification of a cell (click, brush, keyboard) and recentres
+// on every new board / restoration (dimensions possibly changed).
 boardEvents.addEventListener('change', e => {
   const r = e.detail.reason;
   if (r === 'cell') { kb.cursorIdx = e.detail.idx; renderCursor(); }
@@ -61,7 +61,7 @@ boardEvents.addEventListener('change', e => {
   }
 });
 
-// Survol à la souris : le curseur suit la case survolée et se cache.
+// Mouse hover: the cursor follows the hovered cell and hides.
 document.getElementById('bsvg').addEventListener('pointerover', e => {
   const t = e.target;
   if (!t.dataset || t.dataset.idx === undefined || !t.parentNode || t.parentNode.id !== 'layer-hits') return;
@@ -72,8 +72,8 @@ document.getElementById('bsvg').addEventListener('pointerover', e => {
 function handleLetter(letter) {
   const matches = TILES.filter(t => t.label[0].toLowerCase() === letter);
   if (!matches.length) return false;
-  // Défilement des types de même lettre seulement en restant sur la même case ; ailleurs,
-  // on repart du type déjà choisi (clic dans la palette compris), sinon du premier.
+  // Cycling through types with the same letter only while staying on the same cell; elsewhere,
+  // we start again from the type already chosen (palette click included), otherwise from the first.
   const cycling = letter === kb.lastLetter && kb.cursorIdx === kb.lastLetterCell;
   kb.lastLetterIdx = cycling ? (kb.lastLetterIdx + 1) % matches.length
                              : Math.max(0, matches.findIndex(t => t.id === sel));
@@ -85,8 +85,8 @@ function handleLetter(letter) {
   return true;
 }
 
-// ---- Panneau des raccourcis (« ? ») ----
-// Le type d'un plateau neuf y est lu dans DEFAULT_TILE, comme dans le texte du Reset.
+// ---- Shortcuts panel ("?") ----
+// The type of a new board is read there from DEFAULT_TILE, as in the Reset text.
 document.getElementById('help-default-tile').textContent = TILES.find(t => t.id === DEFAULT_TILE).label;
 function toggleShortcutHelp(show) {
   const dlg = document.getElementById('shortcut-help');
@@ -99,7 +99,7 @@ window.addEventListener('keydown', e => {
   const helpOpen = !document.getElementById('shortcut-help').hidden;
   if (helpOpen && (e.key === 'Escape' || e.key === '?')) { e.preventDefault(); toggleShortcutHelp(false); return; }
   if (document.getElementById('board-type-picker').style.display !== 'none') return;
-  if (!document.getElementById('export-dialog').hidden) return; // fenêtre d'export ouverte
+  if (!document.getElementById('export-dialog').hidden) return; // export window open
   const el = document.activeElement;
   if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -109,7 +109,7 @@ window.addEventListener('keydown', e => {
   const DELTA = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
   if (e.key in DELTA) {
     e.preventDefault();
-    if (!kb.visible) { showCursorAt(kb.cursorIdx); return; } // 1er appui : montrer le curseur là où il est
+    if (!kb.visible) { showCursorAt(kb.cursorIdx); return; } // 1st key press: show the cursor where it is
     const [dr, dc] = DELTA[e.key];
     const row = Math.min(ROWS - 1, Math.max(0, Math.floor(kb.cursorIdx / COLS) + dr));
     const col = Math.min(COLS - 1, Math.max(0, kb.cursorIdx % COLS + dc));
@@ -117,7 +117,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault(); // un bouton qui a le focus ne doit pas se déclencher en plus
+    e.preventDefault(); // a button that has focus must not also trigger
     showCursorAt(kb.cursorIdx);
     updateCell(kb.cursorIdx, sel);
     return;

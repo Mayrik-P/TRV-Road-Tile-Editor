@@ -1,26 +1,25 @@
-// ===== js/project.js — Fichier de projet .trvtile (tranche 4d) : « Save project » dans l'éditeur,
-// « Open project » sur l'écran d'accueil.
+// ===== js/project.js — .trvtile project file (tranche 4d): "Save project" in the editor,
+// "Open project" on the home screen.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference). Code run
+// when a file loads can only use what is declared in that file or the previous ones;
+// functions, called later, see everything.
 //
-// Modèle : les fichiers de projet des éditeurs (Tiled : .tmx / .tmj en JSON) — un fichier
-// lisible, signé (champ format) et versionné (formatVersion) pour que les versions suivantes
-// sachent relire les anciens, qui se suffit à lui-même (image de titre personnalisée
-// intégrée). Contenu :
+// Model: the project files of editors (Tiled: .tmx / .tmj in JSON) — a readable file,
+// signed (format field) and versioned (formatVersion) so that later versions know how to
+// re-read old ones, and self-contained (custom title image embedded). Contents:
 //   { format: 'trv-road-tile', formatVersion: 1, app, savedAt,
-//     board: getBoardState() (porte sa propre version), titleImage: data: URL ou null }
-// Ouvrir un projet remplace le plateau en cours ; s'il y en avait un dans la page, Ctrl+Z
-// le ramène (une étape). Fichier refusé sans rien modifier : pas un projet, abîmé, ou
-// d'une version plus récente de l'éditeur. Base de l'export vers TRV-Pocket (phase 9).
+//     board: getBoardState() (carries its own version), titleImage: data: URL or null }
+// Opening a project replaces the current board; if there was one in the page, Ctrl+Z
+// brings it back (one step). File rejected without changing anything: not a project, damaged, or
+// from a newer version of the editor. Basis of the export to TRV-Pocket (phase 9).
 
 const PROJECT_FORMAT = 'trv-road-tile';
-const PROJECT_FORMAT_VERSION = 2; // 2 (phase 7) : photo du plateau en version 2 (décorations libres) ; 1 converti
+const PROJECT_FORMAT_VERSION = 2; // 2 (phase 7): board snapshot in version 2 (free decorations); 1 converted
 const PROJECT_EXT = '.trvtile';
 
-// Nom de fichier commun au PNG exporté et au projet (nom de la route, ou numéro Ignition).
+// File name shared by the exported PNG and the project (road name, or Ignition number).
 function boardFileBaseName() {
   return BOARD_TYPE === 'ignition'
     ? 'Ignition-' + (document.getElementById('board-number-input').value || '').padStart(3, '0')
@@ -47,12 +46,12 @@ function saveProject() {
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
 
-// Vérifie un projet lu dans un fichier : message d'erreur pour l'utilisateur, ou null.
+// Checks a project read from a file: error message for the user, or null.
 function checkProject(p) {
   if (!p || typeof p !== 'object' || p.format !== PROJECT_FORMAT) return 'This file is not a TRV Road Tile Editor project.';
   if (typeof p.formatVersion !== 'number' || p.formatVersion > PROJECT_FORMAT_VERSION)
     return 'This project was saved with a newer version of the editor. Please reload the page to get the latest version.';
-  p.board = upgradeBoardState(p.board); // fichier de la version 1 : converti (sans décoration)
+  p.board = upgradeBoardState(p.board); // version 1 file: converted (without decorations)
   if (validateBoardState(p.board) !== null) return 'This project file is damaged and cannot be opened.';
   if (p.titleImage != null && !(typeof p.titleImage === 'string' && p.titleImage.startsWith('data:image/')))
     return 'This project file is damaged and cannot be opened.';
@@ -76,9 +75,9 @@ function openProjectFile(input) {
 }
 
 function applyProject(project) {
-  const previous = undoHistory.current; // plateau en cours dans cette page, s'il y en a un
-  setBoardState(project.board);         // 'restore' : nouveau point de départ de l'historique
-  if (previous) { undoHistory.past = [previous]; updateHistoryButtons(); } // Ctrl+Z ramène l'ancien
+  const previous = undoHistory.current; // board in progress in this page, if there is one
+  setBoardState(project.board);         // 'restore': new starting point of the history
+  if (previous) { undoHistory.past = [previous]; updateHistoryButtons(); } // Ctrl+Z brings the old one back
   if (project.titleImage) {
     const img = new Image();
     img.onload = () => applyTitleImage(img);

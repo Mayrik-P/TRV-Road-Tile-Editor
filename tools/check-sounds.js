@@ -1,18 +1,18 @@
-// VÉRIFICATION DES SONS (phase 6) dans un vrai navigateur (Chromium via Playwright), avec de
-// vrais clics, touches et glissés. Les lectures sont relevées en espionnant howler.js (fichier,
-// volume, hauteur de chaque son lancé) : les 7 sons se chargent ; palette, pose d'une case, coup
-// de pinceau (1re case normale, suivantes plus discrètes à hauteur variée, jamais deux en 70 ms),
-// Annuler / Rétablir (au clavier et au bouton, sans double son), « Clear board » (un seul tampon,
-// rien si on refuse), clavier (pose sans son de palette), export (drapeau, pas de son de bouton),
-// fichier refusé, haut-parleur (coupe tout, choix retenu après rechargement, rallume).
-// Usage (dépôt servi en HTTP) : node tools/check-sounds.js [http://localhost:8765/]
-// Code de sortie 1 au moindre échec ou à la moindre erreur JavaScript de la page.
+// SOUND CHECK (phase 6) in a real browser (Chromium via Playwright), with
+// real clicks, keys and drags. Playbacks are collected by spying on howler.js (file,
+// volume, pitch of each sound played): the 7 sounds load; palette, cell placement, brush
+// stroke (1st cell normal, following ones quieter at varied pitch, never two within 70 ms),
+// Undo / Redo (keyboard and button, no double sound), "Clear board" (a single stamp,
+// nothing if refused), keyboard (placement without palette sound), export (flag, no button sound),
+// rejected file, speaker (mutes everything, choice remembered after reload, turns back on).
+// Usage (repo served over HTTP): node tools/check-sounds.js [http://localhost:8765/]
+// Exit code 1 on the slightest failure or on any JavaScript error from the page.
 const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path');
 const base = process.argv[2] || 'http://localhost:8765/';
-const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉCHEC'} : ${name}`);
+const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAIL'} : ${name}`);
 
-// Espion posé avant tout script de la page : enveloppe Howl dès que howler.js le déclare.
+// Spy installed before any page script: wraps Howl as soon as howler.js declares it.
 const SPY = () => {
   window.__played = [];
   let H;
@@ -45,87 +45,87 @@ const SPY = () => {
   await p.goto(new URL('index.html', base).href);
   await p.waitForFunction(() => Object.keys(sounds.howls).length === 7 && Object.values(sounds.howls).every(h => h.state() !== 'loading'), null, { timeout: 30000 });
   const states = await p.evaluate(() => Object.entries(sounds.howls).map(([k, h]) => k + ':' + h.state()));
-  check(`les 7 sons se chargent (${states.join(' ')})`, states.every(s => s.endsWith(':loaded')));
+  check(`the 7 sounds load (${states.join(' ')})`, states.every(s => s.endsWith(':loaded')));
 
   await take(); await p.click('#board-type-vendetta');
-  check('bouton de l\'accueil : son « bouton »', (await files()) === 'tap-menu-button');
+  check('home button: "button" sound', (await files()) === 'tap-menu-button');
   await p.waitForFunction(() => Object.keys(TEXTURES).length === Object.keys(TEXTURE_PATHS).length, null, { timeout: 60000 });
   await p.mouse.move(2, 2);
 
   await p.click('#tb-mud');
-  { const f = await files(); check('palette : son de la palette seul (' + f + ')', f === 'dash-zoom'); }
+  { const f = await files(); check('palette: palette sound alone (' + f + ')', f === 'dash-zoom'); }
 
   const c8 = await center(8); await p.mouse.click(c8.x, c8.y);
   let r = await take();
-  check('clic sur une case : un son de pose, volume normal', r.length === 1 && r[0].file === 'card-flip' && r[0].volume === 1 && r[0].rate === 1);
+  check('click on a cell: one placement sound, normal volume', r.length === 1 && r[0].file === 'card-flip' && r[0].volume === 1 && r[0].rate === 1);
 
-  // Coup de pinceau lent sur la 3e rangée (8 cases)
+  // Slow brush stroke on the 3rd row (8 cells)
   const a = await center(16), z = await center(23);
   await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(z.x, z.y, { steps: 40 }); await p.mouse.up();
   r = await take();
   const first = r[0], rest = r.slice(1);
-  check(`pinceau : ${r.length} sons de pose pour 8 cases (au plus 8)`, r.length >= 2 && r.length <= 8 && r.every(x => x.file === 'card-flip'));
-  check('pinceau : 1re case à volume normal', first.volume === 1 && first.rate === 1);
-  check('pinceau : cases suivantes à 70 % du volume, hauteur entre 0,92 et 1,08',
+  check(`brush: ${r.length} placement sounds for 8 cells (at most 8)`, r.length >= 2 && r.length <= 8 && r.every(x => x.file === 'card-flip'));
+  check('brush: 1st cell at normal volume', first.volume === 1 && first.rate === 1);
+  check('brush: following cells at 70 % volume, pitch between 0.92 and 1.08',
         rest.every(x => x.volume === 0.7 && x.rate >= 0.92 && x.rate <= 1.08) && rest.some(x => x.rate !== 1));
   const gaps = r.slice(1).map((x, i) => x.t - r[i].t);
-  check(`pinceau : jamais deux sons en moins de 70 ms (plus petit écart ${Math.round(Math.min(...gaps))} ms)`, gaps.every(g => g >= 69));
-  // Glissé très rapide : 8 cases en un seul mouvement -> un seul son (même instant)
+  check(`brush: never two sounds within 70 ms (smallest gap ${Math.round(Math.min(...gaps))} ms)`, gaps.every(g => g >= 69));
+  // Very fast drag: 8 cells in a single movement -> a single sound (same instant)
   await p.click('#tb-goo'); await take();
   const c = await center(24), d = await center(31);
   await p.mouse.move(c.x, c.y); await p.mouse.down(); await p.mouse.move(d.x, d.y, { steps: 1 }); await p.mouse.up();
   r = await take();
-  check(`glissé très rapide : ${r.length} son(s), pas de rafale`, r.length >= 1 && r.length <= 2);
+  check(`very fast drag: ${r.length} sound(s), no burst`, r.length >= 1 && r.length <= 2);
 
   await p.keyboard.press('Control+z');
-  check('Ctrl+Z : son de retour', (await files()) === 'tap-back');
-  await p.waitForTimeout(150); // un humain ne clique pas en moins de 70 ms (règle anti-rafale)
+  check('Ctrl+Z: back sound', (await files()) === 'tap-back');
+  await p.waitForTimeout(150); // a human does not click in under 70 ms (anti-burst rule)
   await p.click('#redo-btn');
-  { const f = await files(); check('bouton Redo : son de retour seul, pas de son de bouton en plus (' + f + ')', f === 'tap-back'); }
+  { const f = await files(); check('Redo button: back sound alone, no extra button sound (' + f + ')', f === 'tap-back'); }
 
   p.once('dialog', dl => dl.dismiss()); await p.click('#clear-btn');
-  check('Clear board refusé : aucun son', (await files()) === '');
+  check('Clear board refused: no sound', (await files()) === '');
   p.once('dialog', dl => dl.accept()); await p.click('#clear-btn');
-  check('Clear board accepté : un seul tampon, aucun son de pose', (await files()) === 'stamp');
-  // Cases déjà toutes vides mais une décoration posée : le tampon part quand même (une fois)
+  check('Clear board accepted: a single stamp, no placement sound', (await files()) === 'stamp');
+  // Cells all already empty but a decoration placed: the stamp still plays (once)
   await p.evaluate(() => addDecoration(3, 2000, 2000)); await p.waitForTimeout(150); await take();
   p.once('dialog', dl => dl.accept()); await p.click('#clear-btn');
-  check('Clear board, cases vides + décoration : un seul tampon', (await files()) === 'stamp');
+  check('Clear board, empty cells + decoration: a single stamp', (await files()) === 'stamp');
 
   await p.keyboard.press('ArrowRight'); await p.keyboard.press('r');
-  check('clavier, lettre : son de pose seul (pas de son de palette)', (await files()) === 'card-flip');
+  check('keyboard, letter: placement sound alone (no palette sound)', (await files()) === 'card-flip');
 
   await p.click('#export-open-btn');
-  check('Export image : son « bouton »', (await files()) === 'tap-menu-button');
+  check('Export image: "button" sound', (await files()) === 'tap-menu-button');
   await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]);
   await dl.path();
-  { const r = await take(); check(`export terminé : drapeau d'arrivée seul, à 50 % du volume (${r.map(x => x.file + ' ' + x.volume).join(', ')})`, r.length === 1 && r[0].file === 'finish-flag' && r[0].volume === 0.5); }
+  { const r = await take(); check(`export finished: finish flag alone, at 50 % volume (${r.map(x => x.file + ' ' + x.volume).join(', ')})`, r.length === 1 && r[0].file === 'finish-flag' && r[0].volume === 0.5); }
 
-  // Fichier refusé (depuis l'accueil)
+  // Rejected file (from the home screen)
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'snd-')); const bad = path.join(tmp, 'bad.trvtile');
   fs.writeFileSync(bad, 'not a project');
   await p.click('#home-btn'); await take();
   p.once('dialog', dlg => dlg.dismiss());
   await p.setInputFiles('#open-project-input', bad);
   await p.waitForFunction(() => window.__played.length > 0, null, { timeout: 5000 }).catch(() => {});
-  check('fichier refusé : son de refus', (await files()) === 'tap-refuse');
+  check('file rejected: refusal sound', (await files()) === 'tap-refuse');
 
-  // Haut-parleur
+  // Speaker
   await p.click('#board-type-continue'); await take();
   await p.click('#sound-btn');
-  check('haut-parleur coupé : aucun son, bouton barré', (await files()) === '' && await p.evaluate(() => document.getElementById('sound-btn').getAttribute('aria-pressed') === 'false'));
+  check('speaker muted: no sound, button crossed out', (await files()) === '' && await p.evaluate(() => document.getElementById('sound-btn').getAttribute('aria-pressed') === 'false'));
   await p.click('#tb-road'); const c9 = await center(9); await p.mouse.click(c9.x, c9.y);
-  check('son coupé : palette et pose silencieuses', (await files()) === '');
+  check('sound muted: palette and placement silent', (await files()) === '');
   await p.reload();
   await p.waitForFunction(() => typeof sounds !== 'undefined' && Object.keys(sounds.howls).length === 7);
   await p.click('#board-type-continue');
-  check('après rechargement : son toujours coupé', (await files()) === '' && await p.evaluate(() => sounds.muted));
+  check('after reload: sound still muted', (await files()) === '' && await p.evaluate(() => sounds.muted));
   await p.click('#sound-btn');
-  check('haut-parleur rallumé : un son « bouton » aussitôt', (await files()) === 'tap-menu-button' && !(await p.evaluate(() => sounds.muted)));
+  check('speaker back on: a "button" sound right away', (await files()) === 'tap-menu-button' && !(await p.evaluate(() => sounds.muted)));
 
-  check('aucune erreur JavaScript', errs.length === 0);
+  check('no JavaScript error', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);
-  process.exit(results.some(x => x.startsWith('ÉCHEC')) ? 1 : 0);
+  process.exit(results.some(x => x.startsWith('FAIL')) ? 1 : 0);
 })();

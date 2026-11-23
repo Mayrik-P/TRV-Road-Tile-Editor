@@ -1,19 +1,19 @@
-// ===== js/state.js — État du plateau : photo complète (getBoardState), restauration
-// (setBoardState) et signal unique « le plateau a changé » (boardEvents).
+// ===== js/state.js — Board state: full snapshot (getBoardState), restoration
+// (setBoardState) and the single "the board changed" signal (boardEvents).
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope
+// and are loaded in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in
+// that file or the previous ones; functions, called later, see everything.
 //
-// Tranche 0c (docs/roadmap.md). Toute modification du plateau passe par un point
-// d'entrée unique (updateCell pour une case, chooseBoardType pour un nouveau plateau,
-// setBoardState pour une restauration, les champs et l'image de titre) qui émet ensuite
-// UN signal « change » sur boardEvents. Méthode éprouvée : patron « observateur », avec
-// l'EventTarget natif du navigateur (pas de bibliothèque). Annuler/Rétablir, sauvegarde
-// automatique et sons n'auront qu'à s'abonner :
+// Slice 0c (docs/roadmap.md). Every board change goes through a single entry
+// point (updateCell for a cell, chooseBoardType for a new board,
+// setBoardState for a restoration, the fields and the title image) which then emits
+// ONE "change" signal on boardEvents. Proven method: the "observer" pattern, using
+// the browser's native EventTarget (no library). Undo/Redo, autosave
+// and sounds only have to subscribe:
 //   boardEvents.addEventListener('change', e => { … e.detail.reason … });
-// Raisons émises : 'cell' (detail : idx, oldType, newType), 'new-board', 'restore',
+// Reasons emitted: 'cell' (detail: idx, oldType, newType), 'new-board', 'restore',
 // 'title', 'number', 'title-image'.
 
 const boardEvents = new EventTarget();
@@ -22,23 +22,23 @@ function notifyBoardChange(reason, extra) {
   boardEvents.dispatchEvent(new CustomEvent('change', { detail: Object.assign({ reason }, extra) }));
 }
 
-// Version du format de la photo : à augmenter (avec une conversion des anciennes) le
-// jour où son contenu change — décorations libres, barricades… (leçon de TRV-Pocket :
-// une sauvegarde doit toujours pouvoir être relue par les versions suivantes).
-const BOARD_STATE_VERSION = 2; // 2 (phase 7) : décorations libres
+// Snapshot format version: to be increased (with a conversion of the old ones) the
+// day its content changes — free decorations, barricades… (lesson from TRV-Pocket:
+// a save must always be readable by later versions).
+const BOARD_STATE_VERSION = 2; // 2 (phase 7): free decorations
 
-// Conversion des photos d'une version précédente (sauvegarde du navigateur, fichier de projet),
-// à appeler avant validateBoardState. Version 1 : décorations posées automatiquement, retirées en
-// phase 7 ; Mayrik n'a pas besoin de les retrouver (22/11) : le plateau s'ouvre sans décoration.
+// Conversion of snapshots from a previous version (browser save, project file),
+// to be called before validateBoardState. Version 1: automatically placed decorations, removed in
+// phase 7; Mayrik does not need to get them back (22/11): the board opens without decorations.
 function upgradeBoardState(s) {
   if (s && typeof s === 'object' && s.version === 1) return Object.assign({}, s, { version: 2, decorations: [] });
   return s;
 }
 
-// Photo complète et indépendante (copie profonde, convertible en JSON) de tout ce
-// que l'utilisateur a choisi. L'image de titre personnalisée n'en fait pas partie :
-// trop lourde pour une photo prise à chaque clic, elle sera gérée à part (IndexedDB,
-// Phase 4 du plan).
+// Full, independent snapshot (deep copy, convertible to JSON) of everything
+// the user has chosen. The custom title image is not part of it:
+// too heavy for a snapshot taken at every click, it is handled separately (IndexedDB,
+// Phase 4 of the plan).
 function getBoardState() {
   return {
     version: BOARD_STATE_VERSION,
@@ -52,8 +52,8 @@ function getBoardState() {
   };
 }
 
-// Vérifie qu'une photo (venue d'une sauvegarde, d'un fichier…) est utilisable :
-// renvoie un message d'erreur, ou null si elle est valable.
+// Checks that a snapshot (coming from a save, a file…) is usable:
+// returns an error message, or null if it is valid.
 function validateBoardState(s) {
   if (!s || typeof s !== 'object') return 'not an object';
   if (s.version !== BOARD_STATE_VERSION) return 'unknown version ' + s.version;
@@ -68,8 +68,8 @@ function validateBoardState(s) {
   return null;
 }
 
-// Remet le plateau exactement dans l'état d'une photo, puis émet 'restore'.
-// Lève une erreur si la photo n'est pas valable (rien n'est alors modifié).
+// Puts the board back exactly in the state of a snapshot, then emits 'restore'.
+// Throws an error if the snapshot is not valid (nothing is modified then).
 function setBoardState(s) {
   const err = validateBoardState(s);
   if (err) throw new Error('Invalid board state: ' + err);

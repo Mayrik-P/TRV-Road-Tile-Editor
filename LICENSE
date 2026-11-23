@@ -1,17 +1,70 @@
-Copyright © 2026 Mayrik Padey. All rights reserved.
+TRV Road Tile Editor — licensing
+================================
 
-This repository contains the source code and original artwork (including
-scans made by the author) for TRV Road Tile Editor, a fan-made tool for
-Thunder Road: Vendetta, whose free distribution is authorized by the game's
-publisher (Restoration Games, LLC).
+Copyright © 2026 Mayrik PADEY.
 
-Unless prior written permission is granted by the author, no part of this
-repository — source code, images, or any other file it contains — may be
-copied, modified, redistributed, sublicensed, or used for commercial
-purposes, in whole or in part.
+TRV Road Tile Editor is a free, non-commercial fan-made tool for the board games
+Thunder Road: Vendetta and Ignition. Its free distribution is authorized by the games'
+publisher, Restoration Games, LLC. Different parts of this repository are covered by
+different licenses (layout of the REUSE specification, https://reuse.software):
 
-The application published at
-https://mayrik-p.github.io/TRV-Road-Tile-Editor/ may be freely used by end
-users for its intended purpose (creating custom road tiles, personal use
-only). This permission does not extend to the underlying source code or
-artwork themselves.
+
+1. Program code — PolyForm Noncommercial License 1.0.0
+-------------------------------------------------------
+
+All source code written for this project (index.html, css/, js/ except js/vendor/,
+tools/) is licensed under the PolyForm Noncommercial License 1.0.0:
+LICENSES/PolyForm-Noncommercial-1.0.0.md
+(https://polyformproject.org/licenses/noncommercial/1.0.0)
+
+You may use, copy, modify and share the code for any non-commercial purpose.
+You may not use it for commercial purposes. Anyone who gets a copy of any part of the
+code must also get the license terms and the following notices (same practice as other
+fan projects under this license: the scope of the license travels with every copy):
+
+Required Notice: Copyright 2026 Mayrik PADEY, original author of TRV Road Tile Editor (https://github.com/Mayrik-P/TRV-Road-Tile-Editor).
+Required Notice: This license applies only to the original source code of TRV Road Tile Editor authored by Mayrik PADEY and its contributors.
+Required Notice: It does not cover images, artwork, fonts, sounds or other media, nor third-party software, names or trademarks; Thunder Road: Vendetta and Ignition artwork and trademarks belong to Restoration Games, LLC. Excluded materials remain subject to their respective rights and licenses.
+
+
+2. Original artwork and documentation — CC BY-NC-SA 4.0
+-------------------------------------------------------
+
+All images created by Mayrik PADEY for this project (every image that is not a
+reproduction of a Thunder Road: Vendetta or Ignition game component) and the project
+documentation (README.md, CONTRIBUTING.md, ROADMAP.md, docs/) are licensed under the
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License:
+LICENSES/CC-BY-NC-SA-4.0.txt
+(https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+You must credit Mayrik PADEY, you may not use this material for commercial purposes,
+and adapted versions must be shared under the same license.
+
+
+3. Not covered by these licenses
+--------------------------------
+
+- Thunder Road: Vendetta and Ignition artwork: the graphic elements reproduced from
+  the games are © Restoration Games, LLC and are used with permission. They are NOT
+  licensed under the terms above; you need Restoration Games' permission to reuse them.
+  Thunder Road: Vendetta, Ignition and all associated trade dress are trademarks of
+  Restoration Games, LLC.
+- Third-party components keep their own licenses, listed in the app's Credits page
+  (js/credits.js): fonts (SIL Open Font License 1.1, fonts/*/OFL.txt), howler.js and
+  jsPDF (MIT), idb-keyval (Apache License 2.0), sound effects (Creative Commons 0,
+  sounds/CREDITS.md).
+
+
+Exported tiles
+--------------
+
+Boards exported with the app contain Restoration Games artwork: they are intended for
+personal use only.
+
+
+Contributions
+-------------
+
+By submitting a contribution (pull request, code, image or text), you agree that it is
+licensed under the same terms as the part of the project it belongs to (see
+CONTRIBUTING.md).
