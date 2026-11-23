@@ -18,7 +18,7 @@ const fs = require('fs'), path = require('path');
 
 const [baseUrl, outDir, refDir] = process.argv.slice(2);
 if (!baseUrl || !outDir) {
-  console.error('Usage : node tools/check-app.js <url> <dossier-sortie> [<dossier-référence>]');
+  console.error('Usage: node tools/check-app.js <url> <output-folder> [<reference-folder>]');
   process.exit(2);
 }
 fs.mkdirSync(outDir, { recursive: true });
@@ -95,7 +95,7 @@ async function paintAndExport(browser, format) {
   await page.evaluate(() => buildBoard());
   await exportTo(page, rebuilt);
   const inc = await comparePng(browser, rebuilt, file);
-  checks.push({ name: `redessin complet contre mise à jour case par case : écart max ${inc.maxDelta || 0}/255 sur ${inc.diff || 0} pixels (toléré : 1/255)`,
+  checks.push({ name: `full redraw versus cell-by-cell update: max difference ${inc.maxDelta || 0}/255 over ${inc.diff || 0} pixels (tolerated: 1/255)`,
                 ok: inc.identical || (inc.maxDelta || 0) <= 1 });
 
   if (hasState) {
@@ -104,7 +104,7 @@ async function paintAndExport(browser, format) {
     //    a single 'new-board'.
     const expected = cells.filter(c => c.type !== initial).length + 1;
     const got = await page.evaluate(() => window.__changes);
-    checks.push({ name: `signal 'cell' émis ${got.cell} fois (attendu ${expected}), 'new-board' ${got['new-board']} (attendu 1)`,
+    checks.push({ name: `'cell' signal emitted ${got.cell} times (expected ${expected}), 'new-board' ${got['new-board']} (expected 1)`,
                   ok: got.cell === expected && got['new-board'] === 1 });
     // 2. Snapshot -> JSON -> new empty board -> restoration: same state, same export.
     const rt = await page.evaluate(f => {
@@ -114,7 +114,7 @@ async function paintAndExport(browser, format) {
       setBoardState(snap);
       return { emptied, same: JSON.stringify(getBoardState()) === JSON.stringify(snap) };
     }, format);
-    checks.push({ name: 'restauration : plateau vidé puis état relu à l\'identique', ok: rt.emptied && rt.same });
+    checks.push({ name: 'restore: board emptied then state read back identically', ok: rt.emptied && rt.same });
     const file2 = path.join(outDir, format + '-restored.png');
     await exportTo(page, file2);
     const cmp = await comparePng(browser, file2, rebuilt);
@@ -127,7 +127,7 @@ async function paintAndExport(browser, format) {
       try { setBoardState(s); } catch (e) { refused = true; }
       return refused && JSON.stringify(getBoardState()) === before;
     });
-    checks.push({ name: 'photo abîmée refusée sans rien modifier', ok: bad });
+    checks.push({ name: 'damaged snapshot refused without changing anything', ok: bad });
   }
   await page.close();
   return { file, errors, checks };
@@ -164,13 +164,13 @@ async function comparePng(browser, a, b) {
     const { file, errors, checks } = await paintAndExport(browser, format);
     console.log(`${format} : export ${path.basename(file)} en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
     if (errors.length) { failed = true; console.log('  ERREURS de la page :', errors); }
-    for (const c of checks) { if (!c.ok) failed = true; console.log(`  ${c.ok ? 'ok' : 'ÉCHEC'} : ${c.name}`); }
+    for (const c of checks) { if (!c.ok) failed = true; console.log(`  ${c.ok ? 'ok' : 'FAIL'} : ${c.name}`); }
     if (refDir) {
       const res = await comparePng(browser, file, path.join(refDir, format + '.png'));
-      if (res.identical) console.log('  identique à la référence (même fichier, octet par octet)');
-      else if (res.sizeMismatch) { failed = true; console.log('  TAILLE DIFFÉRENTE :', res.sizeMismatch); }
-      else if (res.diff === 0) console.log('  mêmes pixels que la référence (fichiers encodés différemment)');
-      else { failed = true; console.log(`  ÉCART : ${res.diff} pixels différents sur ${res.total} (écart max ${res.maxDelta}/255)`); }
+      if (res.identical) console.log('  identical to the reference (same file, byte for byte)');
+      else if (res.sizeMismatch) { failed = true; console.log('  DIFFERENT SIZE:', res.sizeMismatch); }
+      else if (res.diff === 0) console.log('  same pixels as the reference (files encoded differently)');
+      else { failed = true; console.log(`  DIFFERENCE: ${res.diff} pixels differ out of ${res.total} (max difference ${res.maxDelta}/255)`); }
     }
   }
   await browser.close();

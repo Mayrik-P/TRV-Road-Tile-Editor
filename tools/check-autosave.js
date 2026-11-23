@@ -11,7 +11,7 @@ const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path'), zlib = require('zlib');
 const base = process.argv[2] || 'http://localhost:8765/';
 const url = new URL('index.html', base).href;
-const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉCHEC'} : ${name}`);
+const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'FAIL'} : ${name}`);
 
 // Noise PNG (incompressible) with the dimensions of the title band: > 5 MB.
 function noisePng(w, h) {
@@ -48,15 +48,15 @@ function noisePng(w, h) {
   await p.waitForTimeout(1500); // IndexedDB write (asynchronous)
 
   await p.reload();
-  check('après rechargement : bouton Continue visible', await continueVisible());
+  check('after reload: Continue button visible', await continueVisible());
   check('Continue indique le format et le nom', (await p.textContent('#board-type-continue-desc')) === 'Vendetta — DUST BOWL');
   await p.click('#board-type-continue'); await ready();
-  check('Continue : plateau, variantes et nom retrouvés à l\'identique', await state() === before);
+  check('Continue: board, variants and name restored identically', await state() === before);
   await p.waitForFunction(() => TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE, null, { timeout: 30000 }).catch(() => {});
-  check(`Continue : grande image de titre retrouvée (${bigMb.toFixed(1)} Mo)`, await p.evaluate(n => !!TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE && TITLE_IMAGE.src.length === n, titleSrc));
-  check('Continue : Undo grisé (la restauration est le point de départ)', await p.evaluate(() => document.getElementById('undo-btn').disabled));
+  check(`Continue: large title image restored (${bigMb.toFixed(1)} MB)`, await p.evaluate(n => !!TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE && TITLE_IMAGE.src.length === n, titleSrc));
+  check('Continue: Undo greyed out (the restore is the starting point)', await p.evaluate(() => document.getElementById('undo-btn').disabled));
   await paint('salt', 30); await p.keyboard.press('Control+z');
-  check('Continue puis une case, Ctrl+Z : retour à l\'état restauré', await state() === before);
+  check('Continue then a cell, Ctrl+Z: back to the restored state', await state() === before);
 
   // New board while there was one: Ctrl+Z brings back the old one
   await p.reload();
@@ -68,15 +68,15 @@ function noisePng(w, h) {
   // Title image reset to default: no longer restored
   await p.click('#reset-title-btn'); await p.waitForTimeout(1000);
   await p.reload(); await p.click('#board-type-continue'); await ready(); await p.waitForTimeout(1500);
-  check('image remise par défaut : plus restaurée ensuite', await p.evaluate(() => !TITLE_IMAGE || TITLE_IMAGE === DEFAULT_TITLE_IMAGE));
+  check('image reset to default: no longer restored afterwards', await p.evaluate(() => !TITLE_IMAGE || TITLE_IMAGE === DEFAULT_TITLE_IMAGE));
 
   // Damaged save: ignored
   await p.evaluate(() => localStorage.setItem(AUTOSAVE_KEY, '{"version":1,"boardType":"vendetta","board":[1,2'));
   await p.reload();
-  check('sauvegarde abîmée : pas de bouton Continue', !(await continueVisible()));
+  check('damaged save: no Continue button', !(await continueVisible()));
   await p.evaluate(() => localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ version: 99, boardType: 'vendetta', board: [], cellVariant: [] })));
   await p.reload();
-  check('sauvegarde d\'une version inconnue : ignorée', !(await continueVisible()));
+  check('save from an unknown version: ignored', !(await continueVisible()));
   check('aucune erreur JavaScript', errs.length === 0);
   await ctx.close();
 
@@ -93,5 +93,5 @@ function noisePng(w, h) {
   check('stockage interdit : la case se peint, aucune erreur', await q.evaluate(() => board[5]) === 'road' && errs2.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length || errs2.length) console.log(errs, errs2);
-  process.exit(results.some(r => r.startsWith('ÉCHEC')) ? 1 : 0);
+  process.exit(results.some(r => r.startsWith('FAIL')) ? 1 : 0);
 })();
