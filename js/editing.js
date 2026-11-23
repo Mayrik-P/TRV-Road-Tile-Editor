@@ -1,18 +1,18 @@
-// ===== js/editing.js — Modification du plateau : mise à jour incrémentale d'une case (updateCell),
-// palette des types de cases, remise à zéro.
+// ===== js/editing.js — Board editing: incremental update of a cell (updateCell),
+// palette of tile types, reset.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference). Code run
+// when a file loads can only use what is declared in that file or the previous ones;
+// functions, called later, see everything.
 
-// ---- Mise à jour incrémentale : ne retouche que la case modifiée et ses voisines ----
-// directement concernées par une transition, au lieu de tout reconstruire (buildBoard()).
-// C'est ce qui règle la lenteur qui grandissait avec le nombre de transitions sur le plateau.
-// Vide entièrement une couche (par id) puis la reconstruit via la fonction de
-// rendu fournie — factorise un motif utilisé pour les couches qu'il est plus
-// simple de toujours recalculer en entier (décorations, edges route) plutôt
-// que de patcher au cas par cas, vu leur coût négligeable (48 cases).
+// ---- Incremental update: only touches the modified cell and its neighbours ----
+// directly concerned by a transition, instead of rebuilding everything (buildBoard()).
+// This fixes the slowness that grew with the number of transitions on the board.
+// Empties a layer entirely (by id) then rebuilds it through the supplied
+// render function — factors out a pattern used for the layers that are simpler
+// to always recompute in full (decorations, road edges) rather than patch
+// case by case, given their negligible cost (48 cells).
 function rebuildLayer(layerId, renderFn) {
   const g = document.getElementById(layerId);
   while (g.firstChild) g.removeChild(g.firstChild);
@@ -22,9 +22,9 @@ function rebuildLayer(layerId, renderFn) {
 function updateCell(idx, newType) {
   const oldType = board[idx];
   const fam = overlayFamily(newType);
-  // Un clic sur une case déjà du même type ne fait normalement rien — sauf pour les
-  // types à variantes (Impassable/Oil/Fire), où c'est justement le geste qui permet
-  // à l'utilisateur de faire défiler le visuel jusqu'au suivant.
+  // A click on a cell that already has the same type normally does nothing — except for
+  // types with variants (Impassable/Oil/Fire), where that is precisely the gesture that lets
+  // the user cycle the visual to the next one.
   if (oldType === newType && !fam) return;
   const row = Math.floor(idx / COLS), col = idx % COLS;
   board[idx] = newType;
@@ -40,7 +40,7 @@ function updateCell(idx, newType) {
 
   const oldBase = baseId(oldType), newBase = baseId(newType);
 
-  // --- Appartenance aux calques de texture (clip union par type) ---
+  // --- Membership in the texture layers (union clip per type) ---
   if (oldBase !== newBase) {
     if (TEXTURES[oldBase]) {
       const oldClip = defs.querySelector(`#tex-clip-${oldBase}`);
@@ -66,8 +66,8 @@ function updateCell(idx, newType) {
     }
   }
 
-  // --- Transitions : on retire celles qui touchaient cette case, puis on ne
-  // recalcule que ses voisines directes (au lieu de tout le plateau) ---
+  // --- Transitions: remove those that touched this cell, then only
+  // recompute its direct neighbours (instead of the whole board) ---
   [...gTransitions.querySelectorAll('[data-pair]')].forEach(el => {
     const [ca, ra, cb, rb] = el.dataset.pair.split(',').map(Number);
     if ((ca === col && ra === row) || (cb === col && rb === row)) {
@@ -81,7 +81,7 @@ function updateCell(idx, newType) {
   });
   pairsForCell(col, row).forEach(([A, B]) => drawTransition(gTransitions, defs, A, B));
 
-  // --- Remplissage plat / bordure pour cette case uniquement ---
+  // --- Flat fill / border for this cell only ---
   [gFlatFill, gBorders].forEach(g => {
     const el = g.querySelector(`[data-cell="${idx}"]`);
     if (el) el.remove();
@@ -98,7 +98,7 @@ function updateCell(idx, newType) {
     }));
   }
 
-  // --- Overlay (hazard/oil/ramp/multiramp/rock/fire) pour cette case uniquement ---
+  // --- Overlay (hazard/oil/ramp/multiramp/rock/fire) for this cell only ---
   const oldOverlay = gOverlays.querySelector(`[data-cell="${idx}"]`);
   if (oldOverlay) oldOverlay.remove();
   const wrap = mkEl('g', {'data-cell': idx});
@@ -111,8 +111,8 @@ function updateCell(idx, newType) {
   if (newType === 'off_mine')   drawMinefield(wrap, col, row);
   if (wrap.childNodes.length) insertInIsometricOrder(gOverlays, wrap, idx);
 
-  // --- Débordement Route <-> Autre : dépend des voisins directs, mais on
-  // recalcule tout le plateau par simplicité (coût négligeable, 48 cases).
+  // --- Road <-> Other overflow: depends on the direct neighbours, but we
+  // recompute the whole board for simplicity (negligible cost, 48 cells).
   rebuildLayer('layer-roadedges', renderAllRoadEdges);
 
   notifyBoardChange('cell', { idx, oldType, newType });
@@ -151,38 +151,38 @@ function buildPalette() {
       sw.appendChild(dot);
     }
     btn.appendChild(sw);
-    // Libellé dans un <span> : sa 1re lettre est soulignée (raccourci clavier, js/keyboard.js).
+    // Label in a <span>: its first letter is underlined (keyboard shortcut, js/keyboard.js).
     const lbl = document.createElement('span');
     lbl.className = 'tb-label';
     lbl.textContent = t.label;
     btn.appendChild(lbl);
     btn.title = 'Shortcut: ' + t.label[0].toUpperCase();
     btn.onclick = () => selectTileType(t.id);
-    btn.dataset.sound = 'palette'; // son du choix dans la palette (js/sounds.js)
+    btn.dataset.sound = 'palette'; // sound of the palette choice (js/sounds.js)
     pal.appendChild(btn);
   });
-  // Texte d'aide des types de case, sous leur rangée, visible en mode pinceau seulement (comme celui
-  // des décorations ; idée de Mayrik, 22/11 : remplace la ligne d'aide au-dessus de la palette).
+  // Help text for the tile types, under their row, visible in brush mode only (like the one
+  // for decorations; Mayrik's idea, 22/11: replaces the help line above the palette).
   const help = document.createElement('p');
   help.className = 'palette-help tile-help';
   help.innerHTML = 'Click or tap a space to place the selected type · drag to paint several spaces · click again on '
     + 'Impassable, Oil or Fire to change its look<span class="help-keys"> · press <kbd>?</kbd> for keyboard shortcuts</span>';
   pal.appendChild(help);
-  buildDecorPalette(); // rangée « Decorations » (js/decor.js)
+  buildDecorPalette(); // "Decorations" row (js/decor.js)
 }
 
-// Point d'entrée unique du choix du type de case (palette, et plus tard clavier) —
-// idée reprise de la PR #2 de ChessMess.
+// Single entry point for choosing the tile type (palette, and later keyboard) —
+// idea taken from ChessMess's PR #2.
 function selectTileType(id) {
-  leaveDecorMode(); // retour au pinceau (js/decor.js)
+  leaveDecorMode(); // back to the brush (js/decor.js)
   sel = id;
   document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
   document.getElementById('tb-' + id)?.classList.add('sel');
 }
 
-// « Clear board » (tranche 4c, remplace « Reset road tile ») : toutes les cases remises en
-// DEFAULT_TILE sans quitter l'éditeur ; nom, numéro et image de titre gardés. Une seule
-// étape d'annulation (beginAction / endAction) : Ctrl+Z ramène tout le plateau.
+// "Clear board" (tranche 4c, replaces "Reset road tile"): all cells put back to
+// DEFAULT_TILE without leaving the editor; name, number and title image kept. A single
+// undo step (beginAction / endAction): Ctrl+Z brings the whole board back.
 function clearBoard() {
   const label = TILES.find(t => t.id === DEFAULT_TILE).label;
   const ok = confirm(
@@ -193,13 +193,13 @@ function clearBoard() {
   beginAction('clear');
   try {
     for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE);
-    clearDecorations(); // décorations retirées aussi, dans la même étape (choix de Mayrik, 22/11)
+    clearDecorations(); // decorations removed too, in the same step (Mayrik's choice, 22/11)
   } finally { endAction(); }
 }
 
-// « Home » (tranche 4c) : retour à l'écran d'accueil sans rien perdre — le plateau reste en
-// mémoire et sauvegardé ; « Continue » y revient avec son historique, « Vendetta » /
-// « Ignition » démarrent un nouveau plateau (Ctrl+Z ramène l'ancien).
+// "Home" (tranche 4c): back to the home screen without losing anything — the board stays in
+// memory and saved; "Continue" returns to it with its history, "Vendetta" /
+// "Ignition" start a new board (Ctrl+Z brings the old one back).
 function goHome() {
   document.getElementById('board-type-picker').style.display = 'flex';
   refreshContinueButton();

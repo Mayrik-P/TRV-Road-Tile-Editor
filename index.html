@@ -4,9 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TRV Road Tile Editor</title>
-<link rel="stylesheet" href="css/app.css?v=6b318bd6af"/>
-<!-- Style TRV-Pocket (phase 3, validé par Mayrik le 19/11) : surcharge css/app.css. -->
-<link rel="stylesheet" href="css/paper-ui.css?v=6e54958a0c"/>
+<link rel="stylesheet" href="css/app.css?v=efd7e928c4"/>
+<!-- TRV-Pocket style (phase 3, validated by Mayrik on 19/11): overrides css/app.css. -->
+<link rel="stylesheet" href="css/paper-ui.css?v=5a5f04296b"/>
 </head>
 <body>
 <div id="board-type-picker">
@@ -37,7 +37,7 @@
       <button class="btn" id="open-project-btn" onclick="document.getElementById('open-project-input').click()">Open project file</button>
       <input id="open-project-input" type="file" accept=".trvtile,application/json" style="display:none" onchange="openProjectFile(this)"/>
     </div>
-    <!-- Crédits (phase 6 bis, comme TRV-Pocket) : mention courte + bouton ; contenu dans js/credits.js -->
+    <!-- Credits (phase 6 bis, as in TRV-Pocket): short mention + button; content in js/credits.js -->
     <div id="home-credits">
       <p id="home-notice"></p>
       <button class="btn" id="credits-btn" onclick="openCredits()">Credits</button>
@@ -132,23 +132,23 @@
     <button class="btn" id="shortcut-help-close" onclick="toggleShortcutHelp(false)">Close</button>
   </div>
 </div>
-<script src="js/config.js?v=49125903a8"></script>
-<script src="js/state.js?v=316c607231"></script>
-<script src="js/history.js?v=427dbf1471"></script>
+<script src="js/config.js?v=d43598d2c5"></script>
+<script src="js/state.js?v=f4fc0d4b88"></script>
+<script src="js/history.js?v=50a8b5a87a"></script>
 <script src="js/vendor/idb-keyval-6.2.1.js?v=1f890e0f76"></script>
-<script src="js/geometry.js?v=7f55f95472"></script>
-<script src="js/build-board.js?v=b3649b5173"></script>
+<script src="js/geometry.js?v=1b4f2f64c1"></script>
+<script src="js/build-board.js?v=daed99e7c8"></script>
 <script src="js/render-layers.js?v=ac068dbf3f"></script>
-<script src="js/editing.js?v=e65eee2774"></script>
-<script src="js/brush.js?v=35c1e75ba7"></script>
-<script src="js/decor.js?v=eb327b64c6"></script>
-<script src="js/keyboard.js?v=b5cba7f2d4"></script>
-<script src="js/export.js?v=87913de56c"></script>
-<script src="js/assets.js?v=a711f9ee68"></script>
+<script src="js/editing.js?v=b0c55d4ebf"></script>
+<script src="js/brush.js?v=4d099cfccd"></script>
+<script src="js/decor.js?v=7a1717f7fc"></script>
+<script src="js/keyboard.js?v=516dfcb8a6"></script>
+<script src="js/export.js?v=2cab75976d"></script>
+<script src="js/assets.js?v=92e57fade1"></script>
 <script src="js/credits.js?v=0772fce6f2"></script>
-<script src="js/ui.js?v=329aaff6e3"></script>
-<script src="js/autosave.js?v=5e6ead7a2a"></script>
-<script src="js/project.js?v=cedb879da2"></script>
+<script src="js/ui.js?v=90fdc0380f"></script>
+<script src="js/autosave.js?v=13d2e5971f"></script>
+<script src="js/project.js?v=52027bb2b9"></script>
 <script src="js/vendor/howler-2.2.4.min.js?v=736c339444"></script>
 <script src="js/sounds.js?v=384ff112d1"></script>
 </body>

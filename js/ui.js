@@ -1,28 +1,28 @@
-// ===== js/ui.js — Interface : ajustement du titre de l'appli à la largeur de l'écran, choix du
-// format de plateau (écran d'accueil).
+// ===== js/ui.js — Interface: fitting the app title to the screen width, choosing the
+// board format (home screen).
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference). Code run
+// when a file loads can only use what is declared in that file or the previous ones;
+// functions, called later, see everything.
 
-// Le bloc titre+sous-titre (.app-title-stack) a une taille de police fixe en px
-// (calibrée pour le contour/l'ombrage, voir CSS) — sur un écran étroit ça peut
-// déborder. On mesure sa largeur réelle après rendu et on le réduit avec un
-// simple scale() global si besoin (préserve exactement les proportions
-// contour/ombrage/skew déjà calibrées, contrairement à changer le font-size).
-// --fit-scale est une variable CSS lue par le transform de chaque contexte
-// (#title-band / #picker-title-band), donc l'échelle ne casse ni le translateX
-// de recentrage ni le skewX propre à chaque texte (transforms indépendants,
-// appliqués à des éléments différents).
-// transform:scale() ne change QUE le rendu visuel, jamais la taille de mise en
-// page — sans compensation, la bande grise autour (#title-band, qui se
-// dimensionne sur la mise en page) resterait à sa hauteur d'origine même avec
-// un titre visuellement réduit, laissant un vide disproportionné sur petit
-// écran. On compense avec une marge basse négative calculée (transform-origin
-// de .app-title-stack est "center top", donc le rétrécissement libère de
-// l'espace en BAS de la boîte — margin-bottom négatif = solution 100% standard,
-// sans dépendre d'une propriété CSS non-standard comme zoom.
+// The title + subtitle block (.app-title-stack) has a fixed font size in px
+// (calibrated for the outline/shadow, see CSS) — on a narrow screen it can
+// overflow. We measure its real width after rendering and shrink it with a
+// single global scale() if needed (this keeps the already-calibrated
+// outline/shadow/skew proportions exactly, unlike changing the font-size).
+// --fit-scale is a CSS variable read by the transform of each context
+// (#title-band / #picker-title-band), so the scale breaks neither the
+// recentering translateX nor the skewX specific to each text (independent
+// transforms, applied to different elements).
+// transform:scale() changes ONLY the visual rendering, never the layout size —
+// without compensation, the grey band around it (#title-band, which is sized
+// by the layout) would keep its original height even with a visually reduced
+// title, leaving a disproportionate gap on small screens. We compensate with a
+// computed negative bottom margin (the transform-origin of .app-title-stack is
+// "center top", so shrinking frees space at the BOTTOM of the box — a negative
+// margin-bottom is a 100% standard solution, with no reliance on a non-standard
+// CSS property such as zoom.
 function fitTitleStack(stack, getAvailableWidth) {
   if (!stack) return;
   stack.style.setProperty('--fit-scale', '1');
@@ -40,7 +40,7 @@ function fitTitleStack(stack, getAvailableWidth) {
 }
 
 function fitAllTitleStacks() {
-  const SAFETY_MARGIN = 16; // évite que le texte touche pile le bord du conteneur
+  const SAFETY_MARGIN = 16; // keeps the text from touching the container edge exactly
 
   const picker = document.getElementById('board-type-picker');
   if (picker && picker.style.display !== 'none') {
@@ -60,9 +60,9 @@ function fitAllTitleStacks() {
 }
 window.addEventListener('resize', fitAllTitleStacks);
 
-// Le plateau/la palette ne se construisent qu'une fois le format choisi (voir
-// l'écran de sélection Vendetta/Ignition) — pas d'appel direct ici.
-// Nouveau plateau vierge (tout en DEFAULT_TILE, Off-Road) du format choisi.
+// The board/palette are only built once the format is chosen (see the
+// Vendetta/Ignition selection screen) — no direct call here.
+// New blank board (all DEFAULT_TILE, Off-Road) of the chosen format.
 function chooseBoardType(type) {
   applyBoardType(type);
   board = Array(COLS * ROWS).fill(DEFAULT_TILE);
@@ -74,8 +74,8 @@ function chooseBoardType(type) {
   notifyBoardChange('new-board');
 }
 
-// Géométrie et champs propres à un format (Vendetta / Ignition), sans toucher au
-// contenu des cases — partagé par chooseBoardType et setBoardState (state.js).
+// Geometry and fields specific to a format (Vendetta / Ignition), without touching the
+// cell contents — shared by chooseBoardType and setBoardState (state.js).
 function applyBoardType(type) {
   BOARD_TYPE = type;
   COLS = BOARD_TYPES[type].cols;
@@ -83,19 +83,19 @@ function applyBoardType(type) {
   BANDS = computeBands();
   const rect = computeGameRect();
   GAME_X = rect.x; GAME_Y = rect.y; GAME_W = rect.w; GAME_H = rect.h;
-  document.getElementById('bwrap').classList.toggle('board-ignition', type === 'ignition'); // affichage (paper-ui.css)
-  setDisplayVariant(); // aperçus adaptés à la taille affichée de ce format (assets.js)
+  document.getElementById('bwrap').classList.toggle('board-ignition', type === 'ignition'); // display (paper-ui.css)
+  setDisplayVariant(); // previews matched to the displayed size of this format (assets.js)
   document.getElementById('name-field-group').style.display = (type === 'vendetta') ? '' : 'none';
   document.getElementById('number-field-group').style.display = (type === 'ignition') ? '' : 'none';
-  // Résolution conseillée pour l'image de titre : la taille exacte du cadre où elle est posée
-  // (titleImageBox, js/render-layers.js), qui change avec le format (8 ou 4 colonnes).
+  // Recommended resolution for the title image: the exact size of the frame it is placed in
+  // (titleImageBox, js/render-layers.js), which changes with the format (8 or 4 columns).
   const box = titleImageBox(), idealW = Math.round(box.w), idealH = Math.round(box.h);
   const idealText = `Ideal size: ${idealW} × ${idealH} px`;
   document.getElementById('title-img-tooltip').textContent = idealText;
-  refreshTitleImageWarning(); // même image, autre cadre : autre résolution (js/export.js)
+  refreshTitleImageWarning(); // same image, other frame: other resolution (js/export.js)
 }
 
-// Masque l'écran d'accueil, affiche l'éditeur et (re)dessine palette et plateau.
+// Hides the home screen, shows the editor and (re)draws the palette and board.
 function showEditor() {
   document.getElementById('board-type-picker').style.display = 'none';
   document.getElementById('app').style.display = '';
@@ -104,9 +104,9 @@ function showEditor() {
   fitAllTitleStacks();
 }
 
-// ===== Crédits (phase 6 bis, d'après TRV-Pocket) : fenêtre <dialog> native qui défile, construite
-// depuis CREDITS (js/credits.js) ; fermée par « Return », Échap (natif) ou un clic à côté.
-// Licences repliées (<details>), texte lu dans le fichier livré avec la ressource à la 1re ouverture.
+// ===== Credits (phase 6 bis, after TRV-Pocket): native scrolling <dialog> window, built
+// from CREDITS (js/credits.js); closed by "Return", Escape (native) or a click outside.
+// Licenses are collapsed (<details>), their text read from the file shipped with the resource on first opening.
 function buildCredits() {
   const C = CREDITS, body = document.getElementById('credits-body');
   body.textContent = '';
@@ -155,6 +155,6 @@ function closeCredits() {
   if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open');
 }
 
-// Clic sur le fond assombri (en dehors de la fenêtre) : ferme, comme la fenêtre d'export
+// Click on the dimmed backdrop (outside the window): closes, like the export window
 document.getElementById('credits').addEventListener('click', e => { if (e.target.id === 'credits') closeCredits(); });
 document.getElementById('home-notice').textContent = CREDITS.homeNotice;
