@@ -153,6 +153,11 @@ Le lire avant tout travail.
   `index.html`). **Lancer `python3 tools/stamp-assets.py` avant chaque commit** qui touche `css/` ou
   `js/` ; `--check` échoue si une empreinte est périmée. Tout nouveau fichier CSS / JS de la page est
   repris tout seul (chemins `css/…` et `js/…`).
+- **Licences et contributions (23/11)** : code sous PolyForm Noncommercial 1.0.0, images originales et
+  documentation sous CC BY-NC-SA 4.0, graphismes de Restoration Games exclus (`LICENSE`, textes dans
+  `LICENSES/`, rangement REUSE). Mayrik seul décideur ; règles publiques en anglais : `README.md`,
+  `CONTRIBUTING.md`, `ROADMAP.md` (à tenir à jour avec `docs/roadmap.md`), `CODE_OF_CONDUCT.md`,
+  modèles dans `.github/`. Toute demande de fusion externe se juge selon `CONTRIBUTING.md`.
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 

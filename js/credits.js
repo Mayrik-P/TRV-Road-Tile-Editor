@@ -55,9 +55,13 @@ const CREDITS = {
       ['idb-keyval', '© 2016 Jake Archibald (Apache License 2.0, below)'] ] },
     { title: 'Legal', lines: [
       'Thunder Road: Vendetta, Ignition and all associated trade dress are trademarks of Restoration Games, LLC.',
-      'Program code and original artwork © 2026 Mayrik PADEY. All rights reserved.' ] }
+      'Program code © 2026 Mayrik PADEY, under the PolyForm Noncommercial License 1.0.0. Original artwork and documentation © 2026 Mayrik PADEY, under CC BY-NC-SA 4.0. Free to use, modify and share for non-commercial purposes, crediting the original author (licenses below).',
+      'Source code and contributions: github.com/Mayrik-P/TRV-Road-Tile-Editor' ] }
   ],
   licenses: [
+    // (licences du projet lui-même, choix de Mayrik du 23/11 : LICENSE et LICENSES/)
+    { title: 'TRV Road Tile Editor code — PolyForm Noncommercial 1.0.0', file: 'LICENSES/PolyForm-Noncommercial-1.0.0.md' },
+    { title: 'TRV Road Tile Editor artwork and documentation — CC BY-NC-SA 4.0', file: 'LICENSES/CC-BY-NC-SA-4.0.txt' },
     { title: 'howler.js — MIT License', file: 'js/vendor/howler-LICENSE.txt' },
     { title: 'jsPDF — MIT License', file: 'js/vendor/jspdf-LICENSE.txt' },
     { title: 'idb-keyval — Apache License 2.0', file: 'js/vendor/idb-keyval-LICENCE.txt' },

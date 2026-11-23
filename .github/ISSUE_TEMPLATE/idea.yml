@@ -1,0 +1,31 @@
+name: Idea
+description: Suggest a new feature or an improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Please check [ROADMAP.md](https://github.com/Mayrik-P/TRV-Road-Tile-Editor/blob/main/ROADMAP.md) first.
+        Please do not start coding before the maintainer has agreed (see CONTRIBUTING.md).
+  - type: textarea
+    id: need
+    attributes:
+      label: What would you like to do with the editor?
+      description: Describe the need from a player's point of view, rather than a technical solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+    validations:
+      required: true
+  - type: dropdown
+    id: help
+    attributes:
+      label: Would you like to work on it yourself?
+      options:
+        - No, just suggesting
+        - Yes, once the idea is accepted
+    validations:
+      required: true
