@@ -1,17 +1,17 @@
-// VÉRIFICATION DU FICHIER DE PROJET .trvtile (tranche 4d) dans un vrai navigateur (Chromium via
-// Playwright) : « Save project » télécharge un fichier signé et versionné au nom du plateau,
-// avec l'image de titre personnalisée ; « Open project file » (accueil) le rouvre à
-// l'identique dans un AUTRE navigateur (contexte vierge) ; ouvert par-dessus un plateau en
-// cours, Ctrl+Z ramène l'ancien ; fichiers refusés sans rien modifier (pas un projet, abîmé,
-// version plus récente) ; le nom du PNG exporté suit toujours la même règle.
-// Usage (dépôt servi en HTTP) : node tools/check-project.js [http://localhost:8765/]
-// Code de sortie 1 au moindre échec ou à la moindre erreur JavaScript de la page.
+// CHECK OF THE .trvtile PROJECT FILE (slice 4d) in a real browser (Chromium via
+// Playwright): "Save project" downloads a signed, versioned file named after the board,
+// with the custom title image; "Open project file" (home) reopens it
+// identically in ANOTHER browser (blank context); opened over a board in
+// progress, Ctrl+Z brings back the old one; files rejected without changing anything (not a project, damaged,
+// newer version); the exported PNG name always follows the same rule.
+// Usage (repo served over HTTP): node tools/check-project.js [http://localhost:8765/]
+// Exit code 1 on the slightest failure or on any JavaScript error from the page.
 const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path');
 const base = process.argv[2] || 'http://localhost:8765/';
 const url = new URL('index.html', base).href;
 const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉCHEC'} : ${name}`);
-// Petit PNG valide (1 x 1 pixel rouge) comme image de titre personnalisée.
+// Small valid PNG (1 x 1 red pixel) as the custom title image.
 const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==', 'base64');
 
 (async () => {
@@ -27,7 +27,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const paint = async (p, type, idx) => { await p.click('#tb-' + type); const c = p.locator(`#bsvg [data-idx="${idx}"]`).first(); await c.scrollIntoViewIfNeeded(); const bb = await c.boundingBox(); await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2); };
   const state = p => p.evaluate(() => JSON.stringify(getBoardState()));
 
-  // ---- Enregistrer ----
+  // ---- Save ----
   const A = await open();
   await A.p.click('#board-type-vendetta'); await ready(A.p);
   await paint(A.p, 'road', 3); await paint(A.p, 'rock', 12); await paint(A.p, 'rock', 12); await paint(A.p, 'mud', 21);
@@ -39,7 +39,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const file = path.join(tmp, dl.suggestedFilename()); await dl.saveAs(file);
   check(`nom du fichier : ${dl.suggestedFilename()}`, dl.suggestedFilename() === 'DUST-BOWL.trvtile');
   const proj = JSON.parse(fs.readFileSync(file, 'utf8'));
-  check('fichier signé et versionné (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 2); // 2 depuis la phase 7 (décorations libres)
+  check('fichier signé et versionné (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 2); // 2 since phase 7 (free decorations)
   check('fichier : plateau complet et image de titre intégrée', JSON.stringify(proj.board) === saved && typeof proj.titleImage === 'string' && proj.titleImage.startsWith('data:image/png'));
   await A.p.click('#export-open-btn');
   await A.p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
@@ -48,7 +48,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   check('enregistrement : aucune erreur JavaScript', A.errs.length === 0);
   await A.ctx.close();
 
-  // ---- Ouvrir dans un autre navigateur (contexte vierge) ----
+  // ---- Open in another browser (blank context) ----
   const B = await open();
   check('accueil : bouton Open project file visible', await B.p.isVisible('#open-project-btn'));
   await B.p.setInputFiles('#open-project-input', file); await ready(B.p);
@@ -56,7 +56,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   await B.p.waitForFunction(() => TITLE_IMAGE && TITLE_IMAGE !== DEFAULT_TITLE_IMAGE, null, { timeout: 10000 }).catch(() => {});
   check('ouverture : image de titre retrouvée', await B.p.evaluate(src => TITLE_IMAGE && TITLE_IMAGE.src === src, proj.titleImage));
   check('ouverture dans une page neuve : Undo grisé', await B.p.evaluate(() => document.getElementById('undo-btn').disabled));
-  // Par-dessus un plateau en cours : Ctrl+Z ramène l'ancien
+  // Over a board in progress: Ctrl+Z brings back the old one
   await B.p.click('#home-btn'); await B.p.click('#board-type-ignition'); await ready(B.p);
   await paint(B.p, 'glass', 5);
   const ign = await state(B.p);
@@ -65,8 +65,8 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   check('ouvert par-dessus un plateau Ignition : projet chargé', await state(B.p) === saved);
   await B.p.keyboard.press('Control+z');
   check('puis Ctrl+Z : le plateau Ignition revient', await state(B.p) === ign);
-  // Fichiers refusés sans rien modifier (un seul écouteur d'alerte, permanent : un fichier
-  // accepté à tort n'ouvre pas d'alerte et ne doit pas fausser le contrôle suivant)
+  // Files rejected without changing anything (a single, permanent alert listener: a file
+  // wrongly accepted opens no alert and must not skew the next check)
   let lastDialog = '';
   B.p.on('dialog', d => { lastDialog = d.message(); d.accept(); });
   const bad = async (name, content, expectWord) => {

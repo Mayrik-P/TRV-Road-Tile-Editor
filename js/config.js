@@ -1,10 +1,10 @@
-// ===== js/config.js — Constantes et état du plateau : types de cases, géométrie à 300 dpi
-// (formats Vendetta / Ignition), variantes d'overlay, polices du titre.
+// ===== js/config.js — Constants and board state: tile types, 300 dpi geometry
+// (Vendetta / Ignition formats), overlay variants, title fonts.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope
+// and are loaded in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in that file or the previous
+// ones; functions, called later, see everything.
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -45,18 +45,18 @@ function tcolor(id) { return BOARD_FILL_OVERRIDE[id] || TILES.find(t => t.id ===
 const TEXTURES = {};    // Image objects for SVG display
 const IMAGES_B64 = {};  // base64 strings for PNG export
 let TITLE_IMAGE = null;
-// Référence conservée séparément de TITLE_IMAGE (qui peut être remplacée par
-// l'utilisateur) pour pouvoir revenir à l'image par défaut via "Reset title image".
+// Reference kept separately from TITLE_IMAGE (which the user may replace)
+// so we can go back to the default image via "Reset title image".
 let DEFAULT_TITLE_IMAGE = null;
-// Vrai une fois que l'image de titre par défaut est fetchée ET décodée (que
-// l'utilisateur l'ait déjà remplacée par la sienne ou non) — nécessaire pour
-// l'export même si elle n'est plus affichée, voir allImagesReady().
+// True once the default title image is fetched AND decoded (whether or not
+// the user has already replaced it with their own) — needed for the
+// export even if it is no longer displayed, see allImagesReady().
 let defaultTitleImageDecoded = false;
 // ---- Board geometry (300dpi) ----
-// Vendetta = A3 paysage (420×297mm @300dpi = 4961×3508px), Ignition = A4 portrait
-// (210×297mm @300dpi = 2481×3508px) — même hauteur dans les deux cas (297mm),
-// seule la largeur change. COLS/VW deviennent donc des variables dépendant du
-// type de plateau choisi, au lieu de constantes figées pour 8 colonnes.
+// Vendetta = A3 landscape (420×297mm @300dpi = 4961×3508px), Ignition = A4 portrait
+// (210×297mm @300dpi = 2481×3508px) — same height in both cases (297mm),
+// only the width changes. COLS/VW are therefore variables depending on the
+// chosen board type, instead of constants fixed for 8 columns.
 const VH = 3508, NOTCH = 50, CELL_SLOT = 493, ROWS = 6;
 const BOARD_TYPES = {
   vendetta: { cols: 8, vw: 4961, label: 'Vendetta' },
@@ -66,14 +66,14 @@ let BOARD_TYPE = 'vendetta';
 let COLS = BOARD_TYPES[BOARD_TYPE].cols;
 let VW   = BOARD_TYPES[BOARD_TYPE].vw;
 
-// Décalage horizontal du quinconce : la moitié de l'écart entre les deux
-// positions alternées de gauche des lignes. Propriété intrinsèque de la forme
-// des cases (le chevron/notch), indépendante de la largeur du plateau — donc
-// une constante, quel que soit COLS/VW.
+// Horizontal offset of the staggered layout: half the gap between the two
+// alternating left positions of the rows. Intrinsic property of the cell shape
+// (the chevron/notch), independent of the board width — hence a
+// constant, whatever COLS/VW.
 const QUINCONCE_HALF_SHIFT = 97.5;
 
-// Hauteurs de ligne (haut/bas) : ne dépendent que de ROWS, jamais de COLS —
-// mêmes valeurs quel que soit le type de plateau.
+// Row heights (top/bottom): depend only on ROWS, never on COLS —
+// same values whatever the board type.
 const ROW_TOPS_BOTS = [
   {top:164,  bot:620},  // title
   {top:620,  bot:1072}, // row1 (odd)
@@ -84,10 +84,10 @@ const ROW_TOPS_BOTS = [
   {top:2884, bot:3338}, // row6 (even)
 ];
 
-// Construit BANDS pour la largeur de plateau courante : centre COLS*CELL_SLOT
-// sur VW, puis alterne ±QUINCONCE_HALF_SHIFT autour de ce centre selon la
-// parité de ligne — généralise les anciennes valeurs figées (606/411 pour
-// COLS=8) à n'importe quelle largeur de plateau.
+// Builds BANDS for the current board width: centres COLS*CELL_SLOT
+// on VW, then alternates ±QUINCONCE_HALF_SHIFT around that centre depending on the
+// row parity — generalises the old fixed values (606/411 for
+// COLS=8) to any board width.
 function computeBands() {
   const avgLeft = (VW - COLS * CELL_SLOT) / 2;
   return ROW_TOPS_BOTS.map((rb, i) => ({
@@ -97,10 +97,10 @@ function computeBands() {
 }
 let BANDS = computeBands();
 
-// Rectangle sur lequel chaque texture plein-plateau est étirée avant d'être
-// découpée case par case (voir getSharedTextureImage) — doit toujours couvrir
-// large (toutes les lignes, quelle que soit leur parité), généralisé de la
-// même façon que BANDS au lieu de 4 valeurs figées pour COLS=8.
+// Rectangle over which each full-board texture is stretched before being
+// cut cell by cell (see getSharedTextureImage) — must always cover
+// generously (all rows, whatever their parity), generalised in the
+// same way as BANDS instead of 4 fixed values for COLS=8.
 function computeGameRect() {
   const avgLeft = (VW - COLS * CELL_SLOT) / 2;
   return {
@@ -112,42 +112,42 @@ function computeGameRect() {
 }
 let { x: GAME_X, y: GAME_Y, w: GAME_W, h: GAME_H } = computeGameRect();
 
-// Rectangle sur lequel chaque texture de terrain est posée, puis découpée case par
-// case. Les textures sources de Mayrik font 4243 × 2718 px : la zone des cases
-// Vendetta à 300 dpi (4239 × 2718, plus 2 px de marge de chaque côté). Elles sont
-// posées à cette taille exacte, sans redimensionnement (1 pixel de texture = 1 pixel
-// imprimé), centrées sur la zone des cases du format en cours ; les cases ayant la
-// même taille physique dans tous les formats, Ignition en montre la partie centrale,
-// à la même échelle. Historique (19/11) : la v1.00 utilisait des copies réduites à
-// 3000 × 1922, agrandies ×1,41 (environ 212 dpi réels), et ajustées à la zone de
-// chaque format — en Ignition, écrasées à 0,76 en largeur pour 1,41 en hauteur.
+// Rectangle on which each terrain texture is laid, then cut cell by
+// cell. Mayrik's source textures are 4243 × 2718 px: the Vendetta cell
+// area at 300 dpi (4239 × 2718, plus a 2 px margin on each side). They are
+// laid at this exact size, without resizing (1 texture pixel = 1 printed
+// pixel), centred on the cell area of the current format; since cells have the
+// same physical size in every format, Ignition shows the central part,
+// at the same scale. History (19/11): v1.00 used reduced copies at
+// 3000 × 1922, enlarged ×1.41 (about 212 real dpi), and fitted to the area of
+// each format — in Ignition, squashed to 0.76 in width for 1.41 in height.
 const TEXTURE_W = 4243, TEXTURE_H = 2718;
 function textureRect() {
   return { x: GAME_X + (GAME_W - TEXTURE_W) / 2, y: GAME_Y + (GAME_H - TEXTURE_H) / 2, w: TEXTURE_W, h: TEXTURE_H };
 }
 
-// Type des cases d'un plateau neuf (demande des utilisateurs, Mayrik 19/11 : Off-Road,
-// au lieu de Road en v1.00) et type sélectionné au départ dans la palette (Road : ce
-// qu'on peint en premier sur un fond Off-Road).
+// Type of the cells of a new board (users' request, Mayrik 19/11: Off-Road,
+// instead of Road in v1.00) and type selected at start in the palette (Road: what
+// you paint first on an Off-Road background).
 const DEFAULT_TILE = 'sand';
 let sel = 'road';
 let board = Array(COLS * ROWS).fill(DEFAULT_TILE);
 
-// ---- Variantes d'overlay (Impassable/Oil/Fire) : cycle + mémoire par case ----
-// Avant : la variante était une pure fonction de la position (col + row*2) % N,
-// recalculée à chaque rendu — deux cases éloignées pouvaient tomber sur le même
-// visuel par hasard, et l'utilisateur n'avait aucun moyen de choisir.
-// Maintenant : chaque famille (rock/fire/oil) a son propre compteur qui avance
-// d'un cran à chaque pose ou reclic de ce type — jamais à cause d'un autre type,
-// jamais lors d'un simple rendu (buildBoard). La variante RÉSULTANTE est mémorisée
-// par case dans cellVariant (pas recalculée), afin qu'un buildBoard() complet
-// (reset, reload, changement d'image de titre) ne rebatte jamais les cartes des
-// visuels déjà posés — buildBoard() ne fait que relire cet état, jamais l'avancer.
+// ---- Overlay variants (Impassable/Oil/Fire): cycle + per-cell memory ----
+// Before: the variant was a pure function of the position (col + row*2) % N,
+// recomputed at each render — two distant cells could end up with the same
+// visual by chance, and the user had no way to choose.
+// Now: each family (rock/fire/oil) has its own counter that advances
+// one step at each placement or re-click of that type — never because of another type,
+// never during a mere render (buildBoard). The RESULTING variant is stored
+// per cell in cellVariant (not recomputed), so that a full buildBoard()
+// (reset, reload, title image change) never reshuffles the
+// visuals already placed — buildBoard() only re-reads this state, never advances it.
 const OVERLAY_VARIANT_COUNTS = { rock: 8, fire: 6, oil: 8 }; // oil partage son pool avec off_oil
 let overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
 let cellVariant = Array(COLS * ROWS).fill(null);
-// Décorations libres (phase 7, js/decor.js) : [{ item: 1..12, x, y }], centre de l'image en
-// pixels du plateau à 300 dpi ; ordre de pose (l'affichage suit la profondeur, voir decor.js).
+// Free decorations (phase 7, js/decor.js): [{ item: 1..12, x, y }], image centre in
+// board pixels at 300 dpi; placement order (display follows depth, see decor.js).
 let decorations = [];
 
 function overlayFamily(type) {
@@ -157,8 +157,8 @@ function overlayFamily(type) {
   return null;
 }
 
-// Appelé uniquement depuis updateCell (jamais depuis buildBoard) : avance le
-// compteur de la famille concernée et mémorise la variante obtenue pour cette case.
+// Called only from updateCell (never from buildBoard): advances the
+// counter of the family concerned and stores the variant obtained for this cell.
 function assignOverlayVariant(idx, type) {
   const fam = overlayFamily(type);
   if (!fam) return;
@@ -167,9 +167,9 @@ function assignOverlayVariant(idx, type) {
   overlayCycleIndex[fam] = (overlayCycleIndex[fam] + 1) % count;
 }
 
-// Lecture seule, utilisée par drawImpassable/drawFire/drawOil. Filet de sécurité :
-// si une case a ce type sans variante mémorisée (ne devrait pas arriver via l'UI
-// normale), on retombe sur l'ancienne formule positionnelle plutôt que de planter.
+// Read-only, used by drawImpassable/drawFire/drawOil. Safety net:
+// if a cell has this type without a stored variant (should not happen via the normal
+// UI), we fall back to the old positional formula rather than crash.
 function getOverlayVariant(idx, fam) {
   const count = OVERLAY_VARIANT_COUNTS[fam];
   const v = cellVariant[idx];
@@ -178,39 +178,39 @@ function getOverlayVariant(idx, fam) {
 
 let transTexCache = {};
 
-// Cooper Hewitt Bold (licence libre SIL OFL) — utilisée uniquement pour le numéro
-// à 3 chiffres sur le blason Ignition, volontairement différente d'Alfa Slab One
-// pour ne pas reprendre le même style que le titre Vendetta.
-// Auto-hébergée depuis la tranche 0b (avant : chargée depuis le dépôt GitHub tiers
-// rse/typopro-dtp — si ce dépôt bougeait, le numéro Ignition disparaissait).
+// Cooper Hewitt Bold (free SIL OFL licence) — used only for the 3-digit number
+// on the Ignition badge, deliberately different from Alfa Slab One
+// so as not to reuse the same style as the Vendetta title.
+// Self-hosted since tranche 0b (before: loaded from the third-party GitHub repo
+// rse/typopro-dtp — if that repo moved, the Ignition number disappeared).
 const COOPER_HEWITT_BOLD_URL = 'fonts/cooper-hewitt/CooperHewitt-Bold.woff2';
 let FONT_B64_COOPERHEWITT = null;
 let COOPERHEWITT_READY = false;
 
-// Polices de toute l'appli (chrome UI + titre de plateau), toutes deux libres OFL.
-// Format woff2 (compression sans perte du même fichier de police, environ 3 fois plus
-// léger que le .ttf), un sous-dossier par police avec sa licence OFL.txt à côté.
-// Auto-hébergées dans le dépôt (dossier fonts/) plutôt que chargées depuis le
-// dépôt GitHub tiers de Google Fonts : évite toute dépendance à un repo hors de
-// contrôle qui pourrait un jour renommer/déplacer ces fichiers et casser le
-// titre du plateau + tout le chrome de l'appli sans qu'aucun code n'ait changé
-// ici — même robustesse que pour les propres textures/sprites de l'appli.
-// Alfa Slab One : nom de la route + titre de l'appli + noms Vendetta/Ignition —
-// formes de lettres proches de la police d'origine des vrais plateaux (Square
-// Slabserif 711 Bold, commerciale, non intégrable) — voir notamment C et R majuscules.
+// Fonts for the whole app (UI chrome + board title), both free OFL.
+// woff2 format (lossless compression of the same font file, about 3 times lighter
+// than the .ttf), one subfolder per font with its OFL.txt licence next to it.
+// Self-hosted in the repository (fonts/ folder) rather than loaded from the
+// third-party Google Fonts GitHub repo: avoids any dependency on a repo outside our
+// control that could one day rename/move these files and break the
+// board title + all the app chrome without any code having changed
+// here — same robustness as for the app's own textures/sprites.
+// Alfa Slab One: road name + app title + Vendetta/Ignition names —
+// letter shapes close to the original font of the real boards (Square
+// Slabserif 711 Bold, commercial, not embeddable) — see in particular capital C and R.
 const ALFA_SLAB_ONE_FONT_URL = 'fonts/alfa-slab-one/AlfaSlabOne-Regular.woff2';
 let FONT_B64_ALFASLABONE = null;
 let ALFASLABONE_READY = false;
-// Oswald (police variable) : "FAN-MADE CHAPTER"/"THE", sous-titre de l'appli, et
-// tous les boutons — remplace complètement Bevan, ce qui économise le poids d'une
-// police en moins à charger/stocker en base64. Fichier variable : @font-face
-// déclare une plage de graisse (200-700), utilisée à 700 (gras) partout.
+// Oswald (variable font): "FAN-MADE CHAPTER"/"THE", app subtitle, and
+// all buttons — completely replaces Bevan, which saves the weight of one
+// font to load/store as base64. Variable file: @font-face
+// declares a weight range (200-700), used at 700 (bold) everywhere.
 const OSWALD_BOLD_FONT_URL = 'fonts/oswald/Oswald-Variable.woff2';
 let FONT_B64_OSWALD = null;
 let OSWALD_READY = false;
-// Ni l'une ni l'autre n'a de véritable style italique dessiné : l'inclinaison du
-// titre de plateau et des noms Vendetta/Ignition est simulée par un skewX SVG/CSS,
-// calibré par comparaison avec une capture d'un vrai plateau (12°).
+// Neither has a truly drawn italic style: the slant of the
+// board title and of the Vendetta/Ignition names is simulated by an SVG/CSS skewX,
+// calibrated by comparison with a capture of a real board (12°).
 const TITLE_SKEW_DEG = -12;
 
 

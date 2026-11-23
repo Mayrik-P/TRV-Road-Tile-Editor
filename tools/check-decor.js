@@ -1,12 +1,12 @@
-// VÉRIFICATION DES DÉCORATIONS LIBRES (phase 7) dans un vrai navigateur (Chromium via Playwright),
-// avec de vrais clics, glissés, touches et doigts : choix dans la palette, pose, pose + glisser en un
-// geste, déplacement, sélection, retrait (✕, Suppr), Échap, Annuler / Rétablir (une étape par geste),
-// mode pinceau qui peint à travers une décoration, marge blanche refusée, centre gardé dans le plateau,
-// sauvegarde (rechargement + Continue), fichier de projet (aller-retour, ancien fichier v1), export
-// (décoration présente, coupée aux marges blanches mais visible sur la bande de titre, jamais la
-// sélection ni le ✕), et au doigt sur téléphone (pose, glisser, pincement qui annule).
-// Usage (dépôt servi en HTTP) : node tools/check-decor.js [http://localhost:8765/]
-// Code de sortie 1 au moindre échec ou à la moindre erreur JavaScript de la page.
+// FREE DECORATIONS CHECK (phase 7) in a real browser (Chromium via Playwright),
+// with real clicks, drags, keys and fingers: palette choice, placement, placement + drag in one
+// gesture, move, selection, removal (✕, Delete), Escape, Undo / Redo (one step per gesture),
+// brush mode that paints through a decoration, white margin rejected, center kept in the board,
+// save (reload + Continue), project file (round trip, old v1 file), export
+// (decoration present, clipped at the white margins but visible on the title band, never the
+// selection nor the ✕), and with a finger on phone (placement, drag, pinch that cancels).
+// Usage (repo served over HTTP): node tools/check-decor.js [http://localhost:8765/]
+// Exit code 1 on the slightest failure or on any JavaScript error from the page.
 const { chromium, devices } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path');
 const base = process.argv[2] || 'http://localhost:8765/';
@@ -20,7 +20,7 @@ async function open(b, opts) {
   return { ctx, p, errs };
 }
 const ready = p => p.waitForFunction(() => Object.keys(TEXTURES).length === Object.keys(TEXTURE_PATHS).length, null, { timeout: 60000 });
-// Point du plateau (pixels à 300 dpi) -> point de l'écran
+// Board point (pixels at 300 dpi) -> screen point
 const scr = (p, x, y) => p.evaluate(([x, y]) => { const m = document.getElementById('bsvg').getScreenCTM(); return { x: m.a * x + m.e, y: m.d * y + m.f }; }, [x, y]);
 const decos = p => p.evaluate(() => JSON.parse(JSON.stringify(decorations)));
 const steps = p => p.evaluate(() => undoHistory.past.length);
@@ -29,7 +29,7 @@ const exportPng = async (p, file) => {
   await p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
   const [d] = await Promise.all([p.waitForEvent('download'), p.click('#export-btn')]); await d.saveAs(file);
 };
-// Pixels de deux exports : différences et pixels blancs de la référence (marges)
+// Pixels of two exports: differences and white pixels of the reference (margins)
 const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
   const [ia, ib] = await Promise.all([load(a), load(b)]);
@@ -49,7 +49,7 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
 
 (async () => {
   const b = await chromium.launch();
-  // ---------- Souris et clavier ----------
+  // ---------- Mouse and keyboard ----------
   const { ctx, p, errs } = await open(b, { viewport: { width: 1400, height: 1200 } });
   await p.click('#board-type-vendetta'); await ready(p);
   check('au départ : mode pinceau, aucune décoration, aide cachée',
@@ -70,14 +70,14 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   check(`clic sur le plateau : décoration posée à l'endroit cliqué (${d[0] && d[0].x}, ${d[0] && d[0].y}), une étape`,
         d.length === 1 && d[0].item === 6 && Math.abs(d[0].x - 1500) < 8 && Math.abs(d[0].y - 1600) < 8 && await steps(p) === n0 + 1);
   check('décoration posée : sélectionnée (cercle et ✕)', await p.evaluate(() => decor.selected === 0 && !!document.getElementById('decor-remove')));
-  // Pose + glisser dans le même geste : une seule étape, à la place finale
+  // Placement + drag in the same gesture: a single step, at the final position
   await p.click('#decor-2'); n0 = await steps(p);
   a = await scr(p, 3000, 1300); let z = await scr(p, 3400, 2100);
   await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(z.x, z.y, { steps: 12 }); await p.mouse.up();
   d = await decos(p);
   check(`pose puis glisser en un geste : posée à la fin du geste (${d[1].x}, ${d[1].y}), une seule étape`,
         d.length === 2 && Math.abs(d[1].x - 3400) < 8 && Math.abs(d[1].y - 2100) < 8 && await steps(p) === n0 + 1);
-  // Déplacer une décoration existante
+  // Move an existing decoration
   n0 = await steps(p);
   a = await scr(p, 1500, 1600 + 26); z = await scr(p, 2300, 1100);
   await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(z.x, z.y, { steps: 12 }); await p.mouse.up();
@@ -88,15 +88,15 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   check('Ctrl+Z : la décoration revient à sa place', d.length === 2 && Math.abs(d[0].x - 1500) < 8);
   await p.keyboard.press('Control+y'); d = await decos(p);
   check('Ctrl+Y : de nouveau déplacée', Math.abs(d[0].x - 2300) < 8);
-  // Glisser loin hors du plateau : le centre reste dans les cases / la bande de titre
+  // Drag far off the board: the center stays in the cells / the title band
   a = await scr(p, 3400, 2104); z = await scr(p, 6000, 4000);
   await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(z.x, z.y, { steps: 8 }); await p.mouse.up();
   d = await decos(p); const bnd = await p.evaluate(() => decorBounds());
   check(`glissée hors du plateau : centre gardé dans le plateau (${d[1].x}, ${d[1].y})`, d[1].x <= bnd.maxX && d[1].y <= bnd.maxY);
-  // Clic sur la marge blanche : rien n'est posé, la sélection est retirée
+  // Click on the white margin: nothing is placed, the selection is removed
   const cnt = d.length; a = await scr(p, 80, 1700); await p.mouse.click(a.x, a.y);
   check('clic sur la marge blanche : rien posé, plus de sélection', (await decos(p)).length === cnt && await p.evaluate(() => decor.selected === -1));
-  // Retrait : sélection + ✕, puis sélection + Suppr (la case dessous reste intacte)
+  // Removal: selection + ✕, then selection + Delete (the cell underneath stays intact)
   a = await scr(p, 2300, 1100); await p.mouse.click(a.x, a.y);
   const xb = await p.locator('#decor-remove').boundingBox(); await p.mouse.click(xb.x + xb.width / 2, xb.y + xb.height / 2);
   check('sélection puis ✕ : décoration retirée', (await decos(p)).length === cnt - 1);
@@ -106,8 +106,8 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   await p.keyboard.press('Control+z');
   a = await scr(p, d[0].x, d[0].y + 4); await p.mouse.click(a.x, a.y); await p.keyboard.press('Escape');
   check('Échap : désélectionne sans retirer', (await decos(p)).length === cnt - 1 && await p.evaluate(() => decor.selected === -1));
-  // Mode pinceau : un clic sur une décoration peint la case dessous
-  await p.evaluate(() => { addDecoration(5, 2000, 1900); decor.selected = -1; redrawDecorations(); }); // au milieu des cases
+  // Brush mode: a click on a decoration paints the cell underneath
+  await p.evaluate(() => { addDecoration(5, 2000, 1900); decor.selected = -1; redrawDecorations(); }); // in the middle of the cells
   await p.click('#tb-road'); d = (await decos(p)).slice(-1);
   check('choix d\'un type de case : retour au mode pinceau, vignette désélectionnée',
         await p.evaluate(() => decor.mode === 'paint' && !document.querySelector('.decor-btn.sel')));
@@ -116,11 +116,11 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
     const el = document.elementFromPoint(m.a * x + m.e, m.d * y + m.f); return el && el.dataset.idx ? +el.dataset.idx : -1; }, [d[0].x, d[0].y]);
   check(`mode pinceau : clic sur une décoration = case ${idxUnder} peinte, décoration intacte`,
         idxUnder >= 0 && await p.evaluate(i => board[i], idxUnder) === 'road' && JSON.stringify((await decos(p)).slice(-1)) === JSON.stringify(d));
-  // Export : la décoration est dans l'image ; ni le cercle ni le ✕
+  // Export: the decoration is in the image; neither the circle nor the ✕
   await p.evaluate(() => { decorations = []; decor.selected = -1; redrawDecorations(); });
   await exportPng(p, path.join(tmp, 'none.png'));
-  await p.evaluate(() => addDecoration(4, GAME_X, 1700));            // à cheval sur le bord gauche (marge blanche)
-  await p.evaluate(() => addDecoration(8, 2400, BANDS[0].top + 120)); // sur la bande de titre
+  await p.evaluate(() => addDecoration(4, GAME_X, 1700));            // straddling the left edge (white margin)
+  await p.evaluate(() => addDecoration(8, 2400, BANDS[0].top + 120)); // on the title band
   await p.evaluate(() => { decor.selected = -1; redrawDecorations(); });
   await exportPng(p, path.join(tmp, 'with.png'));
   const cmp = await comparePng(p, path.join(tmp, 'none.png'), path.join(tmp, 'with.png'));
@@ -133,17 +133,17 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   await exportPng(p, path.join(tmp, 'selected.png'));
   check('export avec une décoration sélectionnée = export sans sélection (cercle et ✕ jamais exportés)',
         Buffer.compare(fs.readFileSync(path.join(tmp, 'with.png')), fs.readFileSync(path.join(tmp, 'selected.png'))) === 0);
-  // « Clear board » : cases ET décorations, en une seule étape ; Ctrl+Z ramène tout
+  // "Clear board": cells AND decorations, in a single step; Ctrl+Z brings everything back
   { const before = JSON.stringify(await p.evaluate(() => ({ b: board, d: decorations }))); const s0 = await steps(p);
     p.once('dialog', dlg => dlg.accept()); await p.click('#clear-btn');
     check('Clear board : décorations retirées aussi, une seule étape', (await decos(p)).length === 0 && await steps(p) === s0 + 1);
     await p.keyboard.press('Control+z');
     check('Ctrl+Z après Clear board : cases et décorations reviennent', JSON.stringify(await p.evaluate(() => ({ b: board, d: decorations }))) === before); }
-  // Sauvegarde : rechargement + Continue
+  // Save: reload + Continue
   const saved = JSON.stringify(await decos(p));
   await p.reload(); await p.click('#board-type-continue'); await ready(p);
   check('rechargement + Continue : décorations retrouvées', JSON.stringify(await decos(p)) === saved);
-  // Fichier de projet : aller-retour, puis ancien fichier (v1) qui s'ouvre sans décoration
+  // Project file: round trip, then old file (v1) that opens without decoration
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#save-project-btn')]);
   const proj = path.join(tmp, 'p.trvtile'); await dl.saveAs(proj);
   const pj = JSON.parse(fs.readFileSync(proj, 'utf8'));
@@ -156,13 +156,13 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   const f1 = path.join(tmp, 'v1.trvtile'); fs.writeFileSync(f1, JSON.stringify(v1));
   await p.click('#home-btn'); await p.setInputFiles('#open-project-input', f1); await p.waitForTimeout(500);
   check('ancien fichier de projet (v1) : ouvert, sans décoration', await p.evaluate(() => decorations.length === 0 && document.getElementById('app').style.display !== 'none'));
-  // Ancienne sauvegarde du navigateur (clé v1) : relue et convertie
+  // Old browser save (v1 key): read back and converted
   await p.evaluate(s => { localStorage.removeItem('trv_road_tile_board_v2'); localStorage.setItem('trv_road_tile_board_v1', s); }, JSON.stringify(v1.board));
   await p.reload();
   check('ancienne sauvegarde du navigateur (v1) : « Continue » proposé', await p.evaluate(() => !document.getElementById('board-type-continue').hidden));
   await ctx.close();
 
-  // ---------- Doigt (téléphone) ----------
+  // ---------- Finger (phone) ----------
   const T = await open(b, devices['Pixel 7']);
   const q = T.p; const cdp = await T.ctx.newCDPSession(q);
   const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
@@ -189,15 +189,15 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   check(`doigt : bouton ✕ assez grand pour le doigt (${Math.round(xr.width)} px)`, xr.width >= 24);
   await T.ctx.close();
 
-  // ---------- Doigt, page neuve (le pincement ci-dessus zoome réellement la page) ----------
+  // ---------- Finger, fresh page (the pinch above really zooms the page) ----------
   const T2 = await open(b, devices['Pixel 7']);
   { const q = T2.p; const cdp = await T2.ctx.newCDPSession(q);
     const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
     let dd;
     await q.click('#board-type-vendetta'); await ready(q);
     await q.click('#decor-12'); await q.locator('#bsvg').scrollIntoViewIfNeeded();
-    // Bug du 22/11 (Mayrik, téléphone) : le ✕ recouvrait la décoration. Plus petite décoration (n° 12).
-    await q.evaluate(() => { decorations = []; addDecoration(12, 2500, 1800); }); // posée et sélectionnée
+    // 22/11 bug (Mayrik, phone): the ✕ covered the decoration. Smallest decoration (no. 12).
+    await q.evaluate(() => { decorations = []; addDecoration(12, 2500, 1800); }); // placed and selected
     const geo = await q.evaluate(() => { const d = decorations[0], g = decorSelectionGeometry(d), m = document.getElementById('bsvg').getScreenCTM();
       return { sx: m.a * g.grab.cx + m.e, sy: m.d * g.grab.cy + m.f, gr: g.grab.r * m.a, xr: g.R * m.a, xx: m.a * g.rx + m.e, xy: m.d * g.ry + m.f }; });
     const gap = Math.hypot(geo.xx - geo.sx, geo.xy - geo.sy) - geo.gr - geo.xr;

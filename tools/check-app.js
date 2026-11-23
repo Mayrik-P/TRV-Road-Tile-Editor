@@ -1,19 +1,18 @@
-// VÉRIFICATION DE L'APPLI DANS UN VRAI NAVIGATEUR (Chromium via Playwright).
+// APP CHECK IN A REAL BROWSER (Chromium via Playwright).
 //
-// Pour chaque format (Vendetta, Ignition) : ouvre l'appli, peint un plateau qui
-// utilise tous les types de cases (vrais clics de souris sur la palette puis sur
-// les cases, comme un utilisateur), reclique une case Fire! pour faire défiler son
-// visuel, exporte le PNG et le range dans <dossier-sortie>. Relève aussi toute
-// erreur JavaScript de la page.
+// For each format (Vendetta, Ignition): opens the app, paints a board that uses
+// every tile type (real mouse clicks on the palette then on the cells, like a
+// user), clicks a Fire! cell again to cycle its visual, exports the PNG and stores
+// it in <output-folder>. Also reports any JavaScript error from the page.
 //
-// Avec un dossier de référence, compare chaque export à celui de la référence,
-// pixel par pixel : c'est ce qui prouve qu'un changement « sans effet visible »
-// (découpage des fichiers, nettoyage…) ne change vraiment rien au résultat.
+// With a reference folder, compares each export to the reference one, pixel by
+// pixel: this is what proves that a "no visible change" modification (file
+// splitting, cleanup...) really changes nothing in the result.
 //
-// Usage (le dépôt doit être servi en HTTP, par exemple `python3 -m http.server 8765`) :
-//   node tools/check-app.js http://localhost:8765/ <dossier-sortie> [<dossier-référence>]
-// Méthode habituelle : lancer d'abord sur l'ancienne version (dossier de référence),
-// puis sur la nouvelle avec ce dossier en 3e argument. Code de sortie 1 au moindre écart.
+// Usage (the repo must be served over HTTP, e.g. `python3 -m http.server 8765`):
+//   node tools/check-app.js http://localhost:8765/ <output-folder> [<reference-folder>]
+// Usual method: run first on the old version (reference folder), then on the new
+// one with that folder as 3rd argument. Exit code 1 on the slightest difference.
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 
@@ -24,9 +23,8 @@ if (!baseUrl || !outDir) {
 }
 fs.mkdirSync(outDir, { recursive: true });
 
-// Plateau de test : les 3 premières rangées font défiler tous les types de cases
-// (tous les 17 en Vendetta), les 3 dernières font de grandes zones Off-Road / Road
-// (bords de route, décorations de groupe).
+// Test board: the first 3 rows cycle through all tile types (all 17 in Vendetta),
+// the last 3 make large Off-Road / Road areas (road edges, group decorations).
 function scenario(cols, tileIds) {
   const cells = [];
   for (let row = 0; row < 6; row++)
@@ -39,21 +37,21 @@ function scenario(cols, tileIds) {
 }
 
 async function exportTo(page, file) {
-  await page.mouse.move(2, 2); // pas de survol au moment de l'export
-  await page.click('#export-open-btn'); // fenêtre d'export (consigne d'impression)
+  await page.mouse.move(2, 2); // no hover at export time
+  await page.click('#export-open-btn'); // export dialog (print instructions)
   await page.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 180000 });
   const [download] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
   await download.saveAs(file);
 }
 
 async function paintAndExport(browser, format) {
-  // locale en-GB : papier International (A3 / A4) par défaut, exports comparables d'une version à l'autre
+  // en-GB locale: International paper (A3 / A4) by default, exports comparable from one version to the next
   const page = await browser.newPage({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true, locale: 'en-GB' });
   const errors = [], checks = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(new URL('index.html', baseUrl).href);
-  // Signal « le plateau a changé » (tranche 0c) : on compte les émissions par raison.
+  // "board changed" signal (slice 0c): emissions are counted by reason.
   const hasState = await page.evaluate(() => typeof boardEvents !== 'undefined');
   if (hasState) await page.evaluate(() => {
     window.__changes = {};
@@ -76,12 +74,12 @@ async function paintAndExport(browser, format) {
     if (type !== current) { await page.click('#tb-' + type); current = type; }
     await clickCell(idx);
   }
-  // Reclic sur la 1re case Fire! : son visuel doit passer au suivant.
+  // Click the 1st Fire! cell again: its visual must move to the next one.
   const fireIdx = cells.find(c => c.type === 'fire').idx;
   await page.click('#tb-fire');
   await clickCell(fireIdx);
-  // Reclic sur une case déjà de son type (type d'un plateau neuf, jamais repeinte) : ne
-  // change rien, ne doit rien émettre.
+  // Click again on a cell already of its type (type of a new board, never repainted): changes
+  // nothing, must emit nothing.
   const roadIdx = cells.find(c => c.type === initial).idx;
   await page.click('#tb-' + initial);
   await clickCell(roadIdx);
@@ -89,10 +87,10 @@ async function paintAndExport(browser, format) {
   const file = path.join(outDir, format + '.png');
   await exportTo(page, file);
 
-  // Redessin complet du même état (buildBoard), référence de la restauration ci-dessous.
-  // La mise à jour case par case (updateCell) ne range pas les éléments du SVG tout à
-  // fait dans le même ordre : des arrondis de lissage d'au plus 1/255 sont tolérés
-  // (constaté dès la version d'origine, avant tout changement).
+  // Full redraw of the same state (buildBoard), reference for the restoration below.
+  // The cell-by-cell update (updateCell) does not order the SVG elements quite the
+  // same way: smoothing rounding differences of at most 1/255 are tolerated
+  // (seen from the original version, before any change).
   const rebuilt = path.join(outDir, format + '-rebuilt.png');
   await page.evaluate(() => buildBoard());
   await exportTo(page, rebuilt);
@@ -101,14 +99,14 @@ async function paintAndExport(browser, format) {
                 ok: inc.identical || (inc.maxDelta || 0) <= 1 });
 
   if (hasState) {
-    // 1. Une émission 'cell' par vraie modification (cases repeintes d'un autre type que
-    //    celui d'un plateau neuf + le reclic Fire!), aucune pour le reclic sans effet ;
-    //    un seul 'new-board'.
+    // 1. One 'cell' emission per real modification (cells repainted with a type other than
+    //    that of a new board + the Fire! re-click), none for the no-effect re-click;
+    //    a single 'new-board'.
     const expected = cells.filter(c => c.type !== initial).length + 1;
     const got = await page.evaluate(() => window.__changes);
     checks.push({ name: `signal 'cell' émis ${got.cell} fois (attendu ${expected}), 'new-board' ${got['new-board']} (attendu 1)`,
                   ok: got.cell === expected && got['new-board'] === 1 });
-    // 2. Photo -> JSON -> nouveau plateau vide -> restauration : même état, même export.
+    // 2. Snapshot -> JSON -> new empty board -> restoration: same state, same export.
     const rt = await page.evaluate(f => {
       const snap = JSON.parse(JSON.stringify(getBoardState()));
       chooseBoardType(f);
@@ -121,7 +119,7 @@ async function paintAndExport(browser, format) {
     await exportTo(page, file2);
     const cmp = await comparePng(browser, file2, rebuilt);
     checks.push({ name: 'restauration : export identique au redessin complet', ok: cmp.identical || cmp.diff === 0 });
-    // 3. Photo abîmée (une case en moins) : refusée, plateau intact.
+    // 3. Damaged snapshot (one cell missing): rejected, board untouched.
     const bad = await page.evaluate(() => {
       const before = JSON.stringify(getBoardState());
       const s = getBoardState(); s.board.pop();
@@ -135,7 +133,7 @@ async function paintAndExport(browser, format) {
   return { file, errors, checks };
 }
 
-// Compare deux PNG dans le navigateur (canvas) : nombre de pixels différents.
+// Compares two PNGs in the browser (canvas): number of differing pixels.
 async function comparePng(browser, a, b) {
   if (Buffer.compare(fs.readFileSync(a), fs.readFileSync(b)) === 0) return { identical: true, diff: 0 };
   const page = await browser.newPage();

@@ -1,10 +1,10 @@
-// VÉRIFICATION DES CRÉDITS (phase 6 bis) dans un vrai navigateur (Chromium via Playwright) :
-// bouton « Credits » de l'accueil, fenêtre qui s'ouvre avec toutes les sections, chaque licence
-// dépliée affiche le vrai texte de son fichier, fermeture par Return, Échap et clic à côté,
-// pas de défilement horizontal sur téléphone. Garde-fou « seule liste des crédits » : chaque
-// police (fonts/*/OFL.txt) et chaque bibliothèque (js/vendor/*.js) du dépôt y figure.
-// Usage (dépôt servi en HTTP) : node tools/check-credits.js [http://localhost:8765/]
-// Code de sortie 1 au moindre échec ou à la moindre erreur JavaScript de la page.
+// CREDITS CHECK (phase 6 bis) in a real browser (Chromium via Playwright):
+// "Credits" button on the home screen, dialog that opens with all the sections, each unfolded
+// license shows the real text of its file, closing by Return, Escape and click outside,
+// no horizontal scroll on phone. "Single credits list" safeguard: each
+// font (fonts/*/OFL.txt) and each library (js/vendor/*.js) of the repo appears in it.
+// Usage (repo served over HTTP): node tools/check-credits.js [http://localhost:8765/]
+// Exit code 1 on the slightest failure or on any JavaScript error from the page.
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const base = process.argv[2] || 'http://localhost:8765/';
@@ -32,7 +32,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
     check(`${label} : fenêtre centrée dans l'écran (${info.box.join('–')} px), pas de défilement horizontal`,
           !info.overflow && info.box[0] > 0 && Math.abs(info.box[0] - (opts.viewport.width - info.box[1])) <= 2);
     if (label === 'ordinateur') {
-      // Chaque licence dépliée : le texte exact de son fichier
+      // Each unfolded license: the exact text of its file
       const lic = await p.evaluate(() => CREDITS.licenses.map(l => l.file));
       for (let i = 0; i < lic.length; i++) {
         const d = p.locator('#credits details').nth(i);
@@ -54,7 +54,7 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
     check(`${label} : « Return » ferme la fenêtre`, !(await isOpen()));
     await p.close();
   }
-  // Garde-fou : chaque police et chaque bibliothèque du dépôt est citée avec sa licence
+  // Safeguard: each font and each library of the repo is cited with its license
   const credits = fs.readFileSync(path.join(root, 'js/credits.js'), 'utf8');
   const fonts = fs.readdirSync(path.join(root, 'fonts')).filter(d => fs.existsSync(path.join(root, 'fonts', d, 'OFL.txt')));
   const missingFonts = fonts.filter(d => !credits.includes(`fonts/${d}/OFL.txt`));
@@ -66,11 +66,11 @@ const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉC
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);
   process.exit(results.some(r => r.startsWith('ÉCHEC')) ? 1 : 0);
-})().catch(e => { // test interrompu : on montre quand même ce qui a été vérifié
+})().catch(e => { // test interrupted: we still show what was verified
   console.log(results.join('\n')); console.log('ÉCHEC : test interrompu : ' + e.message.split('\n')[0]); process.exit(1);
 });
 
-// Nombre de sections déclarées dans js/credits.js (lu sous Node, sans exécuter la page)
+// Number of sections declared in js/credits.js (read under Node, without running the page)
 function CREDITS_SECTIONS() {
   const src = fs.readFileSync(path.join(root, 'js/credits.js'), 'utf8');
   return new Function(src + '; return CREDITS;')().sections.length;

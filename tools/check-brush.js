@@ -1,11 +1,11 @@
-// VÉRIFICATION DU PINCEAU (tranche 2b) dans un vrai navigateur (Chromium via Playwright),
-// avec de vrais gestes : glissé à la souris (lent et très rapide), une seule étape
-// d'annulation par coup de pinceau, clic sur une case à variantes (le visuel change) mais
-// glissé sans effet sur les cases déjà du bon type, clic droit sans effet, champ de texte
-// quitté en cliquant sur le plateau, glissé au doigt (sans défilement de la page) et
-// pincement à deux doigts qui annule le coup de pinceau en cours.
-// Usage (dépôt servi en HTTP) : node tools/check-brush.js [http://localhost:8765/]
-// Code de sortie 1 au moindre échec ou à la moindre erreur JavaScript de la page.
+// BRUSH CHECK (slice 2b) in a real browser (Chromium via Playwright),
+// with real gestures: mouse drag (slow and very fast), a single undo step
+// per brush stroke, click on a variant cell (the visual changes) but
+// drag without effect on cells already of the right type, right click without effect, text field
+// left by clicking on the board, finger drag (no page scroll) and
+// two-finger pinch that cancels the brush stroke in progress.
+// Usage (repo served over HTTP): node tools/check-brush.js [http://localhost:8765/]
+// Exit code 1 on the slightest failure or on any JavaScript error from the page.
 const { chromium, devices } = require('playwright');
 const base = process.argv[2] || 'http://localhost:8765/';
 const results = []; const check = (name, ok) => results.push(`${ok ? 'ok' : 'ÉCHEC'} : ${name}`);
@@ -22,10 +22,10 @@ const types = p => p.evaluate(() => board.slice());
 const undoCount = p => p.evaluate(() => undoHistory.past.length);
 
 (async () => {
-  // ---------- Souris ----------
+  // ---------- Mouse ----------
   {
     const { b, p, errs } = await open({ viewport: { width: 1300, height: 1300 } });
-    const row = [8, 9, 10, 11, 12, 13, 14, 15]; // 2e rangée (Vendetta, 8 colonnes)
+    const row = [8, 9, 10, 11, 12, 13, 14, 15]; // 2nd row (Vendetta, 8 columns)
     await p.click('#tb-mud');
     const n0 = await undoCount(p);
     const a = await center(p, row[0]), z = await center(p, row[7]);
@@ -36,14 +36,14 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     await p.keyboard.press('Control+z'); t = await types(p);
     const initial = await p.evaluate(() => DEFAULT_TILE);
     check('Ctrl+Z annule tout le coup de pinceau', row.every(i => t[i] === initial));
-    // glissé très rapide : un seul mouvement de bout en bout
+    // very fast drag: a single movement from end to end
     const r3 = [16, 17, 18, 19, 20, 21, 22, 23];
     await p.click('#tb-goo');
     const c = await center(p, r3[0]), d = await center(p, r3[7]);
     await p.mouse.move(c.x, c.y); await p.mouse.down(); await p.mouse.move(d.x, d.y, { steps: 1 }); await p.mouse.up();
     t = await types(p);
     check('glissé très rapide (1 seul mouvement) : aucune case sautée', r3.every(i => t[i] === 'goo'));
-    // cases à variantes : clic = visuel suivant ; glissé sur des cases déjà Impassable = rien
+    // variant cells: click = next visual; drag over cells already Impassable = nothing
     await p.click('#tb-rock');
     const e1 = await center(p, 24), e2 = await center(p, 25);
     await p.mouse.click(e1.x, e1.y); await p.mouse.click(e2.x, e2.y);
@@ -55,12 +55,12 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     await p.mouse.click(e2.x, e2.y);
     const v3 = await p.evaluate(() => cellVariant.slice());
     check('clic sur une case Impassable : visuel suivant', v3[25] !== v2[25]);
-    // clic droit : rien
+    // right click: nothing
     await p.click('#tb-salt'); const f = await center(p, 30);
     const before = (await types(p))[30];
     await p.mouse.click(f.x, f.y, { button: 'right' });
     check('clic droit : case non peinte', (await types(p))[30] === before);
-    // champ de texte puis clic sur le plateau : Ctrl+Z vise le plateau
+    // text field then click on the board: Ctrl+Z targets the board
     await p.click('#title-input'); await p.keyboard.type('Dust');
     await p.mouse.click(f.x, f.y);
     check('clic sur le plateau : le champ de texte n\'a plus le focus', await p.evaluate(() => document.activeElement.id !== 'title-input'));
@@ -69,7 +69,7 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     check('souris : aucune erreur JavaScript', errs.length === 0);
     await b.close();
   }
-  // ---------- Doigt (écran tactile) ----------
+  // ---------- Finger (touch screen) ----------
   {
     const { b, ctx, p, errs } = await open(devices['Pixel 7']);
     const cdp = await ctx.newCDPSession(p);
@@ -85,7 +85,7 @@ const undoCount = p => p.evaluate(() => undoHistory.past.length);
     let t = await types(p);
     check('doigt : glissé peint les cases traversées', row.every(i => t[i] === 'glass'));
     check('doigt : la page ne défile pas pendant le glissé', await p.evaluate(() => scrollY) === scroll0);
-    // pincement : 1er doigt peint 2 cases, puis un 2e doigt se pose -> coup de pinceau annulé
+    // pinch: 1st finger paints 2 cells, then a 2nd finger lands -> brush stroke cancelled
     await p.click('#tb-mud');
     const r2 = [16, 17]; for (const i of r2) await p.locator(`#bsvg [data-idx="${i}"]`).first().scrollIntoViewIfNeeded();
     const q0 = await center(p, 16), q1 = await center(p, 17);
