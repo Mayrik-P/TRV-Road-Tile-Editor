@@ -20,6 +20,8 @@ No installation, no account: it runs in any modern browser, on a computer, table
 
 Ideas, bug reports and contributions are welcome. Please read **[CONTRIBUTING.md](CONTRIBUTING.md)**
 first: the short version is *open an issue to discuss your idea before writing code*.
+This is a small hobby project, maintained in spare time: replies may take a while, and ideas are reviewed from time to time against the [roadmap](ROADMAP.md).
+Questions and chat: on the game's [Discord channel](https://discord.com/channels/722465956265197618/1275818318921465927).
 Where the project is going: **[ROADMAP.md](ROADMAP.md)**.
 Everyone taking part follows the **[Code of Conduct](CODE_OF_CONDUCT.md)**.
 

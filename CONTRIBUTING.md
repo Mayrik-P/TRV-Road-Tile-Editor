@@ -4,6 +4,10 @@ Thank you for wanting to help! This is a small community project with a single m
 **Mayrik PADEY**, who decides its direction and what gets merged. These rules keep the project
 coherent and keep reviews manageable.
 
+This is a small hobby project, maintained in spare time: replies may take a while, and ideas are reviewed from time to time against the [roadmap](ROADMAP.md).
+For questions and informal chat, use the game's Discord channel
+(https://discord.com/channels/722465956265197618/1275818318921465927) rather than GitHub issues.
+
 ## 1. Discuss first, code second
 
 **Open an issue before writing any code.** Describe the problem or the idea, and wait until the
