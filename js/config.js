@@ -143,7 +143,7 @@ let board = Array(COLS * ROWS).fill(DEFAULT_TILE);
 // per cell in cellVariant (not recomputed), so that a full buildBoard()
 // (reset, reload, title image change) never reshuffles the
 // visuals already placed — buildBoard() only re-reads this state, never advances it.
-const OVERLAY_VARIANT_COUNTS = { rock: 8, fire: 6, oil: 8 }; // oil partage son pool avec off_oil
+const OVERLAY_VARIANT_COUNTS = { rock: 8, fire: 6, oil: 8 }; // oil shares its pool with off_oil
 let overlayCycleIndex = { rock: 0, fire: 0, oil: 0 };
 let cellVariant = Array(COLS * ROWS).fill(null);
 // Free decorations (phase 7, js/decor.js): [{ item: 1..12, x, y }], image centre in

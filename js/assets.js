@@ -1,10 +1,10 @@
-// ===== js/assets.js — Chemins des images et polices ; aperçus à l'écran (copie adaptée à la
-// taille affichée) ; originaux en base64 pour l'export ; déblocage du bouton Export.
+// ===== js/assets.js — Image and font paths; on-screen previews (copy matched to the
+// displayed size); originals in base64 for export; unlocking of the Export button.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in that file or the previous
+// ones; functions, called later, see everything.
 
 // ---- Overlay sprite sources ----
 let HAZARD_1, HAZARD_2, HAZARD_3;
@@ -13,7 +13,7 @@ let RAMP, MULTI_RAMP;
 let MINEFIELD;
 let FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6;
 let IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7, IMP_8;
-// Décorations de groupe (bidon, cactus, roue, pare-choc...) — 12 png dans le dossier Items/.
+// Group decorations (jerrycan, cactus, wheel, bumper...) — 12 png in the Items/ folder.
 const ITEM_PATHS = Array.from({length: 12}, (_, i) => `items/Item-${i + 1}.webp`);
 
 function initOverlaySources() {
@@ -47,9 +47,9 @@ function allImagesReady() {
     OSWALD_BOLD_FONT_URL,
   ];
   const fetchesOk = required.every(src => !!IMAGES_B64[src]);
-  // Les aperçus des textures doivent aussi être affichés : sans eux, le plateau ne
-  // contient pas encore ses calques de texture et l'export en serait privé. Alfa Slab
-  // One et Oswald bloquent l'export (utilisées dans le titre du plateau exporté).
+  // The texture previews must also be displayed: without them, the board does not yet
+  // contain its texture layers and the export would lack them. Alfa Slab One and Oswald
+  // block the export (used in the title of the exported board).
   const texturesOk = Object.keys(TEXTURE_PATHS).every(key => !!TEXTURES[key]);
   return fetchesOk && texturesOk && defaultTitleImageDecoded && ALFASLABONE_READY && OSWALD_READY;
 }
@@ -64,27 +64,25 @@ const TEXTURE_PATHS = {
   glass: 'textures/Texture-Desert-Glass.webp',
 };
 
-// Image de titre par défaut, affichée tant que l'utilisateur n'en a pas chargé
-// une via "Load title image" — rend le plateau plus accueillant dès l'ouverture
-// qu'un simple fond marron uni. Chargée en tout dernier (moins prioritaire que
-// textures/sprites/décorations/police), voir allSources plus bas.
+// Default title image, shown until the user has loaded one via "Load title image" —
+// makes the board more welcoming from the start than a plain brown background. Loaded
+// dead last (lower priority than textures/sprites/decorations/fonts), see allSources below.
 const DEFAULT_TITLE_IMAGE_PATH = 'textures/TitleImage.webp';
-// Blason affiché dans la bande de titre des plateaux Ignition.
+// Crest shown in the title band of Ignition boards.
 const BLASON_PATH = 'sprites/BlasonIgnition.webp';
 
-// ---- Aperçus à l'écran (tranche 1c) ----
-// Méthode des fichiers « proxy » des logiciels de montage (et des dossiers par densité
-// d'Android, déjà utilisée par TRV-Pocket) : l'écran affiche une copie réduite de
-// chaque image, l'export utilise toujours l'original. Trois copies, mêmes noms :
-// <dossier>/quarter/ (25 %), <dossier>/half/ (50 %), <dossier>/ (original), faites
-// par tools/make-webp.py. On prend la plus petite qui reste nette pour la taille
-// réellement affichée du format choisi (jamais une valeur fixe pensée pour le
-// téléphone : un écran Retina reçoit une copie plus fine).
-let DISPLAY_DIR = null;            // 'quarter/', 'half/' ou '' (original) ; null avant le choix du format
-const FULL_OF_DISPLAY = {};        // adresse d'aperçu -> chemin de l'original (pour l'export)
-let displayTexturesPending = 0;    // textures d'aperçu du format en cours encore en chargement
+// ---- On-screen previews (slice 1c) ----
+// Method of the "proxy" files of editing software (and of Android's per-density folders,
+// already used by TRV-Pocket): the screen shows a reduced copy of each image, the export
+// always uses the original. Three copies, same names: <folder>/quarter/ (25%),
+// <folder>/half/ (50%), <folder>/ (original), made by tools/make-webp.py. We take the
+// smallest one that stays sharp for the actually displayed size of the chosen format
+// (never a fixed value designed for the phone: a Retina screen gets a finer copy).
+let DISPLAY_DIR = null;            // 'quarter/', 'half/' or '' (original); null before the format is chosen
+const FULL_OF_DISPLAY = {};        // preview address -> path of the original (for export)
+let displayTexturesPending = 0;    // preview textures of the current format still loading
 
-// Adresse à afficher pour une image (chemin de l'original en entrée).
+// Address to display for an image (path of the original as input).
 function displayHref(path) {
   if (!DISPLAY_DIR) return path;
   const href = path.replace(/^([^/]+)\//, `$1/${DISPLAY_DIR}`);
@@ -92,10 +90,11 @@ function displayHref(path) {
   return href;
 }
 
-// Copie d'aperçu adaptée : pixels d'écran réels du plateau / pixels de l'original.
-// Forçable pour les vérifications : ?display=quarter|half|full dans l'adresse.
-// Part de la largeur de la zone occupée par le plateau à l'écran : Ignition s'affiche à la hauteur
-// de Vendetta sur les écrans d'au moins 700 px (même règle que css/paper-ui.css, #bwrap.board-ignition).
+// Suitable preview copy: real screen pixels of the board / pixels of the original.
+// Can be forced for checks: ?display=quarter|half|full in the address.
+// Share of the width of the area the board occupies on screen: Ignition is displayed at the
+// height of Vendetta on screens at least 700 px wide (same rule as css/paper-ui.css,
+// #bwrap.board-ignition).
 function boardDisplayFraction() {
   return BOARD_TYPE === 'ignition' && window.matchMedia('(min-width: 700px)').matches ? 2481 / 4961 : 1;
 }
@@ -109,9 +108,9 @@ function pickDisplayDir() {
   return need <= 0.25 ? 'quarter/' : need <= 0.5 ? 'half/' : '';
 }
 
-// Appelé par applyBoardType (ui.js) à chaque choix de format : (re)charge les
-// textures d'aperçu si la copie adaptée change, dans l'ordre voulu par Mayrik
-// (Road, Off-Road, Muddy, puis le reste), puis lance les originaux en arrière-plan.
+// Called by applyBoardType (ui.js) on every format choice: (re)loads the preview
+// textures if the suitable copy changes, in the order wanted by Mayrik (Road, Off-Road,
+// Muddy, then the rest), then starts the originals in the background.
 function setDisplayVariant() {
   const dir = pickDisplayDir();
   if (dir === DISPLAY_DIR) return;
@@ -128,7 +127,7 @@ function setDisplayVariant() {
         img.onerror = () => { console.warn('Preview failed:', displayHref(TEXTURE_PATHS[key])); resolve(); };
         img.src = displayHref(TEXTURE_PATHS[key]);
       });
-      if (DISPLAY_DIR !== dir) return; // format changé entre-temps : un autre chargement a pris le relais
+      if (DISPLAY_DIR !== dir) return; // format changed in the meantime: another load took over
       displayTexturesPending--;
     }
     updateExportButton();
@@ -136,13 +135,13 @@ function setDisplayVariant() {
   })();
 }
 
-// ---- Originaux (export) et polices ----
-// Polices dès l'ouverture de la page (titre de l'appli, puis du plateau). Originaux
-// des images en arrière-plan, une fois les aperçus du premier plateau affichés, pour
-// ne pas leur disputer la connexion. Chacun est converti en base64 (fetch puis
-// FileReader : pas de canevas, aucun risque CORS) pour être intégré au SVG exporté ;
-// les originaux ne sont jamais décodés en image (mémoire), seul l'export les utilise.
-// Le bouton Export se débloque quand tout est prêt (updateExportButton).
+// ---- Originals (export) and fonts ----
+// Fonts from the page opening (app title, then board). Originals of the images in the
+// background, once the previews of the first board are shown, so as not to compete with
+// them for the connection. Each is converted to base64 (fetch then FileReader: no canvas,
+// no CORS risk) to be embedded in the exported SVG; the originals are never decoded into
+// an image (memory), only the export uses them.
+// The Export button is unlocked when everything is ready (updateExportButton).
 const LOAD = { done: 0, failed: 0, total: 0, fullStarted: false };
 
 function updateExportButton() {
@@ -174,12 +173,12 @@ function updateExportButton() {
   }
 }
 
-// Téléchargement qui ne peut pas rester suspendu (bug vu par Mayrik le 22/11 : export bloqué à 98 %,
-// un seul fichier jamais arrivé ; le navigateur n'impose aucun délai à fetch). Méthode des
-// bibliothèques de téléchargement (ky, axios-retry) : une tentative qui ne reçoit plus AUCUNE donnée
-// depuis LOAD_STALL_MS est abandonnée puis relancée, 3 essais au plus, attente croissante (1 s, 3 s).
-// Seule l'absence de données compte : un gros fichier qui arrive lentement n'est jamais coupé.
-// Réglable pour les tests : ?stalltimeout=<ms>.
+// Download that cannot stay suspended (bug seen by Mayrik on 22/11: export stuck at 98%,
+// a single file never arrived; the browser imposes no timeout on fetch). Method of download
+// libraries (ky, axios-retry): an attempt that has received NO data for LOAD_STALL_MS is
+// abandoned then retried, 3 attempts at most, increasing wait (1 s, 3 s).
+// Only the absence of data counts: a large file arriving slowly is never cut.
+// Adjustable for tests: ?stalltimeout=<ms>.
 const LOAD_STALL_MS = +new URLSearchParams(location.search).get('stalltimeout') || 20000;
 const LOAD_RETRY_DELAYS = [1000, 3000];
 const LOAD_PARALLEL = 4;
@@ -191,7 +190,7 @@ function fetchOnce(src) {
   return fetch(src, { signal: ctrl.signal })
     .then(async r => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      if (!r.body || !r.body.getReader) return r.blob(); // navigateur ancien : sans surveillance des données
+      if (!r.body || !r.body.getReader) return r.blob(); // old browser: no data monitoring
       const reader = r.body.getReader(), chunks = [];
       for (;;) {
         arm();
@@ -214,9 +213,9 @@ async function fetchWithRetry(src) {
   }
 }
 
-// Télécharge un fichier et le garde en base64 ; pour les polices, l'enregistre aussi
-// auprès du navigateur (FontFace) — nécessaire pour l'interface, pour canvas
-// measureText() (calage du titre) et pour ne jamais exporter avant qu'elles soient prêtes.
+// Downloads a file and keeps it as base64; for fonts, also registers it with the browser
+// (FontFace) — needed for the interface, for canvas measureText() (title fitting) and to
+// never export before they are ready.
 function loadOne({key, src, type}) {
   return fetchWithRetry(src)
     .then(blob => new Promise((resolve, reject) => {
@@ -228,8 +227,8 @@ function loadOne({key, src, type}) {
     .then(dataUrl => {
       IMAGES_B64[src] = dataUrl;
       if (type === 'font') return registerFont(key, dataUrl);
-      // Image de titre par défaut : ne remplace jamais une image déjà chargée par
-      // l'utilisateur ; décodée dans tous les cas (voir allImagesReady).
+      // Default title image: never replaces an image already loaded by the
+      // user; decoded in all cases (see allImagesReady).
       if (type === 'defaultTitle') return new Promise(resolve => {
         const img = new Image();
         img.onload = () => { DEFAULT_TITLE_IMAGE = img; if (!TITLE_IMAGE) TITLE_IMAGE = img; defaultTitleImageDecoded = true; resolve(); };
@@ -247,13 +246,13 @@ function loadOne({key, src, type}) {
 
 const FONT_FACES = {
   alfaslabone:  { family: 'AlfaSlabOne',      weight: '400',     set: d => { FONT_B64_ALFASLABONE = d; },  ready: () => { ALFASLABONE_READY = true; } },
-  // Police variable : plage de graisse déclarée (200-700), utilisée à 700.
+  // Variable font: declared weight range (200-700), used at 700.
   oswald:       { family: 'OswaldBold',       weight: '200 700', set: d => { FONT_B64_OSWALD = d; },       ready: () => { OSWALD_READY = true; } },
   cooperhewitt: { family: 'CooperHewittBold', weight: '700',     set: d => { FONT_B64_COOPERHEWITT = d; }, ready: () => { COOPERHEWITT_READY = true; } },
 };
 function registerFont(key, dataUrl) {
   const f = FONT_FACES[key];
-  f.set(dataUrl); // intégrée au SVG (affichage et export), voir buildBoard
+  f.set(dataUrl); // embedded in the SVG (display and export), see buildBoard
   if (document.getElementById('bsvg').firstChild) buildBoard();
   let face;
   try { face = new FontFace(f.family, `url(${dataUrl})`, { style: 'normal', weight: f.weight }); }
@@ -266,9 +265,9 @@ function registerFont(key, dataUrl) {
   }).catch(() => {});
 }
 
-// Originaux des images, dans l'ordre voulu par Mayrik : Road, Off-Road, Muddy, les
-// Impassable un par un, puis tout le reste en parallèle (image de titre par défaut
-// en dernier, la moins prioritaire).
+// Originals of the images, in the order wanted by Mayrik: Road, Off-Road, Muddy, the
+// Impassable ones one by one, then everything else in parallel (default title image
+// last, the lowest priority).
 function fullResItems() {
   const overlaySources = [
     HAZARD_1, HAZARD_2, HAZARD_3, OIL_1, OIL_2, RAMP, MULTI_RAMP, MINEFIELD,
@@ -291,9 +290,9 @@ function startFullResLoading() {
   updateExportButton();
   (async () => {
     for (const item of sequential) await loadOne(item);
-    // Au plus LOAD_PARALLEL téléchargements à la fois (comme p-limit) : chacun reçoit ses données
-    // dès son départ, sans patienter dans la file du navigateur, où la surveillance des données
-    // (fetchOnce) le prendrait à tort pour suspendu (22 relances sur connexion lente sinon).
+    // At most LOAD_PARALLEL downloads at a time (like p-limit): each receives its data
+    // from the start, without waiting in the browser's queue, where the data monitoring
+    // (fetchOnce) would wrongly take it for suspended (otherwise 22 retries on a slow connection).
     const queue = parallel.slice();
     const worker = async () => { while (queue.length) await loadOne(queue.shift()); };
     for (let i = 0; i < LOAD_PARALLEL; i++) worker();
@@ -301,8 +300,8 @@ function startFullResLoading() {
 }
 
 window.addEventListener('load', function () {
-  // Polices d'abord : Alfa Slab One et Oswald (titre de l'appli et du plateau), puis
-  // Cooper Hewitt (numéro Ignition).
+  // Fonts first: Alfa Slab One and Oswald (app and board title), then
+  // Cooper Hewitt (Ignition number).
   const fonts = [
     { key: 'alfaslabone', src: ALFA_SLAB_ONE_FONT_URL, type: 'font' },
     { key: 'oswald', src: OSWALD_BOLD_FONT_URL, type: 'font' },

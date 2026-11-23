@@ -1,16 +1,16 @@
-// ===== js/export.js — Export PNG à 300 dpi, image de titre personnalisée, champs nom / numéro.
+// ===== js/export.js — 300 dpi PNG export, custom title image, name / number fields.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope and are loaded
+// in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in that file or the previous
+// ones; functions, called later, see everything.
 
-// ---- Résolution d'impression écrite dans le PNG (tranche 5a) ----
-// Un PNG produit par canvas.toBlob ne dit pas à quelle densité l'imprimer : avec « Taille
-// réelle / 100 % », un logiciel peut supposer 72 ou 96 dpi et imprimer à la mauvaise taille.
-// Correction standard, décrite par la spécification PNG du W3C (§ 11.3.5.3, bloc pHYs) et
-// utilisée par les bibliothèques comme changeDPI : insérer un bloc pHYs juste après l'en-tête
-// IHDR, sans réencoder l'image (pixels strictement identiques). Unité : pixels par mètre
+// ---- Print resolution written into the PNG (slice 5a) ----
+// A PNG produced by canvas.toBlob does not say at what density to print it: with "Actual
+// size / 100%", a program may assume 72 or 96 dpi and print at the wrong size.
+// Standard fix, described by the W3C PNG specification (§ 11.3.5.3, pHYs chunk) and used by
+// libraries such as changeDPI: insert a pHYs chunk right after the IHDR header, without
+// re-encoding the image (pixels strictly identical). Unit: pixels per metre
 // (300 dpi = 11 811 px/m).
 const PNG_CRC_TABLE = (() => {
   const t = new Uint32Array(256);
@@ -25,9 +25,9 @@ function pngCrc(bytes) {
 function withPngDpi(blob, dpi) {
   return blob.arrayBuffer().then(buf => {
     const src = new Uint8Array(buf);
-    // Signature PNG (8 octets) puis IHDR : 4 (longueur) + 4 (type) + 13 (données) + 4 (CRC).
+    // PNG signature (8 bytes) then IHDR: 4 (length) + 4 (type) + 13 (data) + 4 (CRC).
     const afterIhdr = 8 + 4 + 4 + 13 + 4;
-    // Retire un éventuel bloc pHYs déjà présent, puis insère le nôtre après IHDR.
+    // Remove any pHYs chunk already present, then insert ours after IHDR.
     const parts = [src.subarray(0, afterIhdr)];
     let pos = afterIhdr;
     while (pos < src.length) {
@@ -40,19 +40,19 @@ function withPngDpi(blob, dpi) {
     const chunk = new Uint8Array(4 + 4 + 9 + 4);
     const dv = new DataView(chunk.buffer);
     dv.setUint32(0, 9);
-    chunk.set([0x70, 0x48, 0x59, 0x73], 4); // « pHYs »
-    dv.setUint32(8, ppm); dv.setUint32(12, ppm); chunk[16] = 1; // unité : mètre
+    chunk.set([0x70, 0x48, 0x59, 0x73], 4); // "pHYs"
+    dv.setUint32(8, ppm); dv.setUint32(12, ppm); chunk[16] = 1; // unit: metre
     dv.setUint32(17, pngCrc(chunk.subarray(4, 17)));
     parts.splice(1, 0, chunk);
     return new Blob(parts, { type: 'image/png' });
-  }).catch(() => blob); // en cas d'imprévu, on exporte le PNG tel quel plutôt que rien
+  }).catch(() => blob); // if anything unexpected happens, export the PNG as is rather than nothing
 }
 
-// ---- Papier d'impression : International / US (tranche 5b, choix dans la fenêtre d'export) ----
-// Même rendu du plateau, posé au centre d'une page de la taille du papier, avec un décalage d'un
-// nombre ENTIER de pixels (aucun redimensionnement : taille réelle conservée). Zone imprimée :
-// 268,7 mm de haut — marges de 14 mm en A3 / A4, de 5,3 mm en Tabloid / Letter (calcul du plan,
-// docs/roadmap.md § Phase 5). En International, la page est le plateau lui-même (export inchangé).
+// ---- Print paper: International / US (slice 5b, chosen in the export dialog) ----
+// Same board rendering, placed at the centre of a page of the paper size, with a WHOLE number
+// of pixels as offset (no resizing: actual size kept). Printed area: 268.7 mm high — margins
+// of 14 mm on A3 / A4, 5.3 mm on Tabloid / Letter (calculation from the plan,
+// docs/roadmap.md § Phase 5). In International, the page is the board itself (export unchanged).
 const PAPERS = {
   vendetta: { intl: { name: 'A3', w: 4961, h: 3508, desc: 'A3, landscape' },
               us:   { name: 'Tabloid', w: 5100, h: 3300, desc: 'Tabloid (11×17″), landscape' } },
@@ -60,7 +60,7 @@ const PAPERS = {
               us:   { name: 'Letter', w: 2550, h: 3300, desc: 'Letter (8.5×11″), portrait' } },
 };
 const PAPER_REGION_KEY = 'trv_road_tile_paper_region_v1';
-// Pays au papier Letter (et Tabloid) : choix par défaut US, d'après la région du navigateur.
+// Countries using Letter (and Tabloid) paper: default to US, based on the browser region.
 const LETTER_REGIONS = ['US', 'CA', 'MX', 'PH'];
 function defaultPaperRegion() {
   try { const r = localStorage.getItem(PAPER_REGION_KEY); if (r === 'intl' || r === 'us') return r; } catch (e) {}
@@ -75,13 +75,13 @@ function setPaperRegion(r) {
   try { localStorage.setItem(PAPER_REGION_KEY, r); } catch (e) {}
   refreshExportDialog();
 }
-// Zone réellement occupée par le plateau (titre + 6 rangées), en pixels à 300 dpi.
+// Area actually occupied by the board (title + 6 rows), in pixels at 300 dpi.
 function boardContentBox() {
   const lefts = BANDS.slice(1).map(b => b.left);
   return { left: Math.min(...lefts), right: Math.max(...lefts) + COLS * CELL_SLOT + NOTCH,
            top: BANDS[0].top, bottom: BANDS[ROWS].bot };
 }
-// Décalage entier qui centre le plateau sur la page du papier choisi (0, 0 en International).
+// Whole-number offset that centres the board on the chosen paper page (0, 0 in International).
 function pageOffset(paper) {
   if (paper.w === VW && paper.h === VH) return { x: 0, y: 0 };
   const c = boardContentBox();
@@ -90,8 +90,8 @@ function pageOffset(paper) {
 }
 function refreshExportDialog() {
   document.getElementById('export-paper').textContent = currentPaper().desc;
-  // Marges : 14 mm en A3 / A4, seulement 5,3 mm en haut et en bas en Tabloid / Letter (la plupart
-  // des imprimantes impriment à partir de 3 à 5 mm du bord ; certaines coupent davantage).
+  // Margins: 14 mm on A3 / A4, only 5.3 mm top and bottom on Tabloid / Letter (most printers
+  // print from 3 to 5 mm from the edge; some cut more).
   document.getElementById('export-note').textContent = paperRegion === 'us'
     ? 'US paper leaves narrow margins (5 mm top and bottom): most printers print everything; a few may trim a thin edge.'
     : 'The board keeps white margins, so nothing gets cut at 100%.';
@@ -101,12 +101,12 @@ function refreshExportDialog() {
   document.getElementById('paper-us-name').textContent = names.us.name;
 }
 
-// ---- Fenêtre d'export (consigne d'impression, demande de Mayrik du 19/11) ----
-// Les logiciels d'impression ne proposent jamais 100 % d'eux-mêmes (Aperçu : « Imprimer
-// toute l'image » ≈ 97-98 % ; Acrobat Reader : « Ajuster ») ; la pratique du print & play est
-// une consigne « 100 % / Taille réelle ». Elle s'affiche au clic sur « Export image », et la
-// fenêtre occupe le temps du téléchargement des originaux : son bouton « Download PNG »
-// (#export-btn, logique d'export inchangée) se débloque quand tout est prêt.
+// ---- Export dialog (printing instruction, Mayrik's request of 19/11) ----
+// Printing programs never offer 100% by themselves (Preview: "Print entire image" ≈ 97-98%;
+// Acrobat Reader: "Fit"); print & play practice is an instruction "100% / Actual size". It is
+// shown on clicking "Export image", and the dialog fills the time needed to download the
+// originals: its "Download PNG" button (#export-btn, export logic unchanged) is unlocked
+// when everything is ready.
 function openExportDialog() {
   refreshExportDialog();
   document.getElementById('export-dialog').hidden = false;
@@ -118,7 +118,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !document.getElementById('export-dialog').hidden) { e.preventDefault(); closeExportDialog(); }
 });
 
-// Chargement de jsPDF (js/vendor/jspdf-4.2.1.umd.min.js, licence MIT) à la première demande.
+// Loading of jsPDF (js/vendor/jspdf-4.2.1.umd.min.js, MIT licence) on first request.
 let jsPdfLoading = null;
 function loadJsPdf() {
   if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
@@ -132,12 +132,12 @@ function loadJsPdf() {
 }
 
 // ---- Export PNG ----
-// À l'écran, le plateau affiche des aperçus (displayHref, tranche 1c) ; dans la copie
-// exportée, chaque image est remplacée par son original en pleine définition, déjà
-// converti en base64 (IMAGES_B64) : même position, même taille, export inchangé.
+// On screen, the board shows previews (displayHref, slice 1c); in the exported copy, each
+// image is replaced by its full-resolution original, already converted to base64
+// (IMAGES_B64): same position, same size, export unchanged.
 // The export button is locked during export to prevent double-clicks.
-// format : 'png' (bouton « Download PNG ») ou 'pdf' (« Download PDF », tranche 5c). Même rendu ;
-// en PDF, la même image (sans perte) est posée sur une page de la taille exacte du papier.
+// format: 'png' ("Download PNG" button) or 'pdf' ("Download PDF", slice 5c). Same rendering;
+// for PDF, the same (lossless) image is placed on a page of the exact paper size.
 function exportPNG(format = 'png') {
   const btn = document.getElementById('export-btn');
   const label = document.getElementById('export-label');
@@ -157,13 +157,13 @@ function exportPNG(format = 'png') {
   const svg = document.getElementById('bsvg');
   const clone = svg.cloneNode(true);
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
-  clone.querySelector('#layer-cursor')?.remove(); // curseur du clavier : jamais exporté
-  clone.querySelector('#layer-decor-ui')?.remove(); // sélection d'une décoration : jamais exportée
+  clone.querySelector('#layer-cursor')?.remove(); // keyboard cursor: never exported
+  clone.querySelector('#layer-decor-ui')?.remove(); // selection of a decoration: never exported
   clone.setAttribute('width', String(VW));
   clone.setAttribute('height', String(VH));
 
-  // Aperçus -> originaux (base64). Un original manquant arrête l'export plutôt que de
-  // produire un plateau incomplet ou en basse définition.
+  // Previews -> originals (base64). A missing original stops the export rather than
+  // producing an incomplete or low-resolution board.
   const missing = [];
   clone.querySelectorAll('image').forEach(im => {
     const href = im.getAttribute('href');
@@ -184,7 +184,7 @@ function exportPNG(format = 'png') {
   const svgStr = new XMLSerializer().serializeToString(clone);
   const blob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
   const url = URL.createObjectURL(blob);
-  // Page du papier choisi (International : le plateau lui-même ; US : page Tabloid / Letter).
+  // Page of the chosen paper (International: the board itself; US: Tabloid / Letter page).
   const paper = currentPaper(), off = pageOffset(paper);
   const canvas = document.createElement('canvas');
   canvas.width = paper.w;
@@ -196,20 +196,20 @@ function exportPNG(format = 'png') {
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, paper.w, paper.h);
-    ctx.drawImage(img, off.x, off.y, VW, VH); // décalage entier, même taille : aucun redimensionnement
+    ctx.drawImage(img, off.x, off.y, VW, VH); // whole-number offset, same size: no resizing
     URL.revokeObjectURL(url);
     const download = (b, ext) => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(b);
-      a.download = boardFileBaseName() + '-' + paper.name + ext; // règle commune avec le projet (js/project.js)
+      a.download = boardFileBaseName() + '-' + paper.name + ext; // rule shared with the project file (js/project.js)
       a.click();
-      closeExportDialog(); // téléchargement lancé : la consigne a été lue
+      closeExportDialog(); // download started: the instruction has been read
       playSound('export');
       unlock();
     };
     if (format === 'pdf') {
-      // jsPDF chargé seulement maintenant (420 Ko, inutile à l'ouverture de la page). Image sans
-      // perte (PNG dans le PDF, mêmes pixels que l'export PNG), page à la taille exacte du papier.
+      // jsPDF is loaded only now (420 KB, not needed when the page opens). Lossless image
+      // (PNG inside the PDF, same pixels as the PNG export), page at the exact paper size.
       loadJsPdf().then(() => setTimeout(() => {
         try {
           const wmm = paper.w / 300 * 25.4, hmm = paper.h / 300 * 25.4;
@@ -232,20 +232,19 @@ function exportPNG(format = 'png') {
     // image cache already holds fully-decoded copies of those same data URIs).
     // img.decode() explicitly waits for full decode before we paint to canvas.
     //
-    // Le titre du plateau (FAN-MADE CHAPTER / THE / nom de la route) utilise les
-    // polices Alfa Slab One / Oswald intégrées en base64 dans le <style> du SVG —
-    // le même genre de souci s'applique au TEXTE : décoder l'image ne garantit pas que Safari a
-    // fini d'appliquer cette police custom aux glyphes avant de rastériser, d'où
-    // un titre parfois manquant au tout premier export après ouverture. On
-    // attend en plus explicitement document.fonts.ready avant de peindre.
+    // The board title (FAN-MADE CHAPTER / THE / road name) uses the Alfa Slab One / Oswald
+    // fonts embedded as base64 in the SVG's <style> — the same kind of problem applies to
+    // the TEXT: decoding the image does not guarantee that Safari has finished applying that
+    // custom font to the glyphs before rasterizing, hence a title sometimes missing on the
+    // very first export after opening. We also explicitly wait for document.fonts.ready
+    // before painting.
     //
-    // Marge renforcée (setTimeout + 3 rAF au lieu de 2) : depuis que l'ombrage du
-    // titre reprend aussi le contour noir sur chaque copie empilée (40+20+20
-    // éléments avec fill ET stroke, au lieu du texte seul), le premier rendu de
-    // ces polices custom est nettement plus lourd à calculer pour Safari — le
-    // délai précédent (2 rAF) ne suffisait plus toujours en usage réel (retour
-    // de Mayrik). Non vérifiable directement dans cet environnement de test
-    // (pas de vrai Safari/WebKit disponible ici) : à reconfirmer en usage réel.
+    // Reinforced margin (setTimeout + 3 rAF instead of 2): since the title shading also
+    // repeats the black outline on every stacked copy (40+20+20 elements with fill AND
+    // stroke, instead of the text alone), the first rendering of these custom fonts is
+    // much heavier to compute for Safari — the previous delay (2 rAF) was no longer always
+    // enough in real use (feedback from Mayrik). Cannot be verified directly in this test
+    // environment (no real Safari/WebKit available here): to be reconfirmed in real use.
     const decodeStep = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
     decodeStep
       .then(() => document.fonts.ready)
@@ -260,11 +259,11 @@ function exportPNG(format = 'png') {
   img.src = url;
 }
 
-// Avertissement « image trop petite » (19/11) : résolution réelle de l'image une fois posée dans son
-// cadre (titleImageBox, js/render-layers.js). Elle remplit tout le cadre (preserveAspectRatio
-// « slice ») : le côté le plus juste fixe l'agrandissement. Seuil 225 dpi = 75 % de la taille
-// conseillée (les imprimeurs visent 300 dpi, 150 dpi est un plancher souvent visible). Recalculé à
-// chaque changement de format (applyBoardType) : le cadre n'a pas la même largeur.
+// "Image too small" warning (19/11): real resolution of the image once placed in its frame
+// (titleImageBox, js/render-layers.js). It fills the whole frame (preserveAspectRatio
+// "slice"): the tightest side sets the enlargement. Threshold 225 dpi = 75% of the
+// recommended size (printers aim for 300 dpi, 150 dpi is a floor that is often visible).
+// Recomputed on every format change (applyBoardType): the frame does not have the same width.
 const TITLE_IMAGE_MIN_DPI = 225;
 function titleImageDpi(img) {
   const box = titleImageBox();
@@ -278,9 +277,9 @@ function refreshTitleImageWarning() {
   warn.style.display = dpi < TITLE_IMAGE_MIN_DPI ? 'inline' : 'none';
 }
 
-// Adopte une image de titre déjà décodée (en data: URL, seule forme utilisable dans le SVG
-// exporté) : après un choix de fichier (loadTitleImage) ou une restauration (autosave.js).
-// Idée reprise de la PR #1 de ChessMess.
+// Adopts an already decoded title image (as a data: URL, the only form usable in the
+// exported SVG): after a file choice (loadTitleImage) or a restore (autosave.js).
+// Idea taken from ChessMess's PR #1.
 function applyTitleImage(img) {
   TITLE_IMAGE = img;
   refreshTitleImageWarning();
@@ -308,11 +307,10 @@ function loadTitleImage(input) {
   input.value = '';
 }
 
-// Efface l'image de titre chargée par l'utilisateur et revient à celle
-// préchargée par défaut à l'ouverture (DEFAULT_TITLE_IMAGE, conservée à part
-// justement pour permettre ce retour en arrière). Si le chargement par défaut
-// n'est pas encore terminé (ou a échoué), retombe simplement sur le fond marron
-// uni — même comportement que si aucune image n'avait jamais été chargée.
+// Clears the title image loaded by the user and goes back to the one preloaded by default
+// at opening (DEFAULT_TITLE_IMAGE, kept separately precisely to allow this return). If the
+// default loading is not finished yet (or failed), simply falls back to the plain brown
+// background — same behaviour as if no image had ever been loaded.
 function resetTitleImage() {
   TITLE_IMAGE = DEFAULT_TITLE_IMAGE;
   document.getElementById('title-img-warn').style.display = 'none';
@@ -322,7 +320,7 @@ function resetTitleImage() {
   notifyBoardChange('title-image');
 }
 
-// Compteur de caractères du nom de route (aussi appelé par setBoardState).
+// Character counter for the road name (also called by setBoardState).
 function refreshTitleCounter() {
   const l = document.getElementById('title-input').value.length;
   const cc = document.getElementById('cc');
@@ -340,7 +338,7 @@ document.getElementById('title-input').addEventListener('input', function () {
   notifyBoardChange('title');
 });
 
-// Champ numéro de plateau (Ignition uniquement) : chiffres uniquement, 3 max.
+// Board number field (Ignition only): digits only, 3 max.
 document.getElementById('board-number-input').addEventListener('input', function () {
   this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);
   buildBoard();

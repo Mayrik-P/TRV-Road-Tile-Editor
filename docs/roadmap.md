@@ -419,6 +419,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    s'il est testé sur téléphone et ordinateur, fonctionnel et optimisé ; interdit d'extraire les
    graphismes du jeu pour les diffuser ailleurs ; commentaires du code en anglais (traduction des
    commentaires existants) ; nom « Mayrik PADEY » ; pas d'e-mail personnel.
+   Traduction faite le 23/11 (1 214 commentaires, 33 fichiers) : code sans commentaires identique jeton
+   par jeton au commit d'avant (vérificateur acorn), exports identiques, tous les tests verts.
 
 ---
 

@@ -1,33 +1,33 @@
-// ===== js/decor.js — Décorations libres (phase 7, docs/roadmap.md ; décisions de Mayrik du 22/11).
+// ===== js/decor.js — Free decorations (phase 7, docs/roadmap.md; Mayrik's decisions of 22/11).
 //
-// Remplace la pose automatique (une décoration au hasard par zone homogène, retirée avec l'accord de
-// Mayrik). Fonctionnement des logiciels de cartes (Dungeondraft, Inkarnate, Wonderdraft) et des
-// éditeurs à autocollants (Canva) : on choisit une image dans la bibliothèque (rangée « Decorations »
-// de la palette), un clic sur le plateau la pose, on la fait glisser pour la déplacer, on la
-// sélectionne puis ✕ (ou Suppr) pour la retirer. Souris et doigt (Pointer Events).
+// Replaces the automatic placement (one random decoration per uniform area, removed with
+// Mayrik's agreement). Works like map software (Dungeondraft, Inkarnate, Wonderdraft) and
+// sticker editors (Canva): you pick an image from the library ("Decorations" row of the
+// palette), a click on the board places it, you drag it to move it, you select it then ✕
+// (or Delete) to remove it. Mouse and finger (Pointer Events).
 //
-// Deux modes, comme les calques actifs des logiciels de dessin : « paint » (choix d'un type de case :
-// le pinceau peint, à travers les décorations) et « decor » (choix d'une décoration : les clics sur
-// le plateau visent les décorations ; le pinceau est mis de côté).
+// Two modes, like the active layers of drawing software: "paint" (a tile type is chosen:
+// the brush paints, through the decorations) and "decor" (a decoration is chosen: clicks on
+// the board target the decorations; the brush is set aside).
 //
-// Données : `decorations` (js/config.js), dans la photo du plateau (getBoardState) : annulable,
-// sauvegardée, dans le fichier de projet et l'export. Toute modification passe par addDecoration /
-// moveDecoration / removeDecoration, qui émettent le signal 'decor' (une étape d'annulation chacune).
-// Calque `layer-decor` SOUS les masques blancs (js/build-board.js) : ce qui déborde sur les marges
-// est caché, la bande de titre reste découverte (choix de Mayrik). Sélection et ✕ dans
-// `layer-decor-ui`, retiré de la copie exportée.
+// Data: `decorations` (js/config.js), in the board snapshot (getBoardState): undoable, saved,
+// in the project file and the export. Every change goes through addDecoration /
+// moveDecoration / removeDecoration, which emit the 'decor' signal (one undo step each).
+// Layer `layer-decor` UNDER the white masks (js/build-board.js): whatever overflows into the
+// margins is hidden, the title band stays uncovered (Mayrik's choice). Selection and ✕ in
+// `layer-decor-ui`, removed from the exported copy.
 
-const DECOR_SIZE = 378;   // images items/ : 378 × 378 px à 300 dpi (taille réelle, jamais réduite)
-// Cercle de chaque dessin dans son cadre de 378 px : [rayon, décalage x, décalage y] du centre,
-// mesurés sur items/source/*.png (zone non transparente, + 25 px) ; sert à la prise et à la sélection.
+const DECOR_SIZE = 378;   // items/ images: 378 × 378 px at 300 dpi (actual size, never reduced)
+// Circle of each drawing in its 378 px frame: [radius, x offset, y offset] of the centre,
+// measured on items/source/*.png (non-transparent area, + 25 px); used for grabbing and selection.
 const DECOR_SHAPES = [[108, -8, 22], [196, 0, 4], [106, -5, -10], [207, -20, -83], [103, 0, 0], [198, 1, 26],
   [94, 1, -24], [198, -51, -37], [148, -42, -17], [92, 0, 0], [130, 22, -40], [64, 0, 0]];
-const DECOR_MIN_HIT_CSS = 22; // zone de prise jamais plus petite que 22 px d'écran (doigt)
+const DECOR_MIN_HIT_CSS = 22; // grab area never smaller than 22 screen px (finger)
 function decorShape(d) { const [r, ox, oy] = DECOR_SHAPES[d.item - 1]; return { r, cx: d.x + ox, cy: d.y + oy }; }
-const DECOR_REMOVE_CSS = 13; // rayon du bouton ✕ en pixels d'écran (même taille au doigt sur téléphone)
+const DECOR_REMOVE_CSS = 13; // radius of the ✕ button in screen pixels (same size for a finger on a phone)
 const decor = { mode: 'paint', item: 1, selected: -1, drag: null };
 
-// Zone où le centre d'une décoration peut se trouver : cases et bande de titre.
+// Area where the centre of a decoration may lie: cells and title band.
 function decorBounds() {
   return { minX: GAME_X, maxX: GAME_X + GAME_W, minY: BANDS[0].top, maxY: GAME_Y + GAME_H };
 }
@@ -36,7 +36,7 @@ function clampToDecorBounds(x, y) {
   return { x: Math.min(b.maxX, Math.max(b.minX, x)), y: Math.min(b.maxY, Math.max(b.minY, y)) };
 }
 
-// ---- Modifications (points d'entrée uniques, signal 'decor') ----
+// ---- Changes (single entry points, 'decor' signal) ----
 function addDecoration(item, x, y) {
   const p = clampToDecorBounds(x, y);
   decorations.push({ item, x: Math.round(p.x), y: Math.round(p.y) });
@@ -58,7 +58,7 @@ function removeDecoration(i) {
   notifyBoardChange('decor', { action: 'remove' });
 }
 
-// Toutes les décorations retirées (« Clear board », js/editing.js, dans son étape d'annulation).
+// Removes all decorations ("Clear board", js/editing.js, within its undo step).
 function clearDecorations() {
   if (!decorations.length) return;
   decorations = [];
@@ -68,7 +68,7 @@ function clearDecorations() {
 }
 
 // ---- Dessin ----
-// Ordre de profondeur de la vue du plateau : plus bas = devant (comme les overlays).
+// Depth order of the board view: lower = in front (like the overlays).
 function decorDrawOrder() {
   return decorations.map((d, i) => i).sort((a, b) => decorations[a].y - decorations[b].y || a - b);
 }
@@ -82,14 +82,14 @@ function renderAllDecorations(g) {
     }));
   }
 }
-// Sélection : cercle en pointillés et bouton ✕ (jamais exportés).
+// Selection: dashed circle and ✕ button (never exported).
 function renderDecorUI(g) {
   const d = decor.mode === 'decor' && decorations[decor.selected];
   if (!d) return;
   const sel = decorSelectionGeometry(d);
   if (!sel) return;
   const { grab, R, rx, ry } = sel;
-  // Cercle = vraie zone de prise (jamais sous 22 px d'écran). Traits d'épaisseur fixe à l'écran.
+  // Circle = real grab area (never under 22 screen px). Strokes of fixed on-screen width.
   g.appendChild(mkEl('circle', { cx: grab.cx, cy: grab.cy, r: grab.r, fill: 'none', stroke: '#f0952c', 'stroke-width': 2.5,
     'stroke-dasharray': '7 4', 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
   const btn = mkEl('g', { id: 'decor-remove', style: 'cursor:pointer' });
@@ -99,13 +99,13 @@ function renderDecorUI(g) {
     stroke: '#f3e6c8', 'stroke-width': 2.5, 'stroke-linecap': 'round', fill: 'none', 'vector-effect': 'non-scaling-stroke' }));
   g.appendChild(btn);
 }
-// Zone de prise et place du ✕ (pixels du plateau). Le ✕ est posé EN DEHORS de la zone de prise, avec
-// un écart en pixels d'écran : il ne la chevauche jamais, même sur téléphone (bug vu par Mayrik le
-// 22/11 : impossible de déplacer une petite décoration sans la supprimer). Coin en haut à droite,
-// sinon un autre coin s'il sortirait du plateau (comme les poignées des éditeurs à autocollants).
+// Grab area and place of the ✕ (board pixels). The ✕ is placed OUTSIDE the grab area, with a gap
+// in screen pixels: it never overlaps it, even on a phone (bug seen by Mayrik on 22/11:
+// impossible to move a small decoration without deleting it). Top-right corner, otherwise
+// another corner if it would leave the board (like the handles of sticker editors).
 function decorScale() {
   const ctm = document.getElementById('bsvg').getScreenCTM();
-  return ctm && ctm.a ? ctm.a : 0.25; // pixels d'écran par pixel du plateau
+  return ctm && ctm.a ? ctm.a : 0.25; // screen pixels per board pixel
 }
 function decorGrab(d, scale) {
   const sh = decorShape(d);
@@ -113,9 +113,9 @@ function decorGrab(d, scale) {
 }
 function decorSelectionGeometry(d) {
   const scale = decorScale(), grab = decorGrab(d, scale), R = DECOR_REMOVE_CSS / scale;
-  const dist = grab.r + R + 4 / scale; // bord à bord : 4 px d'écran d'écart
+  const dist = grab.r + R + 4 / scale; // edge to edge: 4 screen px gap
   const k = dist / Math.SQRT2;
-  const corners = [[1, -1], [-1, -1], [1, 1], [-1, 1]]; // haut droite, haut gauche, bas droite, bas gauche
+  const corners = [[1, -1], [-1, -1], [1, 1], [-1, 1]]; // top right, top left, bottom right, bottom left
   for (const [sx, sy] of corners) {
     const rx = grab.cx + sx * k, ry = grab.cy + sy * k;
     if (rx - R >= 0 && rx + R <= VW && ry - R >= 0 && ry + R <= VH) return { grab, R, rx, ry };
@@ -128,7 +128,7 @@ function redrawDecorations() {
   if (ui) { ui.textContent = ''; renderDecorUI(ui); }
 }
 
-// ---- Palette : rangée « Decorations » (appelée par buildPalette, js/editing.js) ----
+// ---- Palette: "Decorations" row (called by buildPalette, js/editing.js) ----
 function buildDecorPalette() {
   const pal = document.getElementById('palette');
   const row = document.createElement('div');
@@ -146,7 +146,7 @@ function buildDecorPalette() {
     btn.title = 'Decoration ' + (i + 1);
     btn.setAttribute('aria-label', 'Decoration ' + (i + 1));
     const img = document.createElement('img');
-    img.src = path.replace('items/', 'items/thumb/'); // vignette recadrée sur le dessin (tools/make-decor-thumbs.py)
+    img.src = path.replace('items/', 'items/thumb/'); // thumbnail cropped to the drawing (tools/make-decor-thumbs.py)
     img.alt = '';
     btn.appendChild(img);
     btn.onclick = () => selectDecorationItem(i + 1);
@@ -160,7 +160,7 @@ function buildDecorPalette() {
   refreshDecorPalette();
 }
 function refreshDecorPalette() {
-  document.getElementById('palette')?.classList.toggle('decor-on', decor.mode === 'decor'); // quel texte d'aide montrer
+  document.getElementById('palette')?.classList.toggle('decor-on', decor.mode === 'decor'); // which help text to show
   document.querySelectorAll('.decor-btn').forEach(b => b.classList.toggle('sel', decor.mode === 'decor' && b.id === 'decor-' + decor.item));
   document.getElementById('decor-palette')?.classList.toggle('active', decor.mode === 'decor');
   document.getElementById('bsvg')?.classList.toggle('decor-mode', decor.mode === 'decor');
@@ -173,7 +173,7 @@ function selectDecorationItem(n) {
   refreshDecorPalette();
   redrawDecorations();
 }
-// Retour au pinceau (appelé par selectTileType, js/editing.js).
+// Back to the brush (called by selectTileType, js/editing.js).
 function leaveDecorMode() {
   if (decor.mode !== 'decor') return;
   cancelDecorDrag();
@@ -183,13 +183,13 @@ function leaveDecorMode() {
   redrawDecorations();
 }
 
-// ---- Gestes (Pointer Events, en capture : passent avant le pinceau en mode « decor ») ----
+// ---- Gestures (Pointer Events, in capture: run before the brush in "decor" mode) ----
 function toBoardPoint(svg, clientX, clientY) {
   const p = new DOMPoint(clientX, clientY).matrixTransform(svg.getScreenCTM().inverse());
   return { x: p.x, y: p.y };
 }
-function decorAt(p, svg) { // la plus en avant d'abord
-  const scale = svg.getScreenCTM().a; // pixels d'écran par pixel du plateau
+function decorAt(p, svg) { // frontmost first
+  const scale = svg.getScreenCTM().a; // screen pixels per board pixel
   const order = decorDrawOrder();
   for (let k = order.length - 1; k >= 0; k--) {
     const grab = decorGrab(decorations[order[k]], scale);
@@ -204,7 +204,7 @@ function insideDecorBounds(p) {
 function cancelDecorDrag() {
   if (!decor.drag) return;
   decor.drag = null;
-  redrawDecorations(); // remet la décoration à sa place d'avant le geste
+  redrawDecorations(); // puts the decoration back where it was before the gesture
 }
 
 (function installDecorGestures() {
@@ -212,15 +212,15 @@ function cancelDecorDrag() {
 
   svg.addEventListener('pointerdown', e => {
     if (decor.mode !== 'decor') return;
-    e.stopImmediatePropagation(); // le pinceau ne voit rien en mode « decor »
-    if (decor.drag) { // 2e doigt pendant un déplacement : pincement, le déplacement est annulé
+    e.stopImmediatePropagation(); // the brush sees nothing in "decor" mode
+    if (decor.drag) { // 2nd finger during a move: pinch, the move is cancelled
       if (e.pointerType === 'touch' && e.pointerId !== decor.drag.pointerId) cancelDecorDrag();
       return;
     }
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    if (e.target.closest && e.target.closest('#decor-remove')) { // ✕ : agit au relâcher, comme un bouton
+    if (e.target.closest && e.target.closest('#decor-remove')) { // ✕: acts on release, like a button
       decor.drag = { pointerId: e.pointerId, removeArmed: true };
       try { svg.setPointerCapture(e.pointerId); } catch (err) {}
       return;
@@ -229,8 +229,8 @@ function cancelDecorDrag() {
     let i = decorAt(p, svg);
     if (i < 0) {
       if (!insideDecorBounds(p)) { decor.selected = -1; redrawDecorations(); return; }
-      // Nouvelle décoration : montrée tout de suite, ajoutée aux données au lâcher, à sa place finale
-      // (posée puis glissée dans le même geste = une seule étape d'annulation).
+      // New decoration: shown immediately, added to the data on release, at its final place
+      // (placed then dragged in the same gesture = a single undo step).
       const q = clampToDecorBounds(p.x, p.y);
       decor.selected = -1;
       redrawDecorations();
@@ -251,15 +251,15 @@ function cancelDecorDrag() {
   svg.addEventListener('pointermove', e => {
     const dr = decor.drag;
     if (!dr || e.pointerId !== dr.pointerId || dr.removeArmed) return;
-    if (!dr.moved && Math.hypot(e.clientX - dr.startX, e.clientY - dr.startY) < 4) return; // simple clic
+    if (!dr.moved && Math.hypot(e.clientX - dr.startX, e.clientY - dr.startY) < 4) return; // simple click
     dr.moved = true;
     const p = toBoardPoint(svg, e.clientX, e.clientY);
     const q = clampToDecorBounds(p.x - dr.dx, p.y - dr.dy);
-    // Aperçu du déplacement sans toucher aux données (une seule étape d'annulation, au lâcher)
+    // Preview of the move without touching the data (a single undo step, on release)
     const img = dr.adding ? document.getElementById('decor-ghost') : document.querySelector(`#layer-decor [data-decor="${dr.i}"]`);
     if (img) { img.setAttribute('x', q.x - DECOR_SIZE / 2); img.setAttribute('y', q.y - DECOR_SIZE / 2); }
     dr.x = q.x; dr.y = q.y;
-    if (!dr.adding) document.getElementById('layer-decor-ui').textContent = ''; // cercle et ✕ cachés pendant le geste
+    if (!dr.adding) document.getElementById('layer-decor-ui').textContent = ''; // circle and ✕ hidden during the gesture
   }, true);
 
   const finish = e => {
@@ -268,7 +268,7 @@ function cancelDecorDrag() {
     decor.drag = null;
     try { if (svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId); } catch (err) {}
     if (e.type === 'pointercancel') { redrawDecorations(); return; }
-    if (dr.removeArmed) { // retirée seulement si le doigt (ou la souris) est relâché sur le ✕
+    if (dr.removeArmed) { // removed only if the finger (or mouse) is released on the ✕
       const d = decorations[decor.selected], sel = d && decorSelectionGeometry(d), p = toBoardPoint(svg, e.clientX, e.clientY);
       if (sel && Math.hypot(p.x - sel.rx, p.y - sel.ry) <= sel.R * 1.3) removeDecoration(decor.selected);
       return;
@@ -280,8 +280,8 @@ function cancelDecorDrag() {
   svg.addEventListener('pointerup', finish, true);
   svg.addEventListener('pointercancel', finish, true);
 
-  // Clavier : Suppr / Retour arrière retire la décoration sélectionnée, Échap la désélectionne.
-  // En capture sur window : passe avant le clavier du plateau (js/keyboard.js), qui viderait la case.
+  // Keyboard: Delete / Backspace removes the selected decoration, Escape deselects it.
+  // In capture on window: runs before the board keyboard (js/keyboard.js), which would empty the cell.
   window.addEventListener('keydown', e => {
     if (decor.mode !== 'decor' || decor.selected < 0) return;
     const t = e.target;

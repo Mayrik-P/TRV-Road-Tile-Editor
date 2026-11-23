@@ -1,10 +1,10 @@
-// ===== js/geometry.js — Géométrie des cases (polygones, centres, voisins, frontières) et transitions
-// organiques entre terrains, regroupement des zones de même type.
+// ===== js/geometry.js — Cell geometry (polygons, centers, neighbors, boundaries) and organic
+// transitions between terrains, grouping of zones of the same type.
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope
+// and are loaded in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in
+// that file or the previous ones; functions, called later, see everything.
 
 function cellPoly(col, rowIdx) {
   const b = BANDS[rowIdx + 1];
@@ -30,7 +30,7 @@ function mkEl(tag, attrs) {
 }
 
 // Generic overlay placer: positions an <image> centered on (cx,cy) with given size/offset
-// Affiche l'aperçu (displayHref) ; l'export le remplace par l'original (exportPNG).
+// Shows the preview (displayHref); the export replaces it with the original (exportPNG).
 function placeOverlay(svg, href, cx, cy, w, h, dx = 0, dy = 0) {
   const img = mkEl('image', {
     href: displayHref(href),
@@ -86,9 +86,9 @@ function getNeighborPairs() {
   return pairs;
 }
 
-// Trace exact de la frontière réelle entre deux cases :
-// - même ligne : le "V" formé par la pointe du chevron (3 points)
-// - inter-lignes : la ligne droite de bande partagée, sur toute la largeur de recouvrement
+// Exact path of the real boundary between two cells:
+// - same row: the "V" formed by the tip of the chevron (3 points)
+// - between rows: the straight line of the shared band, over the whole overlap width
 function boundaryLine(colA, rowA, colB, rowB) {
   if (rowA === rowB) {
     const b = BANDS[rowA + 1];
@@ -104,8 +104,8 @@ function boundaryLine(colA, rowA, colB, rowB) {
   return [[ox0, y], [ox1, y]];
 }
 
-// Avance de la distance d (longueur d'arc) le long de la polyligne pts,
-// renvoie la position et la normale perpendiculaire à cet endroit.
+// Advances by distance d (arc length) along the polyline pts,
+// returns the position and the perpendicular normal at that point.
 function pointAlong(pts, d) {
   let remaining = d;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -128,9 +128,9 @@ function polylineLength(pts) {
   return L;
 }
 
-// Bruit lisse mais irrégulier : fréquences ET poids relatifs tirés au hasard par frontière
-// (pas de rythme fixe qui se répète), plus une grosse bosse aléatoire ponctuelle pour casser
-// la régularité — comme les gros renflements inégaux qu'on voit sur le plateau original.
+// Smooth but irregular noise: frequencies AND relative weights drawn at random per boundary
+// (no fixed rhythm that repeats), plus one big random bump to break
+// the regularity — like the big uneven swellings seen on the original board.
 function smoothNoise(t, seed) {
   const p1 = seededRandom(seed) * Math.PI * 2;
   const p2 = seededRandom(seed + 1) * Math.PI * 2;
@@ -141,16 +141,16 @@ function smoothNoise(t, seed) {
   let n = Math.sin(t * Math.PI * 2 * f1 + p1) * w1
         + Math.sin(t * Math.PI * 2 * f2 + p2) * w2;
 
-  // Une grosse bosse isolée, à une position aléatoire le long de la frontière
-  const bumpCenter = 0.2 + seededRandom(seed + 5) * 0.6; // évite les extrémités
+  // One big isolated bump, at a random position along the boundary
+  const bumpCenter = 0.2 + seededRandom(seed + 5) * 0.6; // avoids the ends
   const bumpWidth = 0.12 + seededRandom(seed + 6) * 0.12;
   const bumpSign = seededRandom(seed + 7) < 0.5 ? -1 : 1;
   const bumpStrength = 0.4 + seededRandom(seed + 8) * 0.5;
   const d = (t - bumpCenter) / bumpWidth;
   n += bumpSign * bumpStrength * Math.exp(-d * d);
 
-  // Grain fin par-dessus la grande vague : plus haute fréquence, amplitude bien plus petite —
-  // rend le tracé moins "propre/vectoriel" sans casser la forme générale.
+  // Fine grain on top of the big wave: higher frequency, much smaller amplitude —
+  // makes the outline look less "clean/vector" without breaking the general shape.
   const f3 = 6 + seededRandom(seed + 10) * 5;   // 6..11
   const p3 = seededRandom(seed + 11) * Math.PI * 2;
   const f4 = 12 + seededRandom(seed + 12) * 6;  // 12..18
@@ -161,28 +161,28 @@ function smoothNoise(t, seed) {
   return n;
 }
 
-// UNE seule courbe déchirée qui remplace la frontière droite d'origine.
-// Utilisée à la fois pour A et pour B : là où elle penche vers A, B peint jusqu'à
-// cette courbe (et vice versa) — comme c'est la même courbe des deux côtés, aucune
-// couture n'est possible entre les deux textures.
+// ONE single torn curve that replaces the original straight boundary.
+// Used for both A and B: where it leans toward A, B paints up to
+// this curve (and vice versa) — since it is the same curve on both sides, no
+// seam is possible between the two textures.
 function jaggedCurve(pts, amplitude, seed, samples = 50) {
   const L = polylineLength(pts);
   const curve = [];
-  // Intensité globale variable par frontière : certaines calmes, d'autres marquées.
+  // Overall intensity varies per boundary: some calm, others pronounced.
   const intensity = 0.4 + seededRandom(seed + 9) * 0.8; // 0.4..1.2
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
     const { x, y, nx, ny } = pointAlong(pts, t * L);
-    // fenêtre sin(t·π) : force l'amplitude à 0 exactement aux deux extrémités,
-    // pour que la courbe rejoigne parfaitement les vrais coins de la case (pas de trou).
+    // sin(t·π) window: forces the amplitude to 0 exactly at both ends,
+    // so the curve joins the real corners of the cell perfectly (no gap).
     const off = amplitude * intensity * smoothNoise(t, seed) * Math.sin(t * Math.PI);
     curve.push([x + nx * off, y + ny * off]);
   }
   return curve;
 }
 
-// Construit directement le contour fermé complet (ligne droite aller + courbe lissée retour)
-// en un seul passage, sans concaténation fragile de deux chemins distincts.
+// Directly builds the complete closed outline (straight line out + smoothed curve back)
+// in a single pass, without fragile concatenation of two distinct paths.
 function sliverPath(pts, curveReversed) {
   let d = `M ${pts[0][0]},${pts[0][1]} `;
   for (let i = 1; i < pts.length; i++) d += `L ${pts[i][0]},${pts[i][1]} `;
@@ -196,9 +196,9 @@ function sliverPath(pts, curveReversed) {
   return d + 'Z';
 }
 
-// Une seule <image> par terrain est créée (dans <defs>, jamais affichée directement),
-// puis réutilisée via <use> pour chaque transition — évite de dupliquer les données
-// base64 de la texture à chaque paire de cases (gain important en taille/performance).
+// Only one <image> per terrain is created (in <defs>, never displayed directly),
+// then reused via <use> for each transition — avoids duplicating the texture's
+// base64 data for each pair of cells (big gain in size/performance).
 function getSharedTextureImage(defs, base) {
   if (transTexCache[base]) return transTexCache[base];
   const id = `trans-tex-${base}`;
@@ -211,10 +211,10 @@ function getSharedTextureImage(defs, base) {
   return id;
 }
 
-// Remet toujours une paire de cases dans le même ordre canonique, quel que soit
-// celui qui a déclenché le calcul — garantit un tracé identique (même graine
-// aléatoire) que la transition vienne d'une reconstruction complète ou d'une
-// mise à jour incrémentale déclenchée par l'une ou l'autre des deux cases.
+// Always puts a pair of cells back in the same canonical order, whichever
+// one triggered the computation — guarantees an identical outline (same random
+// seed) whether the transition comes from a full rebuild or from an
+// incremental update triggered by either of the two cells.
 function canonicalPair(colA, rowA, colB, rowB) {
   const sameRow = rowA === rowB;
   const aFirst = sameRow ? colA <= colB : rowA <= rowB;
@@ -238,8 +238,8 @@ function drawTransition(target, defs, pairA, pairB) {
     const pts = boundaryLine(colA, rowA, colB, rowB);
     const curve = jaggedCurve(pts, amp, seed);
 
-    // "Sliver" = zone entre la ligne d'origine et la courbe déchirée —
-    // une seule et même forme utilisée pour les deux textures, juste clippée différemment.
+    // "Sliver" = zone between the original line and the torn curve —
+    // one and the same shape used for both textures, just clipped differently.
     const sliverD = sliverPath(pts, curve.slice().reverse());
 
     const clipAId = `tcellA-${uid}`, clipBId = `tcellB-${uid}`;
@@ -270,13 +270,13 @@ function drawTransition(target, defs, pairA, pairB) {
   gB.appendChild(gB2);
   target.appendChild(gB);
   } catch (e) {
-    // Une transition ratée ne doit jamais casser le reste du plateau ni l'export.
+    // A failed transition must never break the rest of the board or the export.
     console.warn('Transition non affichée pour la paire', colA, rowA, colB, rowB, e);
   }
 }
 
-// Voisins directs d'une case (même ligne + inter-lignes), pour ne recalculer
-// que les frontières concernées lors d'une modification incrémentale.
+// Direct neighbors of a cell (same row + between rows), to recompute
+// only the affected boundaries during an incremental change.
 function neighborsOf(col, row) {
   const result = [];
   if (col > 0) result.push([col - 1, row]);

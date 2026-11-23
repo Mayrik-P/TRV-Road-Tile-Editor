@@ -1,23 +1,23 @@
-// ===== js/undoHistory.js — Annuler / Rétablir (tranche 2a) : historique par photos du plateau,
-// boutons Undo / Redo, raccourcis Ctrl+Z / Ctrl+Y (Cmd sur Mac).
+// ===== js/undoHistory.js — Undo / Redo (slice 2a): history of board snapshots,
+// Undo / Redo buttons, Ctrl+Z / Ctrl+Y shortcuts (Cmd on Mac).
 //
-// Script classique (pas de module) : tous les fichiers js/ partagent la même portée
-// globale et sont chargés dans l'ordre fixe des <script> de index.html (seule référence).
-// Le code exécuté au chargement d'un fichier ne peut utiliser que ce qui est déclaré dans
-// ce fichier ou dans les précédents ; les fonctions, appelées plus tard, voient tout.
+// Classic script (not a module): all js/ files share the same global scope
+// and are loaded in the fixed order of the <script> tags in index.html (the only reference).
+// Code run when a file loads can only use what is declared in
+// that file or the previous ones; functions, called later, see everything.
 //
-// Méthode : historique par instantanés (« snapshots ») — après chaque modification,
-// une photo complète du plateau (getBoardState, ~1 Ko) ; annuler = remettre la photo
-// précédente (setBoardState). Le plateau ne fait que 24 à 48 cases : c'est la solution
-// la plus simple et la plus sûre (même principe qu'Excalidraw), sans avoir à écrire
-// l'inverse de chaque action. L'historique s'abonne au signal unique de state.js : rien
-// à ajouter ailleurs quand une nouvelle action apparaîtra.
+// Method: history by snapshots — after each change,
+// a full snapshot of the board (getBoardState, ~1 KB); undo = put back the previous
+// snapshot (setBoardState). The board only has 24 to 48 cells: this is the simplest
+// and safest solution (same principle as Excalidraw), with no need to write
+// the inverse of each action. The history subscribes to the single signal of state.js: nothing
+// to add elsewhere when a new action appears.
 //
-// Regroupements (une seule étape d'annulation) :
-//   - frappe dans le nom ou le numéro du plateau : lettres successives fusionnées ;
-//   - geste en plusieurs modifications (futur coup de pinceau) : beginAction() /
-//     endAction() autour du geste.
-// Non annulable : l'image de titre personnalisée (hors de la photo, trop lourde).
+// Groupings (a single undo step):
+//   - typing in the board name or number: successive letters are merged;
+//   - gesture made of several changes (future brush stroke): beginAction() /
+//     endAction() around the gesture.
+// Not undoable: the custom title image (outside the snapshot, too heavy).
 
 const HISTORY_LIMIT = 200;
 const undoHistory = { past: [], future: [], current: null, lastReason: null, applying: false, batch: 0, batchDirty: false,
@@ -25,7 +25,7 @@ const undoHistory = { past: [], future: [], current: null, lastReason: null, app
 
 function sameState(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 
-// Enregistre l'état actuel comme nouvelle étape (ou le fusionne avec la précédente).
+// Records the current state as a new step (or merges it with the previous one).
 function recordState(reason) {
   const snap = getBoardState();
   if (undoHistory.current && sameState(snap, undoHistory.current)) return;
@@ -42,24 +42,24 @@ function recordState(reason) {
 
 boardEvents.addEventListener('change', e => {
   const reason = e.detail.reason;
-  // Restauration venue d'ailleurs (sauvegarde, fichier) : nouveau point de départ.
+  // Restoration coming from elsewhere (save, file): new starting point.
   if (reason === 'restore' && !undoHistory.applying) { setHistoryBaseline(getBoardState()); return; }
   if (undoHistory.applying || reason === 'restore' || reason === 'title-image') return;
   if (undoHistory.batch > 0) { undoHistory.batchDirty = true; return; }
   recordState(reason);
 });
 
-// Historique vidé, avec cet état comme point de départ (restauration, ou plateau en cours
-// avant « nouveau plateau » depuis l'accueil : autosave.js).
+// History emptied, with this state as the starting point (restoration, or the current board
+// before "new board" from the home screen: autosave.js).
 function setHistoryBaseline(state) {
   undoHistory.past = []; undoHistory.future = [];
   undoHistory.current = state; undoHistory.lastReason = null;
   updateHistoryButtons();
 }
 
-// Geste en plusieurs modifications (coup de pinceau…) : une seule étape d'annulation.
-// kind ('brush', 'clear'…) et actionSeq (numéro du geste) se lisent pendant le geste, par
-// exemple par les sons (js/sounds.js) : 1re case d'un coup de pinceau, « Clear board » entier.
+// Gesture made of several changes (brush stroke…): a single undo step.
+// kind ('brush', 'clear'…) and actionSeq (gesture number) can be read during the gesture, for
+// example by the sounds (js/sounds.js): 1st cell of a brush stroke, whole "Clear board".
 function beginAction(kind) {
   if (undoHistory.batch === 0) { undoHistory.actionSeq++; undoHistory.actionKind = kind || null; }
   undoHistory.batch++;
@@ -70,8 +70,8 @@ function endAction() {
   if (undoHistory.batch === 0 && undoHistory.batchDirty) { undoHistory.batchDirty = false; recordState('action'); }
 }
 
-// Geste interrompu (2e doigt d'un pincement…) : le plateau revient à l'état d'avant le
-// geste, sans laisser d'étape dans l'historique.
+// Interrupted gesture (2nd finger of a pinch…): the board goes back to its state before the
+// gesture, without leaving a step in the history.
 function cancelAction() {
   if (undoHistory.batch === 0) return;
   const dirty = undoHistory.batchDirty;
@@ -106,13 +106,13 @@ function updateHistoryButtons() {
   if (r) r.disabled = undoHistory.future.length === 0;
 }
 
-// Raccourcis standard : Ctrl+Z / Cmd+Z annuler ; Ctrl+Y, Ctrl+Maj+Z, Cmd+Maj+Z rétablir.
-// Ignorés sur l'écran d'accueil et pendant la saisie dans un champ de texte (qui garde
-// sa propre annulation) — précautions reprises de la PR #2 de ChessMess.
+// Standard shortcuts: Ctrl+Z / Cmd+Z undo; Ctrl+Y, Ctrl+Shift+Z, Cmd+Shift+Z redo.
+// Ignored on the home screen and while typing in a text field (which keeps
+// its own undo) — precautions taken from ChessMess's PR #2.
 window.addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   if (document.getElementById('board-type-picker').style.display !== 'none') return;
-  if (!document.getElementById('export-dialog').hidden) return; // fenêtre d'export ouverte
+  if (!document.getElementById('export-dialog').hidden) return; // export dialog open
   const el = document.activeElement;
   if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))) return;
   const k = e.key.toLowerCase();
