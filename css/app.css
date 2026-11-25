@@ -178,8 +178,6 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
 #shortcut-help-box td:first-child{white-space:nowrap;}
 #shortcut-help-close{justify-self:end;}
 kbd{display:inline-block;min-width:1.4em;padding:1px 5px;border:1px solid #8a7556;border-bottom-width:2px;border-radius:4px;background:#f5ecd8;font:600 11px/1.4 Arial,sans-serif;text-align:center;color:#000;}
-/* On touch-only screens, no keyboard: we do not show the "?" invitation. */
-@media (hover:none) and (pointer:coarse){.hint-keys{display:none;}}
 #reset-group{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;}
 #reset-title-btn,#reset-btn{background:#000;color:#fff;border-color:#b0956e;}
 #reset-title-btn:hover,#reset-btn:hover{background:#da613d;color:#fff;border-color:#a8492b;}
