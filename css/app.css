@@ -178,8 +178,6 @@ h1{font-size:19px;font-weight:400;color:#ececec;letter-spacing:1px;text-transfor
 #shortcut-help-box td:first-child{white-space:nowrap;}
 #shortcut-help-close{justify-self:end;}
 kbd{display:inline-block;min-width:1.4em;padding:1px 5px;border:1px solid #8a7556;border-bottom-width:2px;border-radius:4px;background:#f5ecd8;font:600 11px/1.4 Arial,sans-serif;text-align:center;color:#000;}
-/* On touch-only screens, no keyboard: we do not show the "?" invitation. */
-@media (hover:none) and (pointer:coarse){.hint-keys{display:none;}}
 #reset-group{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;}
 #reset-title-btn,#reset-btn{background:#000;color:#fff;border-color:#b0956e;}
 #reset-title-btn:hover,#reset-btn:hover{background:#da613d;color:#fff;border-color:#a8492b;}
@@ -206,12 +204,6 @@ kbd{display:inline-block;min-width:1.4em;padding:1px 5px;border:1px solid #8a755
 /* Brush (js/brush.js): one finger paints instead of scrolling (before: manipulation),
    two-finger pinch is still possible; no text selection during a gesture. */
 #bsvg{display:block;width:100%;touch-action:pinch-zoom;-webkit-user-select:none;user-select:none;}
-#hint{font-size:10px;color:#555;text-align:center;padding:6px 10px;background:#ecd5a7;border-bottom:1px solid #c8b89a;
-  display:flex;flex-wrap:wrap;justify-content:center;column-gap:6px;row-gap:2px;}
-/* Each sentence stays an unbreakable block: on a wide screen the two end up
-   side by side on one line; on a narrow screen, the line break happens between
-   the two sentences (never in the middle of a sentence), thanks to the flex-wrap above. */
-.hint-part{white-space:normal;}
 /* Progress bar inside export button */
 #export-btn{position:relative;overflow:hidden;width:130px;flex:0 0 auto;}
 #export-progress{position:absolute;left:0;top:0;height:100%;width:0%;background:rgba(0,0,0,0.15);transition:width 0.2s;pointer-events:none;}
