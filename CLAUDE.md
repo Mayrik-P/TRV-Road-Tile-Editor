@@ -165,6 +165,10 @@ Le lire avant tout travail.
 - `tools/` : outils de développement (hors de la page).
 - `docs/` : plan et documents de conception.
 
+**Ignition déjà repris** (rappel de Mayrik, 25/11) : le format étroit de 4 cases de large, l'**Omni-ramp**
+et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; reste à faire : les **barricades** (phase 8).
+Avant de proposer un élément d'Ignition, vérifier d'abord la palette (`TILES`, `js/config.js`).
+
 Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonnes), Ignition
 2481 × 3508 px (A4 portrait, 4 colonnes), 6 rangées en quinconce. Zone réellement imprimée mesurée :
 354,7 × 268,7 mm (Vendetta), 187,7 × 268,7 mm (Ignition).
