@@ -23,6 +23,9 @@ This page tells you what is planned, so you can check whether your idea fits bef
 
 - Export of a board to the format of a digital adaptation of the game (long term, optional).
 - Board without title band, with a 7th row of spaces (requested by players; not planned for now).
+- **Ignition curved roads**: wanted, waiting for accurate measurements of an original curved board (a flat,
+  top-down photo with a ruler would help a lot).
+- **Ignition tunnels**: someday, artwork resources needed.
 
 ## Out of scope
 

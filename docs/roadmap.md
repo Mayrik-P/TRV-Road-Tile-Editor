@@ -378,6 +378,20 @@ construire maintenant.
 
 Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles reviennent souvent.
 
+- **Routes courbes d'Ignition** (Mayrik, 25/11 : il y tient, mais n'a pas de plateau original). Réalisable,
+  **en attente des mesures** : rayon, angle, nombre et taille des cases — à obtenir par une photo bien de
+  face d'un plateau courbe avec une règle (joueur de la communauté sur BGG / Discord) ou par Restoration
+  Games. Mesuré dans le code (25/11) : beaucoup est déjà réutilisable — textures (grandes images découpées
+  à la volée par la forme de chaque case, `renderAllTextures` : pas de nouvelles textures, sauf à agrandir
+  les images si le plateau courbe dépasse leur surface), pinceau / clavier / clic (toute forme de case),
+  annulation, sauvegarde, projet, export, sons, décorations, masque d'impression (simple tracé). Travail
+  nouveau : la géométrie des cases courbes (à côté de `cellPoly`), les **bords de route** (images de
+  `edges/` faites pour des frontières droites : à courber ou à dessiner par le code — le plus délicat),
+  l'orientation des jetons et des décorations dans la courbe. Ordre de grandeur : 3 ou 4 tranches.
+  Premier pas proposé : un petit prototype (une courbe affichée, sans les bords de route) pour mesurer la
+  difficulté réelle avant de s'engager.
+- **Tunnels d'Ignition** (Mayrik, 25/11) : à adapter un jour ; il manque les ressources graphiques.
+
 - **Plateau sans bande de titre, avec une 7e rangée de cases** (demande d'utilisateurs, 19/11 : place
   en plus pour des parties personnalisées, un joueur supplémentaire). Faisable : la bande de titre
   (456 px) a presque la hauteur d'une rangée (452 à 456 px), donc même taille de page et mêmes papiers ;
