@@ -27,7 +27,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'barricades-'));
   const open = async () => {
     const ctx = await b.newContext({ viewport: { width: 1400, height: 1200 }, acceptDownloads: true, locale: 'en-GB' });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    p.on('dialog', d => d.accept()); // "Clear board" confirmation
+    p.on('dialog', d => { errs.push('browser dialog: ' + d.type()); d.dismiss(); }); // never alert() / confirm() (26/11)
     await p.goto(url); return { ctx, p, errs };
   };
   const ready = p => p.waitForFunction(() => Object.keys(TEXTURES).length === Object.keys(TEXTURE_PATHS).length, null, { timeout: 60000 });
@@ -127,7 +127,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'barricades-'));
   check('Ctrl+Y: barricade back', (await bars(p)).includes('36-44'));
   await p.evaluate(() => removeBarricade('36-44'));
   check('removal: one step (Ctrl+Z brings it back)', await (async () => { await p.keyboard.press('Control+z'); return (await bars(p)).includes('36-44'); })());
-  await p.click('#clear-btn');
+  await p.click('#clear-btn'); await p.click('#message-ok'); // confirmation in the page
   check('Clear board: all barricades removed', (await bars(p)).length === 0 && await p.evaluate(() => !document.querySelector('[data-barricade]')));
   await p.keyboard.press('Control+z');
   check('Clear board then Ctrl+Z: cells and barricades back in one step', (await bars(p)).length === 4 && await p.evaluate(() => board[10] === 'rock'));
@@ -170,10 +170,12 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'barricades-'));
   // bad barricade: refused without changing anything
   const bad = JSON.parse(JSON.stringify(proj)); bad.board.barricades = ['10-18', '10-18'];
   const badFile = path.join(tmp, 'bad.trvtile'); fs.writeFileSync(badFile, JSON.stringify(bad));
-  const msgs = []; B.p.removeAllListeners('dialog'); B.p.on('dialog', d => { msgs.push(d.message()); d.accept(); });
   const keep = await state(B.p);
   await B.p.click('#home-btn'); await B.p.setInputFiles('#open-project-input', badFile); await B.p.waitForTimeout(500);
-  check('project with a duplicated barricade: refused, board unchanged', msgs.some(m => m.includes('damaged')) && await state(B.p) === keep);
+  const msg = await B.p.evaluate(() => messageOpen() ? document.getElementById('message-text').textContent : '');
+  if (msg) await B.p.click('#message-ok');
+  await B.p.evaluate(() => continueSavedBoard());
+  check('project with a duplicated barricade: refused (message in the page), board unchanged', msg.includes('damaged') && await state(B.p) === keep);
   check('project: no JavaScript error', B.errs.length === 0);
   await B.ctx.close();
 

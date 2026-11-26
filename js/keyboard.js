@@ -101,6 +101,7 @@ window.addEventListener('keydown', e => {
   if (helpOpen && (e.key === 'Escape' || e.key === '?')) { e.preventDefault(); toggleShortcutHelp(false); return; }
   if (document.getElementById('board-type-picker').style.display !== 'none') return;
   if (!document.getElementById('export-dialog').hidden) return; // export window open
+  if (messageOpen()) return; // message or confirmation open (js/ui.js)
   const el = document.activeElement;
   if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;

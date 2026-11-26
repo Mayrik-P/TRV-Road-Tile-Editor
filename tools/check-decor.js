@@ -135,7 +135,7 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
         Buffer.compare(fs.readFileSync(path.join(tmp, 'with.png')), fs.readFileSync(path.join(tmp, 'selected.png'))) === 0);
   // "Clear board": cells AND decorations, in a single step; Ctrl+Z brings everything back
   { const before = JSON.stringify(await p.evaluate(() => ({ b: board, d: decorations }))); const s0 = await steps(p);
-    p.once('dialog', dlg => dlg.accept()); await p.click('#clear-btn');
+    await p.click('#clear-btn'); await p.click('#message-ok');
     check('Clear board: decorations removed too, a single step', (await decos(p)).length === 0 && await steps(p) === s0 + 1);
     await p.keyboard.press('Control+z');
     check('Ctrl+Z after Clear board: cells and decorations come back', JSON.stringify(await p.evaluate(() => ({ b: board, d: decorations }))) === before); }

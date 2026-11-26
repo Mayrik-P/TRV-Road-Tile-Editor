@@ -37,6 +37,7 @@ const SPY = () => {
   const ctx = await b.newContext({ viewport: { width: 1300, height: 1300 }, acceptDownloads: true, locale: 'en-GB' });
   await ctx.addInitScript(SPY);
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+  const nativeDialogs = []; p.on('dialog', d => { nativeDialogs.push(d.type()); d.dismiss(); }); // never alert() / confirm() (26/11)
   const played = () => p.evaluate(() => window.__played.map(x => x.file));
   const take = async () => { const r = await p.evaluate(() => window.__played.splice(0)); return r; };
   const files = async () => (await take()).map(x => x.file).join(',');
@@ -83,13 +84,13 @@ const SPY = () => {
   await p.click('#redo-btn');
   { const f = await files(); check('Redo button: back sound alone, no extra button sound (' + f + ')', f === 'tap-back'); }
 
-  p.once('dialog', dl => dl.dismiss()); await p.click('#clear-btn');
-  check('Clear board refused: no sound', (await files()) === '');
-  p.once('dialog', dl => dl.accept()); await p.click('#clear-btn');
+  await p.click('#clear-btn'); await p.click('#message-cancel');
+  { const f = await files(); check('Clear board refused: only the sound of the Cancel button (' + f + ')', f === 'tap-menu-button'); }
+  await p.click('#clear-btn'); await p.click('#message-ok');
   check('Clear board accepted: a single stamp, no placement sound', (await files()) === 'stamp');
   // Cells all already empty but a decoration placed: the stamp still plays (once)
   await p.evaluate(() => addDecoration(3, 2000, 2000)); await p.waitForTimeout(150); await take();
-  p.once('dialog', dl => dl.accept()); await p.click('#clear-btn');
+  await p.click('#clear-btn'); await p.click('#message-ok');
   check('Clear board, empty cells + decoration: a single stamp', (await files()) === 'stamp');
 
   await p.keyboard.press('ArrowRight'); await p.keyboard.press('r');
@@ -106,10 +107,13 @@ const SPY = () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'snd-')); const bad = path.join(tmp, 'bad.trvtile');
   fs.writeFileSync(bad, 'not a project');
   await p.click('#home-btn'); await take();
-  p.once('dialog', dlg => dlg.dismiss());
   await p.setInputFiles('#open-project-input', bad);
   await p.waitForFunction(() => window.__played.length > 0, null, { timeout: 5000 }).catch(() => {});
   check('file rejected: refusal sound', (await files()) === 'tap-refuse');
+  const msg = await p.evaluate(() => messageOpen() && document.getElementById('message-text').textContent);
+  if (msg) await p.click('#message-ok');
+  check(`file rejected: message in the page ("${String(msg).slice(0, 40)}…"), closed by OK without sound`,
+        typeof msg === 'string' && msg.includes('not a TRV') && !(await p.evaluate(() => messageOpen())) && (await files()) === '');
 
   // Speaker
   await p.click('#board-type-continue'); await take();
@@ -124,6 +128,16 @@ const SPY = () => {
   await p.click('#sound-btn');
   check('speaker back on: a "button" sound right away', (await files()) === 'tap-menu-button' && !(await p.evaluate(() => sounds.muted)));
 
+  // Safety net (js/sounds.js): sound paused behind howler's back, as a browser may do (howler alone never
+  // resumes it: measured 26/11). Safari's "interrupted" state cannot be produced in Chromium.
+  await p.evaluate(() => Howler.ctx.suspend());
+  const paused = await p.evaluate(() => Howler.ctx.state);
+  await p.click('#tb-mud'); await p.waitForTimeout(300);
+  await take(); const c10 = await center(10); await p.mouse.click(c10.x, c10.y);
+  const resumed = await p.waitForFunction(() => Howler.ctx.state === 'running', null, { timeout: 3000 }).then(() => 'running', () => p.evaluate(() => Howler.ctx.state));
+  check(`safety net: sound paused by the browser (${paused}), running again after the next gesture (${resumed}), sounds play`,
+        paused === 'suspended' && resumed === 'running' && (await files()) === 'card-flip');
+  check(`no browser alert() / confirm() window (${nativeDialogs.join(', ') || 'none'}): they cut the sound in Safari`, nativeDialogs.length === 0);
   check('no JavaScript error', errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (errs.length) console.log(errs);

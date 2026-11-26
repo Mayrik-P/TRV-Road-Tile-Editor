@@ -93,7 +93,12 @@ Le lire avant tout travail.
   `playSound(moment)` (70 ms au moins entre deux mêmes sons). Sources : le signal du plateau (pose,
   pinceau et Clear board lus dans `undoHistory.actionKind`, posé par `beginAction(kind)` ; Annuler /
   Rétablir), un seul écouteur de clic pour tous les boutons (`data-sound="palette"` / `"none"`), l'export
-  terminé, et `warnUser(message)` (son de refus + `alert`, à utiliser pour tout message d'erreur).
+  terminé, et `warnUser(message)` (son de refus + message, à utiliser pour tout message d'erreur).
+  **Jamais `alert()` / `confirm()` du navigateur** (bug du 26/11, Safari sur Mac : plus aucun son après « Clear
+  board » ; bugs WebKit 249949 et 255134) : messages et confirmations dans la page, `<dialog id="message-dialog">`
+  (`showMessage(texte)`, `askConfirm(texte, bouton, {danger})` → promesse, `messageOpen()` bloque le clavier ;
+  `js/ui.js`). Filet de sécurité, méthode du moteur de jeux Phaser (3.60, `onFocus`) : contexte audio « suspended »
+  ou « interrupted » (Safari) → `resume()`, à chaque geste et au retour du focus (`resumeAudioIfPaused`, `js/sounds.js`).
   Bouton haut-parleur `#sound-btn` dans la bande du titre, choix retenu (`trv_road_tile_sound_v1`).
 - **Décorations libres (phase 7, `js/decor.js`)** : `decorations` = `[{item, x, y}]` (centre, pixels à
   300 dpi) dans la photo du plateau (`BOARD_STATE_VERSION` 2, `upgradeBoardState` relit la v1 ; clé

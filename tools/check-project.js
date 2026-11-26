@@ -65,16 +65,16 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   check('opened over an Ignition board: project loaded', await state(B.p) === saved);
   await B.p.keyboard.press('Control+z');
   check('then Ctrl+Z: the Ignition board comes back', await state(B.p) === ign);
-  // Files rejected without changing anything (a single, permanent alert listener: a file
-  // wrongly accepted opens no alert and must not skew the next check)
-  let lastDialog = '';
-  B.p.on('dialog', d => { lastDialog = d.message(); d.accept(); });
+  // Files rejected without changing anything: message in the page (26/11, never the browser's
+  // alert(), which cut the sound in Safari), read then closed with its OK button
+  const native = []; B.p.on('dialog', d => { native.push(d.type()); d.dismiss(); });
   const bad = async (name, content, expectWord) => {
     const f = path.join(tmp, name); fs.writeFileSync(f, content);
-    const before = await state(B.p); lastDialog = '';
+    const before = await state(B.p);
     await B.p.click('#home-btn'); await B.p.setInputFiles('#open-project-input', f); await B.p.waitForTimeout(500);
+    const msg = await B.p.evaluate(() => messageOpen() ? document.getElementById('message-text').textContent : '');
+    if (msg) await B.p.click('#message-ok');
     await B.p.evaluate(() => { if (document.getElementById('board-type-picker').style.display !== 'none') continueSavedBoard(); });
-    const msg = lastDialog;
     check(`file rejected (${name}): message "${msg.slice(0, 60)}…", board unchanged`, msg.includes(expectWord) && await state(B.p) === before);
   };
   await bad('photo.trvtile', 'not json at all', 'not a TRV');
@@ -82,6 +82,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   await bad('futur.trvtile', JSON.stringify({ ...proj, formatVersion: 99 }), 'newer version');
   const broken = JSON.parse(JSON.stringify(proj)); broken.board.board.pop();
   await bad('abime.trvtile', JSON.stringify(broken), 'damaged');
+  check(`no browser alert() window (${native.join(', ') || 'none'})`, native.length === 0);
   check('opening: no JavaScript error', B.errs.length === 0);
   await b.close();
   console.log(results.join('\n')); if (A.errs.length || B.errs.length) console.log(A.errs, B.errs);

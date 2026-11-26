@@ -374,6 +374,17 @@ Fait en 8a + 8b + 8d (26/11) :
   cases désigne le segment le plus proche (cible large pour un doigt) ; surbrillance jamais exportée ; Entrée ne peint
   rien avec l'outil ; placement au clavier non prévu (à reconsidérer si on le demande).
 
+### Correctif du 26/11 — son perdu après « Clear board » (Safari)
+Vu par Mayrik sur Safari (Mac) : après « Clear board », plus aucun son. Cause : la fenêtre `confirm()` du navigateur
+met le son de la page en pause (état « interrupted » de WebKit), parfois pour de bon (bugs WebKit 249949, 255134) ;
+howler.js garde alors chaque son en attente. Choix de Mayrik : fenêtres dans la page (`#message-dialog`) pour la
+confirmation de « Clear board » et tous les messages d'erreur (`warnUser`), plus un filet de sécurité qui relance le
+son au geste suivant. Solutions reprises de projets éprouvés : fenêtres de confirmation dans la page (élément
+`<dialog>` natif, méthode recommandée à la place de `window.confirm` ; MDN signale aussi que le navigateur peut ne pas
+afficher `confirm()`) ; relance du contexte audio « suspended » / « interrupted » comme le moteur de jeux Phaser
+(`WebAudioSoundManager.onFocus`, Phaser 3.60, correctif #5353), à chaque geste et au retour du focus.
+Non reproductible dans Chromium (seul navigateur des tests) : la cause est supprimée, à confirmer par Mayrik sur Safari.
+
 ### Phase 9 — *(facultatif, long terme)* Export vers TRV-Pocket
 Ajouter, à l'export, un fichier de données au **format des tuiles de TRV-Pocket**
 (`tiles/data/*.js` : `{id, name, format, extension, cols, rows, grid: [[{terrain, hazardSpace}]]}`).

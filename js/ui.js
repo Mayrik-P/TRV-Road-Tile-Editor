@@ -151,6 +151,44 @@ function openCredits() {
   if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
 }
 
+// ---- Messages and confirmations in the page (26/11) ----
+// Replace the browser's alert() / confirm(), which pause the page's sound in Safari, sometimes
+// for good (WebKit bugs 249949, 255134): native <dialog> (focus kept inside, Escape = cancel),
+// same paper style as the export window. The answer comes back in a promise (true = OK).
+const messageBox = { resolve: null };
+function openMessage(text, { okLabel = 'OK', cancelLabel = null, danger = false } = {}) {
+  const dlg = document.getElementById('message-dialog');
+  if (messageBox.resolve) closeMessage(false); // a new message replaces one still open
+  document.getElementById('message-text').textContent = text;
+  const ok = document.getElementById('message-ok'), cancel = document.getElementById('message-cancel');
+  ok.textContent = okLabel;
+  ok.classList.toggle('danger', danger);
+  cancel.hidden = !cancelLabel;
+  if (cancelLabel) cancel.textContent = cancelLabel;
+  return new Promise(resolve => {
+    messageBox.resolve = resolve;
+    if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+    ok.focus(); // Enter = OK, as with the browser's own windows
+  });
+}
+function closeMessage(answer) {
+  const dlg = document.getElementById('message-dialog'), resolve = messageBox.resolve;
+  messageBox.resolve = null;
+  if (dlg.open) { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); }
+  if (resolve) resolve(answer);
+}
+function showMessage(text) { return openMessage(text); }
+function askConfirm(text, okLabel, opts = {}) { return openMessage(text, Object.assign({ okLabel, cancelLabel: 'Cancel' }, opts)); }
+// Open message: the board keys (cursor, letters, Ctrl+Z…) do nothing meanwhile.
+function messageOpen() { return !!document.getElementById('message-dialog')?.open; }
+(function installMessageDialog() {
+  const dlg = document.getElementById('message-dialog');
+  document.getElementById('message-ok').addEventListener('click', () => closeMessage(true));
+  document.getElementById('message-cancel').addEventListener('click', () => closeMessage(false));
+  dlg.addEventListener('cancel', e => { e.preventDefault(); closeMessage(false); }); // Escape
+  dlg.addEventListener('click', e => { if (e.target === dlg) closeMessage(false); }); // dimmed backdrop
+})();
+
 function closeCredits() {
   const dlg = document.getElementById('credits');
   if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open');

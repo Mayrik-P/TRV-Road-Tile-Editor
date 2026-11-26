@@ -53,10 +53,11 @@ function playSound(moment, opts = {}) {
   h.rate(opts.rate ?? 1, id);
 }
 
-// Error message with refusal sound (replaces alert() for refusals and export errors).
-function warnUser(message) {
+// Error message with refusal sound, for refusals and export errors: in the page (showMessage,
+// js/ui.js), never the browser's alert(), which cut the sound in Safari (bug of 26/11).
+function warnUser(text) {
   playSound('refuse');
-  alert(message);
+  return showMessage(text);
 }
 
 // 1. Board signal
@@ -109,6 +110,20 @@ function toggleSound() {
   refreshSoundButton();
   playSound('button'); // sound turned back on: heard right away
 }
+
+// Safety net (26/11), method of the Phaser game engine (WebAudioSoundManager.onFocus, Phaser 3.60, fix
+// #5353): if the audio context is 'suspended' or 'interrupted' (non-standard state of Safari, after a
+// system window, a phone call, a change of audio device…), ask it to resume. Phaser checks it at every
+// frame while the game has the focus; the editor has no frame loop, so: at every gesture on the page (a
+// resume is always allowed during a user gesture) and when the window gets the focus back. Howler plays
+// normally again as soon as the context is running (howler alone does not resume a context paused behind
+// its back: measured in Chromium, 26/11).
+function resumeAudioIfPaused() {
+  const ctx = typeof Howler !== 'undefined' && Howler.ctx;
+  if (ctx && (ctx.state === 'suspended' || ctx.state === 'interrupted')) ctx.resume().catch(() => {});
+}
+['pointerdown', 'keydown'].forEach(type => document.addEventListener(type, resumeAudioIfPaused, true));
+window.addEventListener('focus', resumeAudioIfPaused);
 
 refreshSoundButton();
 if (document.readyState === 'complete') loadSounds(); else window.addEventListener('load', loadSounds);

@@ -6,7 +6,7 @@
 <title>TRV Road Tile Editor</title>
 <link rel="stylesheet" href="css/app.css?v=f9a3fbc9ac"/>
 <!-- TRV-Pocket style (phase 3, validated by Mayrik on 19/11): overrides css/app.css. -->
-<link rel="stylesheet" href="css/paper-ui.css?v=979c10c6b0"/>
+<link rel="stylesheet" href="css/paper-ui.css?v=416e2a5598"/>
 </head>
 <body>
 <div id="board-type-picker">
@@ -44,6 +44,16 @@
     </div>
   </div>
 </div>
+<!-- Messages and confirmations, in the page (js/ui.js: showMessage, askConfirm). Never the browser's
+     alert() / confirm(): in Safari they pause the page's sound, sometimes for good (bug seen by Mayrik
+     on 26/11 after "Clear board"; WebKit bugs 249949 and 255134). -->
+<dialog id="message-dialog" aria-labelledby="message-text">
+  <p id="message-text"></p>
+  <div class="message-actions">
+    <button class="btn" id="message-cancel" type="button">Cancel</button>
+    <button class="btn" id="message-ok" type="button" data-sound="none">OK</button>
+  </div>
+</dialog>
 <dialog id="credits" aria-labelledby="credits-title">
   <div id="credits-body"></div>
   <button class="btn" id="credits-close" onclick="closeCredits()">Return</button>
@@ -135,23 +145,23 @@
 </div>
 <script src="js/config.js?v=520745fe59"></script>
 <script src="js/state.js?v=e2f557a44b"></script>
-<script src="js/history.js?v=50a8b5a87a"></script>
+<script src="js/history.js?v=c904d61fbc"></script>
 <script src="js/vendor/idb-keyval-6.2.1.js?v=1f890e0f76"></script>
 <script src="js/geometry.js?v=fb8f1b9651"></script>
 <script src="js/build-board.js?v=cd7444decb"></script>
 <script src="js/render-layers.js?v=4ac878eabe"></script>
-<script src="js/editing.js?v=19522cac58"></script>
+<script src="js/editing.js?v=38e1d0105f"></script>
 <script src="js/brush.js?v=4d099cfccd"></script>
-<script src="js/decor.js?v=02c4f5c9ed"></script>
+<script src="js/decor.js?v=43227092b2"></script>
 <script src="js/barricades.js?v=cf44c04d19"></script>
-<script src="js/keyboard.js?v=15b572f369"></script>
+<script src="js/keyboard.js?v=01abfa857c"></script>
 <script src="js/export.js?v=9c1828be0c"></script>
 <script src="js/assets.js?v=a44ad43c2b"></script>
 <script src="js/credits.js?v=6ef421f98f"></script>
-<script src="js/ui.js?v=9107069cab"></script>
+<script src="js/ui.js?v=530bf2ed11"></script>
 <script src="js/autosave.js?v=4c236f709c"></script>
 <script src="js/project.js?v=c8c76d1209"></script>
 <script src="js/vendor/howler-2.2.4.min.js?v=736c339444"></script>
-<script src="js/sounds.js?v=16d7e1fbed"></script>
+<script src="js/sounds.js?v=3be395fc16"></script>
 </body>
 </html>
