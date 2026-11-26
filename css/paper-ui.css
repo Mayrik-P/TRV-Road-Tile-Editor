@@ -290,3 +290,10 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
 #decor-palette.active .decor-help { display: block; }
 /* In "decor" mode: no cell highlighting (the click targets decorations), placement cursor */
 #bsvg.decor-mode #layer-hits polygon { fill: transparent !important; cursor: copy !important; }
+
+/* ---- Barricade tool (phase 8c, js/barricades.js): "Barricade" button in the row of the tile types ---- */
+.barricade-help { display: none; }
+#palette.barricade-on .tile-help { display: none; }
+#palette.barricade-on .barricade-help { display: block; }
+/* No cell highlighting (the hovered border segment lights up instead) */
+#bsvg.barricade-mode #layer-hits polygon { fill: transparent !important; cursor: pointer !important; }

@@ -360,7 +360,7 @@ trouve, pour chaque case, les segments partagés avec la rangée voisine et leur
 |---|---|
 | 8a | **FAIT (26/11)** — **Graphismes à préparer par Mayrik** : barricade « Short » (segment de 195 px) et « Long » (298 px), avec dépassement et ombre, à 300 dpi, 2 ou 3 variantes chacune si possible. Je fournirai les tailles de canevas exactes et un gabarit PNG avec le segment repéré |
 | 8b | **FAIT (26/11)** — Données `barricades: ["idxA-idxB", …]`, sauvegardées, annulables, exportées |
-| 8c | Outil « Barricade » : **bouton dans la palette, choisi comme un type de case** ; au survol, c'est le **segment** de frontière qui se met en surbrillance au lieu de la case (vert : le clic pose, rouge : il retire) ; un clic pose ou retire ; en glissant, le **premier segment décide** pour tout le geste (poser partout ou retirer partout, méthode des grilles de disponibilité type Doodle). Décisions de Mayrik du 26/11 |
+| 8c | **FAIT (26/11)** — Outil « Barricade » : **bouton dans la palette, choisi comme un type de case** ; au survol, c'est le **segment** de frontière qui se met en surbrillance au lieu de la case (vert : le clic pose, rouge : il retire) ; un clic pose ou retire ; en glissant, le **premier segment décide** pour tout le geste (poser partout ou retirer partout, méthode des grilles de disponibilité type Doodle). Décisions de Mayrik du 26/11 |
 | 8d | **FAIT (26/11)** — Rendu : calque au-dessus du quadrillage orange, au même niveau que les overlays, dans l'ordre isométrique |
 
 Fait en 8a + 8b + 8d (26/11) :
@@ -370,6 +370,9 @@ Fait en 8a + 8b + 8d (26/11) :
   du jeu, comme les autres images du projet). Recouvrement de deux ombres plus foncé : accepté par Mayrik.
 - `js/barricades.js` ; photo du plateau en version 3, projet en format 3 ; « Clear board » retire aussi les
   barricades (comme les décorations) ; vérification `tools/check-barricades.js`.
+- 8c : bouton « Barricade » en tête des types de case (lettre B, texte d'aide propre) ; chaque point de la zone des
+  cases désigne le segment le plus proche (cible large pour un doigt) ; surbrillance jamais exportée ; Entrée ne peint
+  rien avec l'outil ; placement au clavier non prévu (à reconsidérer si on le demande).
 
 ### Phase 9 — *(facultatif, long terme)* Export vers TRV-Pocket
 Ajouter, à l'export, un fichier de données au **format des tuiles de TRV-Pocket**

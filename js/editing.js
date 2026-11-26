@@ -134,6 +134,7 @@ const SWATCH_STYLE = {
 function buildPalette() {
   const pal = document.getElementById('palette');
   pal.innerHTML = '';
+  pal.appendChild(buildBarricadeButton()); // "Barricade" tool, chosen like a tile type (js/barricades.js)
   TILES.forEach(t => {
     const btn = document.createElement('div');
     btn.className = 'tb' + (t.id === sel ? ' sel' : '');
@@ -168,13 +169,16 @@ function buildPalette() {
   help.innerHTML = 'Click or tap a space to place the selected type · drag to paint several spaces · click again on '
     + 'Impassable, Oil or Fire to change its look<span class="help-keys"> · press <kbd>?</kbd> for keyboard shortcuts</span>';
   pal.appendChild(help);
+  pal.appendChild(buildBarricadeHelp()); // shown instead of the line above while the barricade tool is active
   buildDecorPalette(); // "Decorations" row (js/decor.js)
+  refreshBarricadePalette();
 }
 
 // Single entry point for choosing the tile type (palette, and later keyboard) —
 // idea taken from ChessMess's PR #2.
 function selectTileType(id) {
   leaveDecorMode(); // back to the brush (js/decor.js)
+  leaveBarricadeTool(); // (js/barricades.js)
   sel = id;
   document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
   document.getElementById('tb-' + id)?.classList.add('sel');

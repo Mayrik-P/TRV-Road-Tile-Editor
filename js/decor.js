@@ -166,6 +166,7 @@ function refreshDecorPalette() {
   document.getElementById('bsvg')?.classList.toggle('decor-mode', decor.mode === 'decor');
 }
 function selectDecorationItem(n) {
+  leaveBarricadeTool(); // js/barricades.js
   decor.mode = 'decor';
   decor.item = n;
   decor.selected = -1;

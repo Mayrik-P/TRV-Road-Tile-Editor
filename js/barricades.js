@@ -122,3 +122,184 @@ function compareBarricadeKeys(a, b) {
   const [a0, a1] = a.split('-').map(Number), [b0, b1] = b.split('-').map(Number);
   return a0 - b0 || a1 - b1;
 }
+
+// ---- Barricade tool (slice 8c; Mayrik's decisions of 26/11) ----
+// Chosen in the palette like a tile type ("Barricade" button, letter B). While it is active,
+// the hovered BORDER segment lights up instead of the cell: green if a click places a
+// barricade, red if it removes the one there. A click places or removes; while dragging, the
+// first segment decides for the whole gesture (places everywhere or removes everywhere: method
+// of the availability grids such as Doodle, and of the checkbox lists of spreadsheet apps).
+// Gestures: Pointer Events in capture on #bsvg, like the decorations, so the brush sees
+// nothing; same rules as the brush (js/brush.js): one gesture = one undo step, primary mouse
+// button only, a 2nd finger (pinch) cancels the gesture, intermediate points of a fast
+// gesture picked up. Every point of the cell area designates the nearest segment (generous
+// target for a finger: half a row above and below each border).
+const barricadeTool = { active: false, stroke: null, hoverKey: null };
+const BARRICADE_STEP_PX = 6;          // maximum gap between two points tested during a fast gesture
+const BARRICADE_HIGHLIGHT_CSS = 9;    // thickness of the highlighted segment, in screen pixels
+const BARRICADE_HIGHLIGHT_INSET = 14; // gap at each end (board px): two neighbouring segments stay distinct
+
+// Segments of the current format, recomputed only when the format changes.
+let barricadeSegmentCache = { type: null, segs: [] };
+function currentBarricadeSegments() {
+  if (barricadeSegmentCache.type !== BOARD_TYPE)
+    barricadeSegmentCache = { type: BOARD_TYPE, segs: barricadePairs(COLS).map(([a, b]) => barricadeSegment(barricadeKey(a, b))) };
+  return barricadeSegmentCache.segs;
+}
+// Segment designated by a board point: nearest row border, segment containing x (or the
+// nearest one at the board edges); nothing outside the cell area (title band, margins).
+function barricadeSegmentAt(p) {
+  const segs = currentBarricadeSegments();
+  const top = BANDS[1].top, bottom = BANDS[ROWS].bot;
+  const minX = Math.min(...segs.map(s => s.x0)), maxX = Math.max(...segs.map(s => s.x1));
+  if (p.y < top || p.y > bottom || p.x < minX - NOTCH || p.x > maxX + NOTCH) return null;
+  let row = 0;
+  for (let r = 1; r < ROWS - 1; r++) if (Math.abs(p.y - BANDS[r + 1].bot) < Math.abs(p.y - BANDS[row + 1].bot)) row = r;
+  const onRow = segs.filter(s => s.row === row);
+  const dist = s => p.x < s.x0 ? s.x0 - p.x : p.x > s.x1 ? p.x - s.x1 : 0;
+  return onRow.reduce((best, s) => dist(s) < dist(best) ? s : best);
+}
+
+// Highlight (layer-barricade-ui, never exported): segment line, plus the barricade drawn
+// lightly when the click would place one (what you see is what you get).
+function renderBarricadeHighlight(seg, adding) {
+  const g = document.getElementById('layer-barricade-ui');
+  if (!g) return;
+  g.textContent = '';
+  barricadeTool.hoverKey = seg ? seg.key : null;
+  if (!seg) return;
+  if (adding) {
+    const ghost = barricadeElement(seg.key);
+    ghost.setAttribute('opacity', '0.55');
+    delete ghost.dataset.barricade;
+    g.appendChild(ghost);
+  }
+  g.appendChild(mkEl('line', {
+    x1: seg.x0 + BARRICADE_HIGHLIGHT_INSET, y1: seg.y, x2: seg.x1 - BARRICADE_HIGHLIGHT_INSET, y2: seg.y,
+    stroke: adding ? '#b0d458' : '#e0392b', 'stroke-width': BARRICADE_HIGHLIGHT_CSS, 'stroke-linecap': 'round',
+    'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none', 'data-action': adding ? 'add' : 'remove',
+  }));
+}
+function clearBarricadeHighlight() { renderBarricadeHighlight(null, false); }
+
+// ---- Palette: "Barricade" button, in the row of the tile types (called by buildPalette) ----
+function buildBarricadeButton() {
+  const btn = document.createElement('div');
+  btn.className = 'tb' + (barricadeTool.active ? ' sel' : '');
+  btn.id = 'tool-barricade';
+  btn.dataset.sound = 'palette';
+  btn.title = 'Barricades on the borders between rows — Shortcut: B';
+  const sw = document.createElement('div');
+  sw.className = 'sw';
+  sw.style.cssText = 'position:relative;flex-shrink:0;background:repeating-linear-gradient(135deg,#f2c72e 0 3px,#1d1426 3px 6px);';
+  btn.appendChild(sw);
+  const lbl = document.createElement('span');
+  lbl.className = 'tb-label';
+  lbl.textContent = 'Barricade';
+  btn.appendChild(lbl);
+  btn.onclick = selectBarricadeTool;
+  return btn;
+}
+function buildBarricadeHelp() {
+  const help = document.createElement('p');
+  help.className = 'palette-help barricade-help';
+  help.textContent = 'Click or tap a border between two rows to place a barricade · click a barricade to remove it · '
+    + 'drag along the borders to place (or remove) several';
+  return help;
+}
+function refreshBarricadePalette() {
+  document.getElementById('palette')?.classList.toggle('barricade-on', barricadeTool.active);
+  document.getElementById('tool-barricade')?.classList.toggle('sel', barricadeTool.active);
+  document.getElementById('bsvg')?.classList.toggle('barricade-mode', barricadeTool.active);
+}
+function selectBarricadeTool() {
+  leaveDecorMode(); // js/decor.js
+  barricadeTool.active = true;
+  document.querySelectorAll('.tb, .decor-btn').forEach(b => b.classList.remove('sel'));
+  refreshBarricadePalette();
+}
+// Back to the brush or to the decorations (called by selectTileType and selectDecorationItem).
+function leaveBarricadeTool() {
+  if (!barricadeTool.active) return;
+  if (barricadeTool.stroke) endBarricadeStroke(true);
+  barricadeTool.active = false;
+  clearBarricadeHighlight();
+  refreshBarricadePalette();
+}
+
+// ---- Gestures ----
+function applyBarricadeStroke(seg) {
+  const st = barricadeTool.stroke;
+  if (!seg || seg.key === st.lastKey) return;
+  st.lastKey = seg.key;
+  if (st.adding) addBarricade(seg.key); else removeBarricade(seg.key); // no change if already so
+  renderBarricadeHighlight(seg, st.adding);
+}
+function endBarricadeStroke(cancel) {
+  const st = barricadeTool.stroke;
+  if (!st) return;
+  barricadeTool.stroke = null;
+  const svg = document.getElementById('bsvg');
+  try { if (svg.hasPointerCapture(st.pointerId)) svg.releasePointerCapture(st.pointerId); } catch (e) {}
+  if (cancel) cancelAction(); else endAction();
+  if (st.pointerType === 'mouse' && st.lastPoint) {
+    const seg = barricadeSegmentAt(st.lastPoint);
+    renderBarricadeHighlight(seg, seg && !barricades.includes(seg.key));
+  } else clearBarricadeHighlight();
+}
+
+(function installBarricadeTool() {
+  const svg = document.getElementById('bsvg');
+  const boardPoint = (x, y) => { const q = new DOMPoint(x, y).matrixTransform(svg.getScreenCTM().inverse()); return { x: q.x, y: q.y }; };
+
+  svg.addEventListener('pointerdown', e => {
+    if (!barricadeTool.active) return;
+    e.stopImmediatePropagation(); // the brush sees nothing with the barricade tool
+    const st = barricadeTool.stroke;
+    if (st) { // 2nd finger during a gesture: pinch, the gesture is cancelled
+      if (e.pointerType === 'touch' && e.pointerId !== st.pointerId) endBarricadeStroke(true);
+      return;
+    }
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const p = boardPoint(e.clientX, e.clientY), seg = barricadeSegmentAt(p);
+    if (!seg) return;
+    e.preventDefault();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    barricadeTool.stroke = { pointerId: e.pointerId, pointerType: e.pointerType, lastKey: null,
+                             adding: !barricades.includes(seg.key), lastX: e.clientX, lastY: e.clientY, lastPoint: p };
+    try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    beginAction('barricade');
+    applyBarricadeStroke(seg);
+  }, true);
+
+  svg.addEventListener('pointermove', e => {
+    if (!barricadeTool.active) return;
+    const st = barricadeTool.stroke;
+    if (!st) { // mouse hover: shows what a click would do
+      if (e.pointerType !== 'mouse') return;
+      const seg = barricadeSegmentAt(boardPoint(e.clientX, e.clientY));
+      if ((seg ? seg.key : null) !== barricadeTool.hoverKey) renderBarricadeHighlight(seg, seg && !barricades.includes(seg.key));
+      return;
+    }
+    if (e.pointerId !== st.pointerId) return;
+    const points = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const pt of (points.length ? points : [e])) {
+      const dx = pt.clientX - st.lastX, dy = pt.clientY - st.lastY;
+      const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / BARRICADE_STEP_PX));
+      for (let i = 1; i <= steps; i++) {
+        st.lastPoint = boardPoint(st.lastX + dx * i / steps, st.lastY + dy * i / steps);
+        applyBarricadeStroke(barricadeSegmentAt(st.lastPoint));
+      }
+      st.lastX = pt.clientX; st.lastY = pt.clientY;
+    }
+  }, true);
+
+  const finish = e => {
+    const st = barricadeTool.stroke;
+    if (st && e.pointerId === st.pointerId) endBarricadeStroke(e.type === 'pointercancel');
+  };
+  svg.addEventListener('pointerup', finish, true);
+  svg.addEventListener('pointercancel', finish, true);
+  svg.addEventListener('lostpointercapture', finish, true);
+  svg.addEventListener('pointerleave', e => { if (!barricadeTool.stroke && e.pointerType === 'mouse') clearBarricadeHighlight(); });
+})();

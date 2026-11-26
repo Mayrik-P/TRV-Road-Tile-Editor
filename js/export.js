@@ -159,6 +159,7 @@ function exportPNG(format = 'png') {
   clone.querySelectorAll('[data-idx]').forEach(e => e.remove());
   clone.querySelector('#layer-cursor')?.remove(); // keyboard cursor: never exported
   clone.querySelector('#layer-decor-ui')?.remove(); // selection of a decoration: never exported
+  clone.querySelector('#layer-barricade-ui')?.remove(); // highlighted segment of the barricade tool: never exported
   clone.setAttribute('width', String(VW));
   clone.setAttribute('height', String(VH));
 

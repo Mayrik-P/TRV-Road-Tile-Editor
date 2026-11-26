@@ -63,25 +63,27 @@ function warnUser(message) {
 boardEvents.addEventListener('change', e => {
   const { reason } = e.detail;
   if (reason === 'restore' && undoHistory.applying) { playSound('undo'); return; }
+  const inAction = undoHistory.batch > 0, seq = undoHistory.actionSeq;
   if (reason === 'decor' || reason === 'barricade') { // decorations, barricades; "Clear board": covered by its stamp
     if (e.detail.action === 'clear') { // a single stamp per "Clear board", even if no cell changes
       if (sounds.clearSeq !== undoHistory.actionSeq) { sounds.clearSeq = undoHistory.actionSeq; playSound('clear'); }
-    } else playSound(e.detail.action === 'remove' ? 'undo' : 'place');
+    } else if (inAction && undoHistory.actionKind === 'barricade') brushSound(seq); // gesture of the barricade tool
+    else playSound(e.detail.action === 'remove' ? 'undo' : 'place');
     return;
   }
   if (reason !== 'cell') return;
-  const inAction = undoHistory.batch > 0, seq = undoHistory.actionSeq;
   if (inAction && undoHistory.actionKind === 'clear') {
     if (sounds.clearSeq !== seq) { sounds.clearSeq = seq; playSound('clear'); } // a single stamp
     return;
   }
-  if (inAction && undoHistory.actionKind === 'brush') {
-    if (sounds.strokeSeq !== seq) { sounds.strokeSeq = seq; sounds.lastAt.place = -Infinity; playSound('place'); return; }
-    playSound('place', { volume: BRUSH_VOLUME, rate: 1 - BRUSH_PITCH + Math.random() * 2 * BRUSH_PITCH });
-    return;
-  }
+  if (inAction && undoHistory.actionKind === 'brush') { brushSound(seq); return; }
   playSound('place'); // clavier
 });
+// Brush stroke (cells or barricades): 1st change at full volume, the next ones softer and varied.
+function brushSound(seq) {
+  if (sounds.strokeSeq !== seq) { sounds.strokeSeq = seq; sounds.lastAt.place = -Infinity; playSound('place'); return; }
+  playSound('place', { volume: BRUSH_VOLUME, rate: 1 - BRUSH_PITCH + Math.random() * 2 * BRUSH_PITCH });
+}
 
 // 2. Buttons: a single listener for the whole page (buttons added later included)
 document.addEventListener('click', e => {

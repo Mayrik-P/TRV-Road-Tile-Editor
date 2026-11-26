@@ -112,9 +112,12 @@ Le lire avant tout travail.
   (`data-rank`, `insertInIsometricOrder`) : devant la rangée du dessus, derrière celle du dessous. Images : dessins de
   Mayrik à ×4 sur le gabarit (`barricades/source/`, 1700 × 1150), ramenés à 300 dpi (425 × 288) par `make-webp.py` ;
   segment centré dans l'image, frontière à 187,5 px du haut, base à cheval et ombre (vers le bas à gauche) dans le
-  dessin : le code ne règle jamais un modèle à part. Outil de pose (8c, à faire) : bouton dans la palette comme un type
-  de case, survol = segment en surbrillance (vert : pose, rouge : retire), clic = poser ou retirer, en glissant le
-  1er segment décide pour tout le geste (choix de Mayrik, 26/11).
+  dessin : le code ne règle jamais un modèle à part. **Outil de pose (8c)** : bouton « Barricade » en tête de la
+  rangée des types de case (lettre B), `barricadeTool.active` ; survol = segment le plus proche en surbrillance
+  (calque `layer-barricade-ui`, retiré de l'export ; vert : pose, avec la barricade en transparence ; rouge : retire) ;
+  clic = poser ou retirer ; en glissant, le 1er segment décide pour tout le geste (une étape, `beginAction('barricade')`,
+  sons du pinceau) ; mêmes règles que le pinceau (bouton principal, 2e doigt = geste annulé). Choisir un type de case
+  ou une décoration quitte l'outil (`leaveBarricadeTool`) ; Entrée ne peint rien avec l'outil (choix de Mayrik, 26/11).
 - **Crédits (phase 6 bis, `js/credits.js`)** : SEULE liste des crédits (comme TRV-Pocket) : toute ressource
   ajoutée (son, image, police, bibliothèque) s'y inscrit, avec son fichier de licence (texte affiché tel
   quel, replié). Bouton « Credits » de l'accueil, fenêtre `<dialog id="credits">` (`openCredits`,
@@ -179,7 +182,7 @@ Le lire avant tout travail.
 - `docs/` : plan et documents de conception.
 
 **Ignition déjà repris** (rappel de Mayrik, 25/11) : le format étroit de 4 cases de large, l'**Omni-ramp**
-et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; **barricades** en cours (phase 8, outil de pose à faire) ;
+et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; **barricades** (phase 8) ;
 idées en attente : le terrain **Rubble** (gravats) et les **routes courbes** (`docs/roadmap.md` § 3 bis).
 Avant de proposer un élément d'Ignition, vérifier d'abord la palette (`TILES`, `js/config.js`).
 
@@ -208,7 +211,7 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   navigateur, fichiers refusés).
 - **`node tools/check-export-dialog.js [url]`** : fenêtre d'export sur connexion lente.
 - **`node tools/check-sounds.js [url]`** : sons (espion de howler.js : fichier, volume, hauteur de chaque son).
-- **`node tools/check-barricades.js [url]`** : barricades (segments, placement, ordre isométrique, Annuler, Clear board, sauvegarde, projet, export).
+- **`node tools/check-barricades.js [url]`** : barricades (segments, placement, ordre isométrique, Annuler, Clear board, sauvegarde, projet, export ; outil avec vrais gestes : survol, clic, glisser, lettre B, doigt).
 - **`node tools/check-decor.js [url]`** : décorations (pose, glisser, retrait, Annuler, export coupé aux marges, sauvegarde, projet, doigt).
 - **`node tools/check-credits.js [url]`** : crédits (fenêtre, textes exacts des licences, polices et bibliothèques toutes citées).
 - Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.

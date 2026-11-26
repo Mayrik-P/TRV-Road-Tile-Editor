@@ -189,6 +189,8 @@ function buildBoard() {
   const gHits        = mkEl('g', {id: 'layer-hits'});        svg.appendChild(gHits);
   // Decoration selection (circle, ✕ button): above everything, removed from the exported copy.
   const gDecorUI     = mkEl('g', {id: 'layer-decor-ui'});    svg.appendChild(gDecorUI);
+  // Highlighted border segment of the barricade tool (js/barricades.js): removed from the exported copy.
+  svg.appendChild(mkEl('g', {id: 'layer-barricade-ui'}));
   // Keyboard cursor (js/keyboard.js): at the very top, removed from the exported copy.
   const gCursor      = mkEl('g', {id: 'layer-cursor'});      svg.appendChild(gCursor);
 

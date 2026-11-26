@@ -6,7 +6,7 @@
 <title>TRV Road Tile Editor</title>
 <link rel="stylesheet" href="css/app.css?v=f9a3fbc9ac"/>
 <!-- TRV-Pocket style (phase 3, validated by Mayrik on 19/11): overrides css/app.css. -->
-<link rel="stylesheet" href="css/paper-ui.css?v=5a5f04296b"/>
+<link rel="stylesheet" href="css/paper-ui.css?v=979c10c6b0"/>
 </head>
 <body>
 <div id="board-type-picker">
@@ -123,6 +123,7 @@
     <table>
       <tr><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Move the cursor from space to space</td></tr>
       <tr><td><kbd>D</kbd> <kbd>F</kbd> <kbd>I</kbd> <kbd>M</kbd> <kbd>O</kbd> <kbd>R</kbd> <kbd>S</kbd> <kbd>T</kbd></td><td>Pick the space type starting with that letter and place it (underlined in the palette). Press again on the same space to cycle through types sharing the letter</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Pick the barricade tool, then click or tap the borders between rows</td></tr>
       <tr><td><kbd>Enter</kbd> or <kbd>Space</kbd></td><td>Place the selected type (again on Impassable, Oil or Fire: next look)</td></tr>
       <tr><td><kbd>Delete</kbd> or <kbd>Backspace</kbd></td><td>Clear the space back to <span id="help-default-tile">Off-Road</span> — or remove the selected decoration</td></tr>
       <tr><td><kbd>Esc</kbd></td><td>Deselect the decoration</td></tr>
@@ -137,20 +138,20 @@
 <script src="js/history.js?v=50a8b5a87a"></script>
 <script src="js/vendor/idb-keyval-6.2.1.js?v=1f890e0f76"></script>
 <script src="js/geometry.js?v=fb8f1b9651"></script>
-<script src="js/build-board.js?v=19c0581118"></script>
+<script src="js/build-board.js?v=cd7444decb"></script>
 <script src="js/render-layers.js?v=4ac878eabe"></script>
-<script src="js/editing.js?v=8bb71fcf65"></script>
+<script src="js/editing.js?v=19522cac58"></script>
 <script src="js/brush.js?v=4d099cfccd"></script>
-<script src="js/decor.js?v=7a1717f7fc"></script>
-<script src="js/barricades.js?v=b829a16d54"></script>
-<script src="js/keyboard.js?v=516dfcb8a6"></script>
-<script src="js/export.js?v=2cab75976d"></script>
+<script src="js/decor.js?v=02c4f5c9ed"></script>
+<script src="js/barricades.js?v=cf44c04d19"></script>
+<script src="js/keyboard.js?v=15b572f369"></script>
+<script src="js/export.js?v=9c1828be0c"></script>
 <script src="js/assets.js?v=a44ad43c2b"></script>
 <script src="js/credits.js?v=6ef421f98f"></script>
 <script src="js/ui.js?v=9107069cab"></script>
 <script src="js/autosave.js?v=4c236f709c"></script>
 <script src="js/project.js?v=c8c76d1209"></script>
 <script src="js/vendor/howler-2.2.4.min.js?v=736c339444"></script>
-<script src="js/sounds.js?v=9a6c1f9fb3"></script>
+<script src="js/sounds.js?v=16d7e1fbed"></script>
 </body>
 </html>
