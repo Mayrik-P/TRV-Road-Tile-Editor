@@ -11,13 +11,15 @@ This page tells you what is planned, so you can check whether your idea fits bef
 
 ## Released
 
+- **1.3**: barricades (Ignition), placed on the borders between rows with a "Barricade" tool, on both board
+  formats; confirmations and messages shown in the page (fixes the sound lost in Safari after "Clear board").
 - **1.2**: free decorations (place, move, remove), contextual tips under the palette.
 - **1.1**: brush painting, undo / redo, keyboard shortcuts, automatic saving, project files, US paper
   sizes and PDF export, print-scale ruler, faster loading, new look, sound effects, credits page.
 
 ## Next
 
-- **Barricades**: obstacles placed on the borders between rows (Ignition rules, both board formats).
+- Nothing scheduled for now: ideas are welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## Maybe later
 

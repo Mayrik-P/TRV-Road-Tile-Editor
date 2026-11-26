@@ -458,6 +458,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    commentaires existants) ; nom « Mayrik PADEY » ; pas d'e-mail personnel.
    Traduction faite le 23/11 (1 214 commentaires, 33 fichiers) : code sans commentaires identique jeton
    par jeton au commit d'avant (vérificateur acorn), exports identiques, tous les tests verts.
+10. **Publication de la v1.3 (26/11)** : phase 8 (barricades : données, affichage, outil de pose) et correctif
+   du son perdu après « Clear board » sur Safari (fenêtres dans la page, relance du son à la manière de Phaser).
 
 ---
 
