@@ -19,14 +19,16 @@
 //   - every storage access is guarded (private browsing, storage forbidden: the app
 //     works, without saving); a damaged save or one of an unknown version is ignored.
 
-const AUTOSAVE_KEY = 'trv_road_tile_board_v2';        // version 2 snapshot (phase 7: free decorations)
-const AUTOSAVE_KEY_V1 = 'trv_road_tile_board_v1';     // re-read and converted if v2 does not exist yet
+const AUTOSAVE_KEY = 'trv_road_tile_board_v3';        // version 3 snapshot (phase 8: barricades)
+const AUTOSAVE_KEY_V2 = 'trv_road_tile_board_v2';     // older saves, re-read and converted if v3 does not
+const AUTOSAVE_KEY_V1 = 'trv_road_tile_board_v1';     // exist yet (never deleted: an older page still reads them)
 const TITLE_IMAGE_KEY = 'trv_road_tile_title_image_v1';
 const autosave = { restoringTitle: false };
 
 function readSavedBoard() {
   try {
-    const s = upgradeBoardState(JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || localStorage.getItem(AUTOSAVE_KEY_V1)));
+    const s = upgradeBoardState(JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || localStorage.getItem(AUTOSAVE_KEY_V2)
+      || localStorage.getItem(AUTOSAVE_KEY_V1)));
     return validateBoardState(s) === null ? s : null;
   } catch (e) { return null; }
 }

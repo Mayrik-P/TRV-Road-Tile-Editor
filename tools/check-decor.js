@@ -148,16 +148,17 @@ const comparePng = (p, a, b) => p.evaluate(async ([a, b]) => {
   const proj = path.join(tmp, 'p.trvtile'); await dl.saveAs(proj);
   const pj = JSON.parse(fs.readFileSync(proj, 'utf8'));
   check(`project file: format ${pj.formatVersion}, snapshot v${pj.board.version}, ${pj.board.decorations.length} decorations`,
-        pj.formatVersion === 2 && pj.board.version === 2 && JSON.stringify(pj.board.decorations) === saved);
+        pj.formatVersion === 3 && pj.board.version === 3 && // 3 since phase 8 (barricades)
+        JSON.stringify(pj.board.decorations) === saved);
   await p.evaluate(() => { decorations = []; redrawDecorations(); });
   await p.click('#home-btn'); await p.setInputFiles('#open-project-input', proj); await p.waitForTimeout(500);
   check('project file reopened: decorations restored', JSON.stringify(await decos(p)) === saved);
-  const v1 = JSON.parse(JSON.stringify(pj)); v1.formatVersion = 1; v1.board.version = 1; delete v1.board.decorations;
+  const v1 = JSON.parse(JSON.stringify(pj)); v1.formatVersion = 1; v1.board.version = 1; delete v1.board.decorations; delete v1.board.barricades;
   const f1 = path.join(tmp, 'v1.trvtile'); fs.writeFileSync(f1, JSON.stringify(v1));
   await p.click('#home-btn'); await p.setInputFiles('#open-project-input', f1); await p.waitForTimeout(500);
   check('old project file (v1): opened, no decoration', await p.evaluate(() => decorations.length === 0 && document.getElementById('app').style.display !== 'none'));
   // Old browser save (v1 key): read back and converted
-  await p.evaluate(s => { localStorage.removeItem('trv_road_tile_board_v2'); localStorage.setItem('trv_road_tile_board_v1', s); }, JSON.stringify(v1.board));
+  await p.evaluate(s => { localStorage.removeItem('trv_road_tile_board_v3'); localStorage.removeItem('trv_road_tile_board_v2'); localStorage.setItem('trv_road_tile_board_v1', s); }, JSON.stringify(v1.board));
   await p.reload();
   check('old browser save (v1): "Continue" offered', await p.evaluate(() => !document.getElementById('board-type-continue').hidden));
   await ctx.close();

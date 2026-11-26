@@ -358,10 +358,18 @@ trouve, pour chaque case, les segments partagés avec la rangée voisine et leur
 
 | Tranche | Contenu |
 |---|---|
-| 8a | **Graphismes à préparer par Mayrik** : barricade « Short » (segment de 195 px) et « Long » (298 px), avec dépassement et ombre, à 300 dpi, 2 ou 3 variantes chacune si possible. Je fournirai les tailles de canevas exactes et un gabarit PNG avec le segment repéré |
-| 8b | Données `barricades: ["idxA-idxB", …]`, sauvegardées, annulables, exportées |
-| 8c | Outil « Barricade » : quand il est actif, des zones de clic fines apparaissent le long de chaque frontière horizontale ; un clic pose ou retire. Le pinceau peut en enchaîner plusieurs |
-| 8d | Rendu : calque au-dessus du quadrillage orange, au même niveau que les overlays, dans l'ordre isométrique |
+| 8a | **FAIT (26/11)** — **Graphismes à préparer par Mayrik** : barricade « Short » (segment de 195 px) et « Long » (298 px), avec dépassement et ombre, à 300 dpi, 2 ou 3 variantes chacune si possible. Je fournirai les tailles de canevas exactes et un gabarit PNG avec le segment repéré |
+| 8b | **FAIT (26/11)** — Données `barricades: ["idxA-idxB", …]`, sauvegardées, annulables, exportées |
+| 8c | Outil « Barricade » : **bouton dans la palette, choisi comme un type de case** ; au survol, c'est le **segment** de frontière qui se met en surbrillance au lieu de la case (vert : le clic pose, rouge : il retire) ; un clic pose ou retire ; en glissant, le **premier segment décide** pour tout le geste (poser partout ou retirer partout, méthode des grilles de disponibilité type Doodle). Décisions de Mayrik du 26/11 |
+| 8d | **FAIT (26/11)** — Rendu : calque au-dessus du quadrillage orange, au même niveau que les overlays, dans l'ordre isométrique |
+
+Fait en 8a + 8b + 8d (26/11) :
+- Gabarit ×4 (1700 × 1150) : segment centré, frontière à y = 750, **bas du plot 20 px (300 dpi) sous la frontière**
+  (mesuré sur un vrai plateau : base à cheval sur la ligne), hauteur 75 à 140 px. Ombre dessinée par Mayrik dans
+  le PNG, **vers le bas à gauche** comme sur les plateaux officiels (choix A du 26/11 : chaque élément garde l'ombre
+  du jeu, comme les autres images du projet). Recouvrement de deux ombres plus foncé : accepté par Mayrik.
+- `js/barricades.js` ; photo du plateau en version 3, projet en format 3 ; « Clear board » retire aussi les
+  barricades (comme les décorations) ; vérification `tools/check-barricades.js`.
 
 ### Phase 9 — *(facultatif, long terme)* Export vers TRV-Pocket
 Ajouter, à l'export, un fichier de données au **format des tuiles de TRV-Pocket**

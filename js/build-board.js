@@ -198,6 +198,7 @@ function buildBoard() {
   renderFlatFillAndBorders(gFlatFill, gBorders);
   renderTitleBand(gTitleBand);
   renderAllOverlays(gOverlays);
+  renderAllBarricades(gOverlays); // between the rows, in the same isometric order (js/barricades.js)
   if (BOARD_TYPE === 'ignition') renderTitleTextIgnition(gTitleText, defs);
   else renderTitleText(gTitleText, defs);
   renderMasks(gMasks);

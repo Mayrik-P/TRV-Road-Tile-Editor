@@ -186,7 +186,7 @@ function selectTileType(id) {
 function clearBoard() {
   const label = TILES.find(t => t.id === DEFAULT_TILE).label;
   const ok = confirm(
-    'Clear all board spaces back to ' + label + ' and remove all decorations?\n\n' +
+    'Clear all board spaces back to ' + label + ' and remove all decorations and barricades?\n\n' +
     'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).'
   );
   if (!ok) return;
@@ -194,6 +194,7 @@ function clearBoard() {
   try {
     for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE);
     clearDecorations(); // decorations removed too, in the same step (Mayrik's choice, 22/11)
+    clearBarricades();  // and barricades, likewise
   } finally { endAction(); }
 }
 

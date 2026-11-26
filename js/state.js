@@ -14,7 +14,7 @@
 // and sounds only have to subscribe:
 //   boardEvents.addEventListener('change', e => { … e.detail.reason … });
 // Reasons emitted: 'cell' (detail: idx, oldType, newType), 'new-board', 'restore',
-// 'title', 'number', 'title-image'.
+// 'title', 'number', 'title-image', 'decor' (js/decor.js), 'barricade' (js/barricades.js).
 
 const boardEvents = new EventTarget();
 
@@ -25,13 +25,15 @@ function notifyBoardChange(reason, extra) {
 // Snapshot format version: to be increased (with a conversion of the old ones) the
 // day its content changes — free decorations, barricades… (lesson from TRV-Pocket:
 // a save must always be readable by later versions).
-const BOARD_STATE_VERSION = 2; // 2 (phase 7): free decorations
+const BOARD_STATE_VERSION = 3; // 2 (phase 7): free decorations; 3 (phase 8): barricades
 
 // Conversion of snapshots from a previous version (browser save, project file),
 // to be called before validateBoardState. Version 1: automatically placed decorations, removed in
 // phase 7; Mayrik does not need to get them back (22/11): the board opens without decorations.
+// Version 2: no barricades yet. Conversions are chained (1 -> 2 -> 3).
 function upgradeBoardState(s) {
-  if (s && typeof s === 'object' && s.version === 1) return Object.assign({}, s, { version: 2, decorations: [] });
+  if (s && typeof s === 'object' && s.version === 1) s = Object.assign({}, s, { version: 2, decorations: [] });
+  if (s && typeof s === 'object' && s.version === 2) s = Object.assign({}, s, { version: 3, barricades: [] });
   return s;
 }
 
@@ -49,6 +51,7 @@ function getBoardState() {
     titleName: document.getElementById('title-input').value,
     boardNumber: document.getElementById('board-number-input').value,
     decorations: decorations.map(d => ({ item: d.item, x: d.x, y: d.y })),
+    barricades: barricades.slice(),
   };
 }
 
@@ -65,6 +68,9 @@ function validateBoardState(s) {
   if (!Array.isArray(s.cellVariant) || s.cellVariant.length !== n) return 'wrong variant list';
   if (!Array.isArray(s.decorations) || !s.decorations.every(d => d && Number.isInteger(d.item)
       && d.item >= 1 && d.item <= ITEM_PATHS.length && Number.isFinite(d.x) && Number.isFinite(d.y))) return 'bad decorations';
+  const keys = validBarricadeKeys(type.cols);
+  if (!Array.isArray(s.barricades) || !s.barricades.every(k => keys.has(k))
+      || new Set(s.barricades).size !== s.barricades.length) return 'bad barricades';
   return null;
 }
 
@@ -77,6 +83,7 @@ function setBoardState(s) {
   board = s.board.slice();
   cellVariant = s.cellVariant.slice();
   decorations = s.decorations.map(d => ({ item: d.item, x: d.x, y: d.y }));
+  barricades = s.barricades.slice().sort(compareBarricadeKeys);
   decor.selected = -1; // js/decor.js
   overlayCycleIndex = Object.assign({ rock: 0, fire: 0, oil: 0 }, s.overlayCycleIndex);
   document.getElementById('title-input').value = s.titleName || '';

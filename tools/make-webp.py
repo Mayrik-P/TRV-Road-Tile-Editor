@@ -12,13 +12,18 @@
 # as PNG) are NOT kept in the repo; Mayrik has them in his working folders.
 # To rebuild their WebPs: put them back in textures/source/ (same names), run
 # this script, then remove them again.
-#   python3 tools/make-webp.py              -> textures, sprites, items, edges
+# Exception (phase 8, 26/11): the barricade PNGs (barricades/source/) are Mayrik's working
+# files, drawn on the template at 4 times the printed size (1700 x 1150 px); their 300 dpi
+# copy is reduced here (SOURCE_SCALE), never by the page.
+#   python3 tools/make-webp.py              -> textures, sprites, items, edges, barricades
 #   python3 tools/make-webp.py sprites      -> a single folder
 # Prerequisite (once): python3 -m pip install Pillow
 import os, sys, glob
 from PIL import Image
 
-FOLDERS = ['textures', 'sprites', 'items', 'edges']
+FOLDERS = ['textures', 'sprites', 'items', 'edges', 'barricades']
+# Folders whose PNGs are not at 300 dpi: scale giving the 300 dpi original.
+SOURCE_SCALE = {'barricades': 0.25}
 QUALITY, METHOD = 95, 6
 # Screen previews (slice 1c): reduced copies, same names, one subfolder
 # per definition (Android's density-folder method, taken from TRV-Pocket:
@@ -31,6 +36,15 @@ VARIANT_QUALITY = 92
 def save_webp(im, path, quality):
     im.save(path, 'WEBP', quality=quality, method=METHOD, alpha_quality=100)
     return os.path.getsize(path)
+
+def pad_to_multiple(im, k):
+    # Transparent rows / columns added at the right and bottom so that the size divides
+    # exactly (1150 px -> 1152: reduced to 288 px, without any rounding of the scale).
+    w, h = -(-im.width // k) * k, -(-im.height // k) * k
+    if (w, h) == im.size: return im
+    out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    out.paste(im.convert('RGBA'), (0, 0))
+    return out
 
 def reduce(im, scale):
     size = (max(1, round(im.width * scale)), max(1, round(im.height * scale)))
@@ -54,6 +68,9 @@ for d in folders:
         base = os.path.basename(f)[:-4] + '.webp'
         im = Image.open(f)
         total_src += os.path.getsize(f)
+        if d in SOURCE_SCALE: # working file larger than 300 dpi: reduced once, from the PNG
+            k = round(1 / SOURCE_SCALE[d])
+            im = reduce(pad_to_multiple(im, k), SOURCE_SCALE[d])
         total_out += save_webp(im, os.path.join(root, d, base), QUALITY)
         for name, scale in VARIANTS:
             total_var[name] += save_webp(reduce(im, scale), os.path.join(root, d, name, base), VARIANT_QUALITY)

@@ -103,6 +103,18 @@ Le lire avant tout travail.
   (coupé aux marges, déborde sur la bande de titre), sélection et ✕ dans `layer-decor-ui` (retiré de
   l'export). Cercles de prise mesurés par dessin (`DECOR_SHAPES`). Vignettes : `items/thumb/`
   (`python3 tools/make-decor-thumbs.py`, à relancer si une décoration change).
+- **Barricades (phase 8, `js/barricades.js`)** : « murs fins » posés sur les ARÊTES entre deux rangées (Red Blob
+  Games), clé `"haute-basse"` (index des deux cases) ; segments de 298 px (« long », toujours aux bords) ou 195 px
+  (« short ») ; `barricadePairs(cols)` les donne sans la géométrie (validation), `barricadeSegment(clé)` les place.
+  `barricades` (liste triée) dans la photo du plateau (`BOARD_STATE_VERSION` 3, v1 et v2 converties ; clé
+  `trv_road_tile_board_v3` ; projet format 3). Points d'entrée `addBarricade` / `removeBarricade` / `clearBarricades`
+  (signal `barricade`) ; « Clear board » les retire aussi. Dessin dans `layer-overlays`, dans l'ordre isométrique
+  (`data-rank`, `insertInIsometricOrder`) : devant la rangée du dessus, derrière celle du dessous. Images : dessins de
+  Mayrik à ×4 sur le gabarit (`barricades/source/`, 1700 × 1150), ramenés à 300 dpi (425 × 288) par `make-webp.py` ;
+  segment centré dans l'image, frontière à 187,5 px du haut, base à cheval et ombre (vers le bas à gauche) dans le
+  dessin : le code ne règle jamais un modèle à part. Outil de pose (8c, à faire) : bouton dans la palette comme un type
+  de case, survol = segment en surbrillance (vert : pose, rouge : retire), clic = poser ou retirer, en glissant le
+  1er segment décide pour tout le geste (choix de Mayrik, 26/11).
 - **Crédits (phase 6 bis, `js/credits.js`)** : SEULE liste des crédits (comme TRV-Pocket) : toute ressource
   ajoutée (son, image, police, bibliothèque) s'y inscrit, avec son fichier de licence (texte affiché tel
   quel, replié). Bouton « Credits » de l'accueil, fenêtre `<dialog id="credits">` (`openCredits`,
@@ -115,7 +127,8 @@ Le lire avant tout travail.
   **`python3 tools/make-webp.py [dossier]`** en tire les WebP (à relancer dès qu'un original change ou
   s'ajoute). Réglages validés par le test à l'aveugle de Mayrik du 19/11 (5/20 à taille réelle, 13/20
   en ×2 : aucune différence perçue). Le même script fait les **aperçus** `<dossier>/half/` (50 %) et
-  `<dossier>/quarter/` (25 %), toujours tirés des PNG. **Exception** : les 6 textures de terrain
+  `<dossier>/quarter/` (25 %), toujours tirés des PNG (ceux de `barricades/source/`, dessinés à ×4, sont d'abord
+  ramenés à 300 dpi : `SOURCE_SCALE`). **Exception** : les 6 textures de terrain
   sources (4243 × 2718 px = zone des cases Vendetta à 300 dpi) ne sont pas dans le dépôt (Mayrik les
   garde en local) ; les redéposer dans `textures/source/` pour régénérer leurs WebP. Elles sont posées
   à leur taille exacte, centrées sur la zone des cases, même échelle dans tous les formats
@@ -166,7 +179,7 @@ Le lire avant tout travail.
 - `docs/` : plan et documents de conception.
 
 **Ignition déjà repris** (rappel de Mayrik, 25/11) : le format étroit de 4 cases de large, l'**Omni-ramp**
-et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; reste à faire : les **barricades** (phase 8) ;
+et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; **barricades** en cours (phase 8, outil de pose à faire) ;
 idées en attente : le terrain **Rubble** (gravats) et les **routes courbes** (`docs/roadmap.md` § 3 bis).
 Avant de proposer un élément d'Ignition, vérifier d'abord la palette (`TILES`, `js/config.js`).
 
@@ -195,6 +208,7 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   navigateur, fichiers refusés).
 - **`node tools/check-export-dialog.js [url]`** : fenêtre d'export sur connexion lente.
 - **`node tools/check-sounds.js [url]`** : sons (espion de howler.js : fichier, volume, hauteur de chaque son).
+- **`node tools/check-barricades.js [url]`** : barricades (segments, placement, ordre isométrique, Annuler, Clear board, sauvegarde, projet, export).
 - **`node tools/check-decor.js [url]`** : décorations (pose, glisser, retrait, Annuler, export coupé aux marges, sauvegarde, projet, doigt).
 - **`node tools/check-credits.js [url]`** : crédits (fenêtre, textes exacts des licences, polices et bibliothèques toutes citées).
 - Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.

@@ -63,7 +63,7 @@ function warnUser(message) {
 boardEvents.addEventListener('change', e => {
   const { reason } = e.detail;
   if (reason === 'restore' && undoHistory.applying) { playSound('undo'); return; }
-  if (reason === 'decor') { // decorations (js/decor.js); "Clear board": covered by its stamp
+  if (reason === 'decor' || reason === 'barricade') { // decorations, barricades; "Clear board": covered by its stamp
     if (e.detail.action === 'clear') { // a single stamp per "Clear board", even if no cell changes
       if (sounds.clearSeq !== undoHistory.actionSeq) { sounds.clearSeq = undoHistory.actionSeq; playSound('clear'); }
     } else playSound(e.detail.action === 'remove' ? 'undo' : 'place');

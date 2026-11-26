@@ -40,6 +40,7 @@ function allImagesReady() {
     IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7, IMP_8,
     ...ITEM_PATHS,
     ...Object.values(EDGE_PATHS),
+    ...BARRICADE_PATHS.long, ...BARRICADE_PATHS.short,
     DEFAULT_TITLE_IMAGE_PATH,
     BLASON_PATH,
     COOPER_HEWITT_BOLD_URL,
@@ -274,6 +275,7 @@ function fullResItems() {
     FIRE_1, FIRE_2, FIRE_3, FIRE_4, FIRE_5, FIRE_6,
     IMP_1, IMP_2, IMP_3, IMP_4, IMP_5, IMP_6, IMP_7, IMP_8,
     ...ITEM_PATHS, ...Object.values(EDGE_PATHS), BLASON_PATH,
+    ...BARRICADE_PATHS.long, ...BARRICADE_PATHS.short,
   ];
   const textures = ['road', 'sand', 'mud', ...Object.keys(TEXTURE_PATHS).filter(k => !['road', 'sand', 'mud'].includes(k))]
     .map(k => ({ src: TEXTURE_PATHS[k], type: 'image' }));

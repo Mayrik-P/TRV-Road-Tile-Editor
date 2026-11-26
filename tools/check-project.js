@@ -39,7 +39,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
   const file = path.join(tmp, dl.suggestedFilename()); await dl.saveAs(file);
   check(`file name: ${dl.suggestedFilename()}`, dl.suggestedFilename() === 'DUST-BOWL.trvtile');
   const proj = JSON.parse(fs.readFileSync(file, 'utf8'));
-  check('file is signed and versioned (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 2); // 2 since phase 7 (free decorations)
+  check('file is signed and versioned (format, formatVersion)', proj.format === 'trv-road-tile' && proj.formatVersion === 3); // 3 since phase 8 (barricades)
   check('file: full board and embedded title image', JSON.stringify(proj.board) === saved && typeof proj.titleImage === 'string' && proj.titleImage.startsWith('data:image/png'));
   await A.p.click('#export-open-btn');
   await A.p.waitForFunction(() => !document.getElementById('export-btn').disabled, null, { timeout: 120000 });
