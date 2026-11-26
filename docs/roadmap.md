@@ -460,6 +460,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    par jeton au commit d'avant (vérificateur acorn), exports identiques, tous les tests verts.
 10. **Publication de la v1.3 (26/11)** : phase 8 (barricades : données, affichage, outil de pose) et correctif
    du son perdu après « Clear board » sur Safari (fenêtres dans la page, relance du son à la manière de Phaser).
+11. **Publication de la v1.3.1 (26/11)** : le long d'une frontière, barricades dessinées de gauche à droite (celle
+   de droite par-dessus celle de gauche, comme l'exigent les dessins ; défaut vu par Mayrik sur la v1.3).
 
 ---
 

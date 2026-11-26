@@ -11,6 +11,7 @@ This page tells you what is planned, so you can check whether your idea fits bef
 
 ## Released
 
+- **1.3.1**: barricades layered from left to right along a border (the right one over the left one).
 - **1.3**: barricades (Ignition), placed on the borders between rows with a "Barricade" tool, on both board
   formats; confirmations and messages shown in the page (fixes the sound lost in Safari after "Clear board").
 - **1.2**: free decorations (place, move, remove), contextual tips under the palette.
