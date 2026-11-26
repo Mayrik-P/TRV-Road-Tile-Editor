@@ -23,7 +23,9 @@ const CREDITS = {
       ['Created by', 'Mayrik PADEY'],
       ['Programming', 'Written with Claude Code (Anthropic) under Mayrik’s direction, every step specified and validated by him'],
       // (Mayrik, 19/11: the images that are not scans of the game are his creations)
-      ['Original artwork', 'Mayrik PADEY (all images that are not scans of the game)'] ] },
+      ['Original artwork', 'Mayrik PADEY (all images that are not scans of the game)'],
+      // (Mayrik, 26/11: honest mention, as for the code written with Claude Code)
+      ['Default title image', 'Created by Mayrik PADEY with the help of AI image tools'] ] },
     { title: 'Contributors', lines: [
       ['Autosave and keyboard navigation ideas', 'ChessMess (GitHub pull requests #1 and #2)'],
       'Many thanks to everyone who suggests ideas or reports problems on GitHub.' ] },
