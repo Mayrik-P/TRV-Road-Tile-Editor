@@ -390,7 +390,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
   l'orientation des jetons et des décorations dans la courbe. Ordre de grandeur : 3 ou 4 tranches.
   Premier pas proposé : un petit prototype (une courbe affichée, sans les bords de route) pour mesurer la
   difficulté réelle avant de s'engager.
-- **Tunnels d'Ignition** (Mayrik, 25/11) : à adapter un jour ; il manque les ressources graphiques.
+- **Terrain « Rubble » (gravats) d'Ignition** (Mayrik, 25/11) : à adapter un jour ; il manque les ressources
+  graphiques.
 
 - **Plateau sans bande de titre, avec une 7e rangée de cases** (demande d'utilisateurs, 19/11 : place
   en plus pour des parties personnalisées, un joueur supplémentaire). Faisable : la bande de titre
