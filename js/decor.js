@@ -166,6 +166,7 @@ function refreshDecorPalette() {
   document.getElementById('bsvg')?.classList.toggle('decor-mode', decor.mode === 'decor');
 }
 function selectDecorationItem(n) {
+  leaveBarricadeTool(); // js/barricades.js
   decor.mode = 'decor';
   decor.item = n;
   decor.selected = -1;
@@ -286,7 +287,7 @@ function cancelDecorDrag() {
     if (decor.mode !== 'decor' || decor.selected < 0) return;
     const t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-    if (!document.getElementById('export-dialog').hidden || !document.getElementById('shortcut-help').hidden) return;
+    if (!document.getElementById('export-dialog').hidden || !document.getElementById('shortcut-help').hidden || messageOpen()) return;
     if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); e.stopImmediatePropagation(); removeDecoration(decor.selected); }
     else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); decor.selected = -1; redrawDecorations(); }
   }, true);

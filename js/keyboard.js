@@ -24,6 +24,7 @@
 // single signal of state.js instead of hooks added in the code; common additions
 // from editors: Space (like Enter), Delete / Backspace (cell put back to
 // DEFAULT_TILE), "?" (shortcuts panel, as used by Gmail, GitHub, Figma).
+// Phase 8c: B chooses the barricade tool (placed with the mouse or a finger only).
 
 const kb = { cursorIdx: 0, visible: false, lastLetter: null, lastLetterIdx: -1, lastLetterCell: -1 };
 
@@ -100,6 +101,7 @@ window.addEventListener('keydown', e => {
   if (helpOpen && (e.key === 'Escape' || e.key === '?')) { e.preventDefault(); toggleShortcutHelp(false); return; }
   if (document.getElementById('board-type-picker').style.display !== 'none') return;
   if (!document.getElementById('export-dialog').hidden) return; // export window open
+  if (messageOpen()) return; // message or confirmation open (js/ui.js)
   const el = document.activeElement;
   if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -118,6 +120,7 @@ window.addEventListener('keydown', e => {
   }
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault(); // a button that has focus must not also trigger
+    if (barricadeTool.active) return; // barricade tool: placed with the mouse or a finger only
     showCursorAt(kb.cursorIdx);
     updateCell(kb.cursorIdx, sel);
     return;
@@ -128,5 +131,6 @@ window.addEventListener('keydown', e => {
     updateCell(kb.cursorIdx, DEFAULT_TILE);
     return;
   }
+  if (e.key === 'b' || e.key === 'B') { e.preventDefault(); selectBarricadeTool(); return; } // no space type starts with B
   if (e.key.length === 1 && /[a-z]/i.test(e.key) && handleLetter(e.key.toLowerCase())) e.preventDefault();
 });

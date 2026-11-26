@@ -290,3 +290,27 @@ kbd { font-family: var(--text); font-weight: 700; font-size: 14px; background: v
 #decor-palette.active .decor-help { display: block; }
 /* In "decor" mode: no cell highlighting (the click targets decorations), placement cursor */
 #bsvg.decor-mode #layer-hits polygon { fill: transparent !important; cursor: copy !important; }
+
+/* ---- Barricade tool (phase 8c, js/barricades.js): "Barricade" button in the row of the tile types ---- */
+.barricade-help { display: none; }
+#palette.barricade-on .tile-help { display: none; }
+#palette.barricade-on .barricade-help { display: block; }
+/* No cell highlighting (the hovered border segment lights up instead) */
+#bsvg.barricade-mode #layer-hits polygon { fill: transparent !important; cursor: pointer !important; }
+
+/* ---- Messages and confirmations in the page (js/ui.js, 26/11): replace alert() / confirm(), which cut the
+   sound in Safari; same paper as the export window, Cancel on the left as there ---- */
+#message-dialog { margin: auto; /* native centring of <dialog>, cancelled by the "* { margin: 0 }" of app.css */
+  max-width: min(480px, calc(100vw - 32px)); padding: 18px 20px; border: 2.5px solid var(--ink); color: var(--ink);
+  background: var(--paper); background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.35), transparent 60%), var(--grain); }
+#message-dialog::backdrop { background: rgba(29,20,38,.72); }
+#message-text { white-space: pre-line; font-family: var(--text); font-size: 18px; line-height: 1.3; margin: 0 0 16px; }
+.message-actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.message-actions .btn { font-size: 16px; min-width: 120px; }
+#message-ok { margin-left: auto; }
+#message-ok.danger { background: var(--red); color: var(--paper); }
+#message-ok.danger:hover { background: #c92f22; }
+#message-cancel { clip-path: var(--chev-back); color: var(--ink); background: var(--ink); }
+#message-cancel::before { content: ""; position: absolute; inset: 2px 2.5px; z-index: -1; background: var(--paper); clip-path: inherit; }
+#message-cancel:hover::before { background: var(--paper-2); }
+#message-cancel[hidden] { display: none; }

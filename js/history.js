@@ -113,6 +113,7 @@ window.addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   if (document.getElementById('board-type-picker').style.display !== 'none') return;
   if (!document.getElementById('export-dialog').hidden) return; // export dialog open
+  if (messageOpen()) return; // message or confirmation open (js/ui.js)
   const el = document.activeElement;
   if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))) return;
   const k = e.key.toLowerCase();

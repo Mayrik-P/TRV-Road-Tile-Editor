@@ -41,14 +41,24 @@ const { chromium } = require('playwright');
   const sBeforeClear = await state();
   await p.fill('#title-input', 'Mesa'); await p.dispatchEvent('#title-input', 'input'); await p.evaluate(() => document.activeElement.blur());
   const sNamed = await state();
-  p.once('dialog', d => d.accept()); await p.click('#clear-btn');
+  await p.click('#clear-btn'); await p.click('#message-ok');
   check('Clear board: all cells at the type of a new board, name kept',
         await p.evaluate(() => board.every(t => t === DEFAULT_TILE) && document.getElementById('title-input').value === 'Mesa'));
   await p.keyboard.press('Control+z');
   check('Clear board then Ctrl+Z: board restored in one step', await state() === sNamed);
   await p.keyboard.press('Control+z'); // also undoes the name, for the rest of the test
-  p.once('dialog', d => d.dismiss()); await p.click('#clear-btn');
+  await p.click('#clear-btn'); await p.click('#message-cancel');
   check('Clear board refused: nothing changes', await state() === sBeforeClear);
+  // Confirmation window in the page (26/11: the browser's confirm() cut the sound in Safari)
+  await p.click('#clear-btn');
+  const dlg = await p.evaluate(() => ({ open: messageOpen(), ok: document.getElementById('message-ok').textContent,
+    focus: document.activeElement.id, cancel: !document.getElementById('message-cancel').hidden }));
+  await p.keyboard.press('r'); await p.keyboard.press('Control+z');
+  const untouched = await state() === sBeforeClear && await p.evaluate(() => messageOpen());
+  await p.keyboard.press('Escape');
+  check(`Clear board: confirmation in the page ("${dlg.ok}" focused, Cancel shown), keys and Ctrl+Z inactive meanwhile, Escape = refused`,
+        dlg.open && dlg.ok === 'Clear board' && dlg.focus === 'message-ok' && dlg.cancel && untouched
+        && !(await p.evaluate(() => messageOpen())) && await state() === sBeforeClear);
   // Home then Continue: editor reopened, history intact
   await p.click('#home-btn'); await p.click('#board-type-continue');
   await p.keyboard.press('Control+y'); await p.keyboard.press('Control+z');

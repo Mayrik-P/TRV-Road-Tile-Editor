@@ -2,7 +2,7 @@
 
 Éditeur web de tuiles de route pour **Thunder Road: Vendetta** et **Ignition** (éditeur Restoration
 Games) : on peint les cases d'un plateau puis on exporte un PNG à 300 dpi, à imprimer (A3 / A4 ;
-Tabloid / Letter, PDF). **Version 1.2 publiée le 22/11** (site officiel = branche `main`). Projet personnel de Mayrik, lié de loin à **TRV-Pocket**
+Tabloid / Letter, PDF). **Version 1.3 publiée le 26/11** (site officiel = branche `main`). Projet personnel de Mayrik, lié de loin à **TRV-Pocket**
 (`Mayrik-P/TRV-Pocket`, privé), dont on réutilise le savoir-faire (polices, sons, copies réduites
 des images, format des tuiles). Dépôt public `Mayrik-P/TRV-Road-Tile-Editor`, servi tel quel
 (GitHub Pages, aucune étape de construction).
@@ -93,7 +93,12 @@ Le lire avant tout travail.
   `playSound(moment)` (70 ms au moins entre deux mêmes sons). Sources : le signal du plateau (pose,
   pinceau et Clear board lus dans `undoHistory.actionKind`, posé par `beginAction(kind)` ; Annuler /
   Rétablir), un seul écouteur de clic pour tous les boutons (`data-sound="palette"` / `"none"`), l'export
-  terminé, et `warnUser(message)` (son de refus + `alert`, à utiliser pour tout message d'erreur).
+  terminé, et `warnUser(message)` (son de refus + message, à utiliser pour tout message d'erreur).
+  **Jamais `alert()` / `confirm()` du navigateur** (bug du 26/11, Safari sur Mac : plus aucun son après « Clear
+  board » ; bugs WebKit 249949 et 255134) : messages et confirmations dans la page, `<dialog id="message-dialog">`
+  (`showMessage(texte)`, `askConfirm(texte, bouton, {danger})` → promesse, `messageOpen()` bloque le clavier ;
+  `js/ui.js`). Filet de sécurité, méthode du moteur de jeux Phaser (3.60, `onFocus`) : contexte audio « suspended »
+  ou « interrupted » (Safari) → `resume()`, à chaque geste et au retour du focus (`resumeAudioIfPaused`, `js/sounds.js`).
   Bouton haut-parleur `#sound-btn` dans la bande du titre, choix retenu (`trv_road_tile_sound_v1`).
 - **Décorations libres (phase 7, `js/decor.js`)** : `decorations` = `[{item, x, y}]` (centre, pixels à
   300 dpi) dans la photo du plateau (`BOARD_STATE_VERSION` 2, `upgradeBoardState` relit la v1 ; clé
@@ -103,6 +108,21 @@ Le lire avant tout travail.
   (coupé aux marges, déborde sur la bande de titre), sélection et ✕ dans `layer-decor-ui` (retiré de
   l'export). Cercles de prise mesurés par dessin (`DECOR_SHAPES`). Vignettes : `items/thumb/`
   (`python3 tools/make-decor-thumbs.py`, à relancer si une décoration change).
+- **Barricades (phase 8, `js/barricades.js`)** : « murs fins » posés sur les ARÊTES entre deux rangées (Red Blob
+  Games), clé `"haute-basse"` (index des deux cases) ; segments de 298 px (« long », toujours aux bords) ou 195 px
+  (« short ») ; `barricadePairs(cols)` les donne sans la géométrie (validation), `barricadeSegment(clé)` les place.
+  `barricades` (liste triée) dans la photo du plateau (`BOARD_STATE_VERSION` 3, v1 et v2 converties ; clé
+  `trv_road_tile_board_v3` ; projet format 3). Points d'entrée `addBarricade` / `removeBarricade` / `clearBarricades`
+  (signal `barricade`) ; « Clear board » les retire aussi. Dessin dans `layer-overlays`, dans l'ordre isométrique
+  (`data-rank`, `insertInIsometricOrder`) : devant la rangée du dessus, derrière celle du dessous. Images : dessins de
+  Mayrik à ×4 sur le gabarit (`barricades/source/`, 1700 × 1150), ramenés à 300 dpi (425 × 288) par `make-webp.py` ;
+  segment centré dans l'image, frontière à 187,5 px du haut, base à cheval et ombre (vers le bas à gauche) dans le
+  dessin : le code ne règle jamais un modèle à part. **Outil de pose (8c)** : bouton « Barricade » en tête de la
+  rangée des types de case (lettre B), `barricadeTool.active` ; survol = segment le plus proche en surbrillance
+  (calque `layer-barricade-ui`, retiré de l'export ; vert : pose, avec la barricade en transparence ; rouge : retire) ;
+  clic = poser ou retirer ; en glissant, le 1er segment décide pour tout le geste (une étape, `beginAction('barricade')`,
+  sons du pinceau) ; mêmes règles que le pinceau (bouton principal, 2e doigt = geste annulé). Choisir un type de case
+  ou une décoration quitte l'outil (`leaveBarricadeTool`) ; Entrée ne peint rien avec l'outil (choix de Mayrik, 26/11).
 - **Crédits (phase 6 bis, `js/credits.js`)** : SEULE liste des crédits (comme TRV-Pocket) : toute ressource
   ajoutée (son, image, police, bibliothèque) s'y inscrit, avec son fichier de licence (texte affiché tel
   quel, replié). Bouton « Credits » de l'accueil, fenêtre `<dialog id="credits">` (`openCredits`,
@@ -115,7 +135,8 @@ Le lire avant tout travail.
   **`python3 tools/make-webp.py [dossier]`** en tire les WebP (à relancer dès qu'un original change ou
   s'ajoute). Réglages validés par le test à l'aveugle de Mayrik du 19/11 (5/20 à taille réelle, 13/20
   en ×2 : aucune différence perçue). Le même script fait les **aperçus** `<dossier>/half/` (50 %) et
-  `<dossier>/quarter/` (25 %), toujours tirés des PNG. **Exception** : les 6 textures de terrain
+  `<dossier>/quarter/` (25 %), toujours tirés des PNG (ceux de `barricades/source/`, dessinés à ×4, sont d'abord
+  ramenés à 300 dpi : `SOURCE_SCALE`). **Exception** : les 6 textures de terrain
   sources (4243 × 2718 px = zone des cases Vendetta à 300 dpi) ne sont pas dans le dépôt (Mayrik les
   garde en local) ; les redéposer dans `textures/source/` pour régénérer leurs WebP. Elles sont posées
   à leur taille exacte, centrées sur la zone des cases, même échelle dans tous les formats
@@ -166,7 +187,7 @@ Le lire avant tout travail.
 - `docs/` : plan et documents de conception.
 
 **Ignition déjà repris** (rappel de Mayrik, 25/11) : le format étroit de 4 cases de large, l'**Omni-ramp**
-et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; reste à faire : les **barricades** (phase 8) ;
+et la **mine** (« Off-Road + Minefield ») viennent d'Ignition ; **barricades** (phase 8) ;
 idées en attente : le terrain **Rubble** (gravats) et les **routes courbes** (`docs/roadmap.md` § 3 bis).
 Avant de proposer un élément d'Ignition, vérifier d'abord la palette (`TILES`, `js/config.js`).
 
@@ -195,6 +216,7 @@ Géométrie : plateau à 300 dpi, Vendetta 4961 × 3508 px (A3 paysage, 8 colonn
   navigateur, fichiers refusés).
 - **`node tools/check-export-dialog.js [url]`** : fenêtre d'export sur connexion lente.
 - **`node tools/check-sounds.js [url]`** : sons (espion de howler.js : fichier, volume, hauteur de chaque son).
+- **`node tools/check-barricades.js [url]`** : barricades (segments, placement, ordre isométrique, Annuler, Clear board, sauvegarde, projet, export ; outil avec vrais gestes : survol, clic, glisser, lettre B, doigt).
 - **`node tools/check-decor.js [url]`** : décorations (pose, glisser, retrait, Annuler, export coupé aux marges, sauvegarde, projet, doigt).
 - **`node tools/check-credits.js [url]`** : crédits (fenêtre, textes exacts des licences, polices et bibliothèques toutes citées).
 - Les tests qui exportent ouvrent d'abord la fenêtre (`#export-open-btn`) puis cliquent `#export-btn`.

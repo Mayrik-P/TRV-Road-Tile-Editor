@@ -358,10 +358,32 @@ trouve, pour chaque case, les segments partagés avec la rangée voisine et leur
 
 | Tranche | Contenu |
 |---|---|
-| 8a | **Graphismes à préparer par Mayrik** : barricade « Short » (segment de 195 px) et « Long » (298 px), avec dépassement et ombre, à 300 dpi, 2 ou 3 variantes chacune si possible. Je fournirai les tailles de canevas exactes et un gabarit PNG avec le segment repéré |
-| 8b | Données `barricades: ["idxA-idxB", …]`, sauvegardées, annulables, exportées |
-| 8c | Outil « Barricade » : quand il est actif, des zones de clic fines apparaissent le long de chaque frontière horizontale ; un clic pose ou retire. Le pinceau peut en enchaîner plusieurs |
-| 8d | Rendu : calque au-dessus du quadrillage orange, au même niveau que les overlays, dans l'ordre isométrique |
+| 8a | **FAIT (26/11)** — **Graphismes à préparer par Mayrik** : barricade « Short » (segment de 195 px) et « Long » (298 px), avec dépassement et ombre, à 300 dpi, 2 ou 3 variantes chacune si possible. Je fournirai les tailles de canevas exactes et un gabarit PNG avec le segment repéré |
+| 8b | **FAIT (26/11)** — Données `barricades: ["idxA-idxB", …]`, sauvegardées, annulables, exportées |
+| 8c | **FAIT (26/11)** — Outil « Barricade » : **bouton dans la palette, choisi comme un type de case** ; au survol, c'est le **segment** de frontière qui se met en surbrillance au lieu de la case (vert : le clic pose, rouge : il retire) ; un clic pose ou retire ; en glissant, le **premier segment décide** pour tout le geste (poser partout ou retirer partout, méthode des grilles de disponibilité type Doodle). Décisions de Mayrik du 26/11 |
+| 8d | **FAIT (26/11)** — Rendu : calque au-dessus du quadrillage orange, au même niveau que les overlays, dans l'ordre isométrique |
+
+Fait en 8a + 8b + 8d (26/11) :
+- Gabarit ×4 (1700 × 1150) : segment centré, frontière à y = 750, **bas du plot 20 px (300 dpi) sous la frontière**
+  (mesuré sur un vrai plateau : base à cheval sur la ligne), hauteur 75 à 140 px. Ombre dessinée par Mayrik dans
+  le PNG, **vers le bas à gauche** comme sur les plateaux officiels (choix A du 26/11 : chaque élément garde l'ombre
+  du jeu, comme les autres images du projet). Recouvrement de deux ombres plus foncé : accepté par Mayrik.
+- `js/barricades.js` ; photo du plateau en version 3, projet en format 3 ; « Clear board » retire aussi les
+  barricades (comme les décorations) ; vérification `tools/check-barricades.js`.
+- 8c : bouton « Barricade » en tête des types de case (lettre B, texte d'aide propre) ; chaque point de la zone des
+  cases désigne le segment le plus proche (cible large pour un doigt) ; surbrillance jamais exportée ; Entrée ne peint
+  rien avec l'outil ; placement au clavier non prévu (à reconsidérer si on le demande).
+
+### Correctif du 26/11 — son perdu après « Clear board » (Safari)
+Vu par Mayrik sur Safari (Mac) : après « Clear board », plus aucun son. Cause : la fenêtre `confirm()` du navigateur
+met le son de la page en pause (état « interrupted » de WebKit), parfois pour de bon (bugs WebKit 249949, 255134) ;
+howler.js garde alors chaque son en attente. Choix de Mayrik : fenêtres dans la page (`#message-dialog`) pour la
+confirmation de « Clear board » et tous les messages d'erreur (`warnUser`), plus un filet de sécurité qui relance le
+son au geste suivant. Solutions reprises de projets éprouvés : fenêtres de confirmation dans la page (élément
+`<dialog>` natif, méthode recommandée à la place de `window.confirm` ; MDN signale aussi que le navigateur peut ne pas
+afficher `confirm()`) ; relance du contexte audio « suspended » / « interrupted » comme le moteur de jeux Phaser
+(`WebAudioSoundManager.onFocus`, Phaser 3.60, correctif #5353), à chaque geste et au retour du focus.
+Non reproductible dans Chromium (seul navigateur des tests) : la cause est supprimée, à confirmer par Mayrik sur Safari.
 
 ### Phase 9 — *(facultatif, long terme)* Export vers TRV-Pocket
 Ajouter, à l'export, un fichier de données au **format des tuiles de TRV-Pocket**
@@ -436,6 +458,8 @@ Demandes gardées sans engagement, à reconsidérer après la phase 8 si elles r
    commentaires existants) ; nom « Mayrik PADEY » ; pas d'e-mail personnel.
    Traduction faite le 23/11 (1 214 commentaires, 33 fichiers) : code sans commentaires identique jeton
    par jeton au commit d'avant (vérificateur acorn), exports identiques, tous les tests verts.
+10. **Publication de la v1.3 (26/11)** : phase 8 (barricades : données, affichage, outil de pose) et correctif
+   du son perdu après « Clear board » sur Safari (fenêtres dans la page, relance du son à la manière de Phaser).
 
 ---
 

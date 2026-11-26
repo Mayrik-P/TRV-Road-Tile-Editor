@@ -134,6 +134,7 @@ const SWATCH_STYLE = {
 function buildPalette() {
   const pal = document.getElementById('palette');
   pal.innerHTML = '';
+  pal.appendChild(buildBarricadeButton()); // "Barricade" tool, chosen like a tile type (js/barricades.js)
   TILES.forEach(t => {
     const btn = document.createElement('div');
     btn.className = 'tb' + (t.id === sel ? ' sel' : '');
@@ -168,13 +169,16 @@ function buildPalette() {
   help.innerHTML = 'Click or tap a space to place the selected type · drag to paint several spaces · click again on '
     + 'Impassable, Oil or Fire to change its look<span class="help-keys"> · press <kbd>?</kbd> for keyboard shortcuts</span>';
   pal.appendChild(help);
+  pal.appendChild(buildBarricadeHelp()); // shown instead of the line above while the barricade tool is active
   buildDecorPalette(); // "Decorations" row (js/decor.js)
+  refreshBarricadePalette();
 }
 
 // Single entry point for choosing the tile type (palette, and later keyboard) —
 // idea taken from ChessMess's PR #2.
 function selectTileType(id) {
   leaveDecorMode(); // back to the brush (js/decor.js)
+  leaveBarricadeTool(); // (js/barricades.js)
   sel = id;
   document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
   document.getElementById('tb-' + id)?.classList.add('sel');
@@ -185,16 +189,20 @@ function selectTileType(id) {
 // undo step (beginAction / endAction): Ctrl+Z brings the whole board back.
 function clearBoard() {
   const label = TILES.find(t => t.id === DEFAULT_TILE).label;
-  const ok = confirm(
-    'Clear all board spaces back to ' + label + ' and remove all decorations?\n\n' +
-    'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).'
-  );
-  if (!ok) return;
-  beginAction('clear');
-  try {
-    for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE);
-    clearDecorations(); // decorations removed too, in the same step (Mayrik's choice, 22/11)
-  } finally { endAction(); }
+  // Confirmation in the page, never the browser's confirm() (it cut the sound in Safari, js/ui.js).
+  return askConfirm(
+    'Clear all board spaces back to ' + label + ' and remove all decorations and barricades?\n\n' +
+    'The road name, number and title image are kept. You can undo this with Undo (Ctrl+Z / ⌘Z).',
+    'Clear board', { danger: true }
+  ).then(ok => {
+    if (!ok) return;
+    beginAction('clear');
+    try {
+      for (let i = 0; i < board.length; i++) updateCell(i, DEFAULT_TILE);
+      clearDecorations(); // decorations removed too, in the same step (Mayrik's choice, 22/11)
+      clearBarricades();  // and barricades, likewise
+    } finally { endAction(); }
+  });
 }
 
 // "Home" (tranche 4c): back to the home screen without losing anything — the board stays in

@@ -149,6 +149,8 @@ let cellVariant = Array(COLS * ROWS).fill(null);
 // Free decorations (phase 7, js/decor.js): [{ item: 1..12, x, y }], image centre in
 // board pixels at 300 dpi; placement order (display follows depth, see decor.js).
 let decorations = [];
+// Barricades (phase 8, js/barricades.js): sorted keys "upper-lower" of the pairs of cells they separate.
+let barricades = [];
 
 function overlayFamily(type) {
   if (type === 'rock') return 'rock';

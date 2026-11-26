@@ -137,11 +137,18 @@ function overlayRank(idx) {
   return row * COLS + (COLS - 1 - col);
 }
 
+// Rank of an element of the layer: a cell's overlay (data-cell), or an element placed between
+// two cells, such as a barricade (data-rank, js/barricades.js).
+function isometricRank(el) {
+  if (el.dataset.rank !== undefined) return parseFloat(el.dataset.rank);
+  if (el.dataset.cell !== undefined) return overlayRank(parseInt(el.dataset.cell));
+  return undefined;
+}
 function insertInIsometricOrder(g, el, idx) {
-  const rank = overlayRank(idx);
+  const rank = idx === undefined ? isometricRank(el) : overlayRank(idx);
   const next = [...g.children].find(child => {
-    const cellAttr = child.dataset.cell;
-    return cellAttr !== undefined && overlayRank(parseInt(cellAttr)) > rank;
+    const r = isometricRank(child);
+    return r !== undefined && r > rank;
   });
   if (next) g.insertBefore(el, next);
   else g.appendChild(el);

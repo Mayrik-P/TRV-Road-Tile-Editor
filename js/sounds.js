@@ -53,35 +53,38 @@ function playSound(moment, opts = {}) {
   h.rate(opts.rate ?? 1, id);
 }
 
-// Error message with refusal sound (replaces alert() for refusals and export errors).
-function warnUser(message) {
+// Error message with refusal sound, for refusals and export errors: in the page (showMessage,
+// js/ui.js), never the browser's alert(), which cut the sound in Safari (bug of 26/11).
+function warnUser(text) {
   playSound('refuse');
-  alert(message);
+  return showMessage(text);
 }
 
 // 1. Board signal
 boardEvents.addEventListener('change', e => {
   const { reason } = e.detail;
   if (reason === 'restore' && undoHistory.applying) { playSound('undo'); return; }
-  if (reason === 'decor') { // decorations (js/decor.js); "Clear board": covered by its stamp
+  const inAction = undoHistory.batch > 0, seq = undoHistory.actionSeq;
+  if (reason === 'decor' || reason === 'barricade') { // decorations, barricades; "Clear board": covered by its stamp
     if (e.detail.action === 'clear') { // a single stamp per "Clear board", even if no cell changes
       if (sounds.clearSeq !== undoHistory.actionSeq) { sounds.clearSeq = undoHistory.actionSeq; playSound('clear'); }
-    } else playSound(e.detail.action === 'remove' ? 'undo' : 'place');
+    } else if (inAction && undoHistory.actionKind === 'barricade') brushSound(seq); // gesture of the barricade tool
+    else playSound(e.detail.action === 'remove' ? 'undo' : 'place');
     return;
   }
   if (reason !== 'cell') return;
-  const inAction = undoHistory.batch > 0, seq = undoHistory.actionSeq;
   if (inAction && undoHistory.actionKind === 'clear') {
     if (sounds.clearSeq !== seq) { sounds.clearSeq = seq; playSound('clear'); } // a single stamp
     return;
   }
-  if (inAction && undoHistory.actionKind === 'brush') {
-    if (sounds.strokeSeq !== seq) { sounds.strokeSeq = seq; sounds.lastAt.place = -Infinity; playSound('place'); return; }
-    playSound('place', { volume: BRUSH_VOLUME, rate: 1 - BRUSH_PITCH + Math.random() * 2 * BRUSH_PITCH });
-    return;
-  }
+  if (inAction && undoHistory.actionKind === 'brush') { brushSound(seq); return; }
   playSound('place'); // clavier
 });
+// Brush stroke (cells or barricades): 1st change at full volume, the next ones softer and varied.
+function brushSound(seq) {
+  if (sounds.strokeSeq !== seq) { sounds.strokeSeq = seq; sounds.lastAt.place = -Infinity; playSound('place'); return; }
+  playSound('place', { volume: BRUSH_VOLUME, rate: 1 - BRUSH_PITCH + Math.random() * 2 * BRUSH_PITCH });
+}
 
 // 2. Buttons: a single listener for the whole page (buttons added later included)
 document.addEventListener('click', e => {
@@ -107,6 +110,20 @@ function toggleSound() {
   refreshSoundButton();
   playSound('button'); // sound turned back on: heard right away
 }
+
+// Safety net (26/11), method of the Phaser game engine (WebAudioSoundManager.onFocus, Phaser 3.60, fix
+// #5353): if the audio context is 'suspended' or 'interrupted' (non-standard state of Safari, after a
+// system window, a phone call, a change of audio device…), ask it to resume. Phaser checks it at every
+// frame while the game has the focus; the editor has no frame loop, so: at every gesture on the page (a
+// resume is always allowed during a user gesture) and when the window gets the focus back. Howler plays
+// normally again as soon as the context is running (howler alone does not resume a context paused behind
+// its back: measured in Chromium, 26/11).
+function resumeAudioIfPaused() {
+  const ctx = typeof Howler !== 'undefined' && Howler.ctx;
+  if (ctx && (ctx.state === 'suspended' || ctx.state === 'interrupted')) ctx.resume().catch(() => {});
+}
+['pointerdown', 'keydown'].forEach(type => document.addEventListener(type, resumeAudioIfPaused, true));
+window.addEventListener('focus', resumeAudioIfPaused);
 
 refreshSoundButton();
 if (document.readyState === 'complete') loadSounds(); else window.addEventListener('load', loadSounds);

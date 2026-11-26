@@ -11,6 +11,7 @@ No installation, no account: it runs in any modern browser, on a computer, table
 
 - Paint the spaces of a Vendetta (8 spaces wide) or Ignition (4 spaces wide) board, with a brush
 - Free decorations (cacti, snakes, road signs…) placed where you want
+- Barricades on the borders between rows (from Ignition), on both board formats
 - Undo / Redo, keyboard shortcuts (press **?** in the editor)
 - Automatic saving in your browser, and project files to reopen a board anywhere
 - Export as PNG or PDF at 300 dpi, on A3 / A4 or US Tabloid / Letter paper, with a ruler to check the print scale
