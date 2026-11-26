@@ -15,9 +15,9 @@
 // (getBoardState): undoable, saved, in the project file and the export. Every change goes
 // through addBarricade / removeBarricade / clearBarricades, which emit the 'barricade' signal.
 //
-// Drawing (slice 8d): in the overlay layer, in its isometric order (rows from top to bottom,
-// columns from right to left): a barricade is in front of the cells of the row above it and
-// behind those of the row below (whose sprites cover its shadow, which falls on their ground).
+// Drawing (slice 8d): in the overlay layer, in its isometric order (rows from top to bottom): a
+// barricade is in front of the cells of the row above it and behind those of the row below (whose
+// sprites cover its shadow, which falls on their ground); along a boundary, from left to right.
 // Images: Mayrik's drawings (barricades/source/, 4 times the printed size, on the template),
 // reduced to 300 dpi by tools/make-webp.py. In the 425 × 288 px image, the segment is
 // centred horizontally and the row boundary is 187.5 px from the top: the drawing itself
@@ -70,9 +70,11 @@ function barricadeHref(key, kind) {
 
 // Rank in the isometric order of the overlay layer (insertInIsometricOrder, js/render-layers.js):
 // after every cell of row r (ranks r*COLS .. r*COLS + COLS - 1), before those of row r + 1,
-// and from right to left along the boundary.
+// and from LEFT to right along the boundary: the barricade on the right is always drawn over the one
+// on its left, as Mayrik's drawings require (the sheets of the short one overhang to the left;
+// layering fault seen by Mayrik on 26/11, version 1.3).
 function barricadeRank(seg) {
-  return seg.row * COLS + COLS - 0.5 + 0.25 * (1 - (seg.x0 + seg.x1) / 2 / VW);
+  return seg.row * COLS + COLS - 0.75 + 0.25 * (seg.x0 + seg.x1) / 2 / VW;
 }
 
 function barricadeElement(key) {
