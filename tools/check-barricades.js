@@ -108,6 +108,15 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'barricades-'));
   check('images: long and short models according to the segment',
         lay.every(l => l.href.includes('barricade-' + l.kind)) && lay.some(l => l.kind === 'long') && lay.some(l => l.kind === 'short'));
   check('isometric order: after the overlays of the row above, before those of the row below', lay.every(l => l.orderOk));
+  // Along a boundary, the barricade on the right is drawn over the one on its left (Mayrik's drawings:
+  // the sheets of the short one overhang to the left; fault seen on 26/11, version 1.3)
+  const leftToRight = () => p.evaluate(() => {
+    const els = [...document.querySelectorAll('#layer-overlays [data-barricade]')].map(e => barricadeSegment(e.dataset.barricade));
+    const pairs = els.flatMap((a, i) => els.slice(i + 1).filter(b => b.row === a.row).map(b => [a, b]));
+    return { pairs: pairs.length, ok: pairs.every(([a, b]) => a.x0 < b.x0) };
+  });
+  const ltr = await leftToRight();
+  check(`along a boundary: drawn from left to right, the right one over the left one (${ltr.pairs} neighbour pair(s))`, ltr.pairs > 0 && ltr.ok);
   // Cell painted with a real click after the barricades (incremental insertion): last cell of row 1 on the left,
   // and a cell of row 2 under the barricade
   await paint(p, 'rock', 8); await paint(p, 'rock', 18);

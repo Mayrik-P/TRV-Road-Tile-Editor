@@ -114,7 +114,8 @@ Le lire avant tout travail.
   `barricades` (liste triée) dans la photo du plateau (`BOARD_STATE_VERSION` 3, v1 et v2 converties ; clé
   `trv_road_tile_board_v3` ; projet format 3). Points d'entrée `addBarricade` / `removeBarricade` / `clearBarricades`
   (signal `barricade`) ; « Clear board » les retire aussi. Dessin dans `layer-overlays`, dans l'ordre isométrique
-  (`data-rank`, `insertInIsometricOrder`) : devant la rangée du dessus, derrière celle du dessous. Images : dessins de
+  (`data-rank`, `insertInIsometricOrder`) : devant la rangée du dessus, derrière celle du dessous ; le long d'une
+  frontière, de gauche à droite (celle de droite par-dessus, comme l'exigent les dessins : Mayrik, 26/11). Images : dessins de
   Mayrik à ×4 sur le gabarit (`barricades/source/`, 1700 × 1150), ramenés à 300 dpi (425 × 288) par `make-webp.py` ;
   segment centré dans l'image, frontière à 187,5 px du haut, base à cheval et ombre (vers le bas à gauche) dans le
   dessin : le code ne règle jamais un modèle à part. **Outil de pose (8c)** : bouton « Barricade » en tête de la
